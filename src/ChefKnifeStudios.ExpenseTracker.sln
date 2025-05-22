@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTracker.Data", "ChefKnifeStudios.ExpenseTracker.Data\ChefKnifeStudios.ExpenseTracker.Data.csproj", "{6FD318E1-F6B7-46F6-A98B-EAADC07123A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChefKnifeStudios.ExpenseTracker.Data", "ChefKnifeStudios.ExpenseTracker.Data\ChefKnifeStudios.ExpenseTracker.Data.csproj", "{6FD318E1-F6B7-46F6-A98B-EAADC07123A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTracker.App", "ChefKnifeStudios.ExpenseTracker.App\ChefKnifeStudios.ExpenseTracker.App.csproj", "{79877DA2-6396-4172-AF6B-F24CD3D8A39F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTracker.MobileApp", "ChefKnifeStudios.ExpenseTracker.MobileApp\ChefKnifeStudios.ExpenseTracker.MobileApp.csproj", "{3B7CF9BE-9D30-437D-96AB-84DEFB79E09F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTracker.Shared", "ChefKnifeStudios.ExpenseTracker.Shared\ChefKnifeStudios.ExpenseTracker.Shared.csproj", "{CFA7E2DB-4AEB-4702-A699-CD6376D16E61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,11 +19,15 @@ Global
 		{6FD318E1-F6B7-46F6-A98B-EAADC07123A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FD318E1-F6B7-46F6-A98B-EAADC07123A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FD318E1-F6B7-46F6-A98B-EAADC07123A9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{79877DA2-6396-4172-AF6B-F24CD3D8A39F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{79877DA2-6396-4172-AF6B-F24CD3D8A39F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{79877DA2-6396-4172-AF6B-F24CD3D8A39F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{79877DA2-6396-4172-AF6B-F24CD3D8A39F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{79877DA2-6396-4172-AF6B-F24CD3D8A39F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B7CF9BE-9D30-437D-96AB-84DEFB79E09F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B7CF9BE-9D30-437D-96AB-84DEFB79E09F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B7CF9BE-9D30-437D-96AB-84DEFB79E09F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{3B7CF9BE-9D30-437D-96AB-84DEFB79E09F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B7CF9BE-9D30-437D-96AB-84DEFB79E09F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFA7E2DB-4AEB-4702-A699-CD6376D16E61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFA7E2DB-4AEB-4702-A699-CD6376D16E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFA7E2DB-4AEB-4702-A699-CD6376D16E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFA7E2DB-4AEB-4702-A699-CD6376D16E61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
