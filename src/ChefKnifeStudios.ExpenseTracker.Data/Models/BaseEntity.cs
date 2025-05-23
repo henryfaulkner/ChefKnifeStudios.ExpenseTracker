@@ -1,6 +1,8 @@
-﻿namespace ChefKnifeStudios.ExpenseTracker.Data.Models;
+﻿using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 
-public abstract class BaseEntity
+namespace ChefKnifeStudios.ExpenseTracker.Data.Models;
+
+public abstract class BaseEntity : IAggregateRoot
 {
     public int Id { get; set; }
     public bool IsDeleted { get; set; }

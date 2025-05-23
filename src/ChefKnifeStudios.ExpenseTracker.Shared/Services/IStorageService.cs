@@ -4,7 +4,11 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.Services;
 
 public interface IStorageService
 {
-    Task AddBudget(BudgetDTO budgetDTO);
-    Task AddExpense(ExpenseDTO expenseDTO);
-    Task<BudgetWithExpensesDTO> GetBudgetWithExpenses();
+    Task AddBudgetAsync(BudgetDTO budgetDTO);
+    Task AddExpenseAsync(ExpenseDTO expenseDTO);
+    Task<PagedResultDTO<BudgetDTO>> SearchBudgetsAsync(
+        string? searchText,
+        int pageSize,
+        int pageNumber
+    );
 }

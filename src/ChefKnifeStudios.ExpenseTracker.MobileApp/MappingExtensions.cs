@@ -1,5 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
-using ChefKnifeStudios.ExpenseTracker.Data.Models.Views;
+using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp;
@@ -11,6 +11,7 @@ public static class MappingExtensions
         ExpenseDTO result = new ()
         { 
             Id = model.Id,
+            BudgetId = model.BudgetId,
             Name = model.Name,
             Cost = model.Cost,
         };
@@ -22,6 +23,7 @@ public static class MappingExtensions
         Expense result = new ()
         { 
             Id = dto.Id,
+            BudgetId = dto.BudgetId,
             Name = dto.Name,
             Cost = dto.Cost,
         };
@@ -30,6 +32,11 @@ public static class MappingExtensions
 
     public static BudgetDTO MapToDTO(this Budget model)
     {
+        List<ExpenseDTO> expenseDTOs = new ();
+        if (model.Expenses != null) 
+            foreach (var expense in model.Expenses) 
+                expenseDTOs.Add(expense.MapToDTO());
+
         BudgetDTO result = new ()
         {
             Id = model.Id,
@@ -37,12 +44,19 @@ public static class MappingExtensions
             ExpenseBudget = model.ExpenseBudget,
             StartDate = model.StartDateUtc, // convert from UTC to Local
             EndDate = model.EndDateUtc, // convert from UTC to Local
+            ExpenseDTOs = expenseDTOs,
         };
+        
         return result;
     }
 
     public static Budget MapToModel(this BudgetDTO dto)
     {
+        List<Expense> expenses = new ();
+        if (dto.ExpenseDTOs != null) 
+            foreach (var expenseDTO in dto.ExpenseDTOs) 
+                expenses.Add(expenseDTO.MapToModel());
+
         Budget result = new () 
         {
             Id = dto.Id,
@@ -50,39 +64,27 @@ public static class MappingExtensions
             ExpenseBudget = dto.ExpenseBudget,
             StartDateUtc = dto.StartDate, // convert from Local to UTC
             EndDateUtc = dto.EndDate, // convert from Local to UTC
-        };
-        return result;
-    }
-
-    public static BudgetWithExpensesDTO MapToDTO(this BudgetWithExpenses model)
-    {
-        BudgetWithExpensesDTO result;
-        BudgetDTO budgetDTO = MapToDTO(model.Budget);
-        List<ExpenseDTO> expenseDTOs = new ();
-        foreach (var expense in model.Expenses) expenseDTOs.Add(MapToDTO(expense));
-
-        result = new ()
-        { 
-            Budget = budgetDTO,
-            TotalExpenseCost = model.TotalExpenseCost,
-            Expenses = expenseDTOs,
-        };
-        return result;
-    }
-
-    public static BudgetWithExpenses MapToModel(this BudgetWithExpensesDTO dto)
-    {
-        BudgetWithExpenses result;
-        Budget budget = MapToModel(dto.Budget);
-        List<Expense> expenses = new ();
-        foreach (var expenseDTO in dto.Expenses) expenses.Add(MapToModel(expenseDTO));
-
-        result = new ()
-        { 
-            Budget = budget,
-            TotalExpenseCost = dto.TotalExpenseCost,
             Expenses = expenses,
         };
+
+        return result;
+    }
+
+    public static PagedResultDTO<BudgetDTO> MapToDTO(this PagedResult<Budget> model)
+    {
+        List<BudgetDTO> records = new ();
+        if (model.Records != null)
+            foreach (var budget in model.Records)
+                records.Add(budget.MapToDTO());
+
+        PagedResultDTO<BudgetDTO> result = new ()
+        {
+            TotalRecords = model.TotalRecords,
+            PageSize = model.PageSize,
+            PageNumber = model.PageNumber,
+            Records = records,
+        };
+
         return result;
     }
 }

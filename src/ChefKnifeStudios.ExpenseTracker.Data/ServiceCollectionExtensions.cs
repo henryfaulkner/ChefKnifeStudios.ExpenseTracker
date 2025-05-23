@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped(typeof(IReadRepository<>), typeof(EfReadRepository<>));
-    }
 
+        services.AddTransient<IBudgetSearchRepository, BudgetSearchRepository>();
+    }
 }

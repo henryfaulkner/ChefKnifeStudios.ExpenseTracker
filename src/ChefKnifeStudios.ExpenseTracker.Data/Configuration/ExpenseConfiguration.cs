@@ -10,5 +10,10 @@ public class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
     public void Configure(EntityTypeBuilder<Expense> builder)
     {
         builder.ToTable($"{nameof(Expense)}s", DbSchemas.ExpenseTracker);
+
+        builder.HasKey(x => x.Id);
+
+        builder.HasOne(x => x.Budget)
+            .WithMany(x => x.Expenses);
     }
 }
