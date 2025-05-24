@@ -9,8 +9,10 @@ public class AppDbContext : DbContext
 {
     readonly IConfiguration _configuration;
     
-    public AppDbContext(
-        DbContextOptions<AppDbContext> options, IConfiguration configuration)
+	public DbSet<Budget> Budgets { get; set; }
+	public DbSet<Expense> Expenses { get; set; }
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration? configuration = null)
         : base(options)
     {
         _configuration = configuration;
@@ -18,6 +20,7 @@ public class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+		System.Diagnostics.Debugger.Launch();
         var connectionString = _configuration.GetConnectionString("ExpenseTrackerDB");
         optionsBuilder.UseSqlite(connectionString);
     }

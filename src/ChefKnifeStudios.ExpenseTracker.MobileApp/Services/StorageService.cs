@@ -10,11 +10,11 @@ public class StorageService : IStorageService
 {
     readonly IRepository<Expense> _expenseRepository;
     readonly IRepository<Budget> _budgetRepository;
-    readonly BudgetSearchRepository _budgetSearchRepository;
+    readonly IBudgetSearchRepository _budgetSearchRepository;
 
     public StorageService(IRepository<Expense> expenseRepository, 
         IRepository<Budget> budgetRepository,
-        BudgetSearchRepository budgetSearchRepository)
+        IBudgetSearchRepository budgetSearchRepository)
     {
         _expenseRepository = expenseRepository;
         _budgetRepository = budgetRepository;

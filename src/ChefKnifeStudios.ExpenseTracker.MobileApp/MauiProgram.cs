@@ -1,5 +1,6 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data;
 using ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
+using ChefKnifeStudios.ExpenseTracker.Shared;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using Microsoft.Extensions.Logging;
 
@@ -26,6 +27,7 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
 
             builder.Services.RegisterDataServices(builder.Configuration);
             builder.Services.AddTransient<IStorageService, StorageService>();
+            builder.Services.RegisterViewModels(builder.Configuration);
 
             return builder.Build();
         }

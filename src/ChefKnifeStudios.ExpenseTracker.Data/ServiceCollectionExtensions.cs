@@ -1,4 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Repos;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -13,7 +14,10 @@ public static class ServiceCollectionExtensions
 {
     public static void RegisterDataServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<AppDbContext>();
+        services.AddDbContext<AppDbContext>(optionsBuilder =>
+        {
+            optionsBuilder.UseSqlite();
+        });
 
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped(typeof(IReadRepository<>), typeof(EfReadRepository<>));
