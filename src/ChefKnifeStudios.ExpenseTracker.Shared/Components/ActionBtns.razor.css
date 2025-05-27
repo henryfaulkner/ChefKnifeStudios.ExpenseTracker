@@ -1,0 +1,13 @@
+﻿::deep .app-fab--absolute {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+}
+
+::deep .expense {
+    bottom: 9rem;
+}
+
+::deep .budget {
+    bottom: 5rem;
+}

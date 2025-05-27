@@ -1,5 +1,6 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ChefKnifeStudios.ExpenseTracker.Shared;
 

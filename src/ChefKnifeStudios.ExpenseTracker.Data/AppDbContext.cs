@@ -12,15 +12,15 @@ public class AppDbContext : DbContext
 	public DbSet<Budget> Budgets { get; set; }
 	public DbSet<Expense> Expenses { get; set; }
 
-    public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration? configuration = null)
+    public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration configuration)
         : base(options)
     {
         _configuration = configuration;
+		Database.EnsureCreated();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-		System.Diagnostics.Debugger.Launch();
         var connectionString = _configuration.GetConnectionString("ExpenseTrackerDB");
         optionsBuilder.UseSqlite(connectionString);
     }

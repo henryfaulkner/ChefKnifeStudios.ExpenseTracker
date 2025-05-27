@@ -2,7 +2,9 @@
 using ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 using ChefKnifeStudios.ExpenseTracker.Shared;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MatBlazor;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp
 {
@@ -19,6 +21,8 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            builder.Services.AddMatBlazor();
 
             #if DEBUG
     		builder.Services.AddBlazorWebViewDeveloperTools();

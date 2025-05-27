@@ -1,4 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Repos;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChefKnifeStudios.ExpenseTracker.Data.Models;
 
@@ -8,5 +9,6 @@ public class Expense : BaseEntity
     public required string Name { get; set; }
     public decimal Cost { get; set; }
 
+    [ForeignKey(nameof(BudgetId))]
     public Budget? Budget { get; set; }
 }
