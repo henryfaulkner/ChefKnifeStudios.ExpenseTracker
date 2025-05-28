@@ -1,0 +1,56 @@
+﻿:root {
+    --height: 120px;
+    --container-width: 300px;
+    --container-horizontal-padding: 20px;
+    --label-width: 0px;
+    --mvc-header-height: 70px;
+    --now-green-secondary: #88cc88; /* Replace with the actual value */
+    --white: #ffffff; /* Replace with the actual value */
+    --font-weight-bold: 700; /* Replace with the actual value */
+    --font-size-extra-large: 24px; /* Replace with the actual value */
+}
+
+.blade-container {
+    border: 2px solid red;
+    z-index: 10;
+    position: absolute;
+    top: calc(-1 * var(--mvc-header-height));
+    right: calc(-1 * var(--container-width) - (2 * var(--container-horizontal-padding)) + (2 * var(--label-width)));
+    min-height: 100vh;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.blade-container .controls-container {
+    background-color: var(--now-green-secondary);
+    position: absolute;
+    top: var(--mvc-header-height);
+    height: calc(100% - var(--mvc-header-height));
+    width: var(--container-width);
+    right: 0;
+    z-index: 99;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 0 var(--container-horizontal-padding);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Simulated card-shadow */
+    transition: opacity 1s, transform 1s; /* Simulated hide-show-blur-translate */
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+.blade-container .controls-container .cross {
+    position: absolute;
+    right: 0;
+    padding-top: 25px;
+    padding-right: 25px;
+    align-self: flex-end;
+    cursor: pointer;
+}
+
+.blade-container .controls-container .cross a {
+    color: var(--white);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-extra-large);
+}

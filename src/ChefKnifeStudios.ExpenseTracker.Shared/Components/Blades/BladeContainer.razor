@@ -1,0 +1,13 @@
+<div class="blade-container">
+    <div class="controls-container {{this.isOpen ? 'showNg' : 'hideNg'}}" #tooltipContainer>
+        <div class="cross">
+            <a onclick="HandleClose">
+                X
+            </a>
+        </div>
+
+        <div class="content">
+            @ContentFragment
+        </div>
+    </div>
+</div>
