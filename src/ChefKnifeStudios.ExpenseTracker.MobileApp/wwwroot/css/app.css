@@ -1,29 +1,13 @@
-﻿/*#if (SampleContent)*/
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-a, .btn-link {
-    color: #006bb7;
-}
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-.content {
-    padding-top: 1.1rem;
-}
-
-/*#endif*/
-h1:focus {
-    outline: none;
+﻿:root {
+    --height: 120px;
+    --container-width: 300px;
+    --container-horizontal-padding: 20px;
+    --label-width: 0px;
+    --mvc-header-height: 70px;
+    --now-green-secondary: #88cc88; /* Replace with the actual value */
+    --white: #ffffff; /* Replace with the actual value */
+    --font-weight-bold: 700; /* Replace with the actual value */
+    --font-size-extra-large: 24px; /* Replace with the actual value */
 }
 
 .valid.modified:not([type=checkbox]) {

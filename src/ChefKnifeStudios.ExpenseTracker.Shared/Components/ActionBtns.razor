@@ -7,24 +7,22 @@
             <MatFAB 
                 Icon="add" 
                 Class="app-fab--absolute add"
-                onclick="HandleOpen"
-            />
+                onclick="HandleOpenPressed" />
             break;
         case ActionStates.Open:
             <MatFAB 
                 Icon="clear" 
                 Class="app-fab--absolute clear"
-                onclick="HandleClose" 
-            />
+                onclick="HandleClosePressed" />
             <MatFAB 
                 Icon="list" 
                 Class="app-fab--absolute budget"
-                onclick="HandleClose" 
+                onclick="HandleBudgetPressed" 
             />
             <MatFAB 
                 Icon="attach_money" 
-                        Class="app-fab--absolute expense" 
-                        onclick="HandleClose"
+                Class="app-fab--absolute expense" 
+                onclick="HandleExpensePressed"
             />
             break;
     }

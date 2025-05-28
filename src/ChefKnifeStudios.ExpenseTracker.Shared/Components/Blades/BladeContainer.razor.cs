@@ -10,7 +10,21 @@ public partial class BladeContainer : ComponentBase
 
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
 
-    void HandleClose()
+    bool _isOpen = false;
+
+    public void Open()
+    {
+        _isOpen = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        _isOpen = false;
+        StateHasChanged();
+    }
+
+    void HandleClosePressed()
     {
         EventNotificationService.PostEvent(
             this,

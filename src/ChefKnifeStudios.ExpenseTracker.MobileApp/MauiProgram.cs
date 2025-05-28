@@ -32,7 +32,7 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
             builder.Services.RegisterDataServices(builder.Configuration);
 
             builder.Services.AddTransient<IStorageService, StorageService>();
-            builder.Services.AddTransient<IEventNotificationService, EventNotificationService>();
+            builder.Services.AddSingleton<IEventNotificationService, EventNotificationService>();
 
             builder.Services.RegisterViewModels(builder.Configuration);
 

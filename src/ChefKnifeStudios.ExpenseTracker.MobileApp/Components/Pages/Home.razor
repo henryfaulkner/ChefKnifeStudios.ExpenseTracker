@@ -1,7 +1,13 @@
 ﻿@using ChefKnifeStudios.ExpenseTracker.Shared.Components
+@using Shared.Models.EventArgs
+@using ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades
 
 @page "/"
 
 <div class="home">
+    @* Use https://www.matblazor.com/ExpansionPanel for budget list *@
+
+    <BudgetBlade />
+    <ExpenseBlade />
     <ActionBtns />
 </div>

@@ -1,10 +1,30 @@
-﻿<div class="expense-blade">
-    <BladeContainer>
+﻿@using MatBlazor
+
+<div class="expense-blade">
+    <BladeContainer @ref="_bladeContainer">
         <ContentFragment>
             <h2>Expense</h2>
 
-            <form>
+            <form style="display: flex; flex-direction: column;">
+                <MatTextField 
+                    @bind-Value="@_name" 
+                    Label="Name" 
+                    Icon="create" 
+                    Required="true" 
+                />
+                <MatTextField 
+                    @bind-Value="@_cost" 
+                    Label="Cost" 
+                    Icon="attach_money" 
+                    Required="true" 
+                />
 
+                <MatButton 
+                    OnClick="HandleSubmitPressed"
+                    Unelevated="true"
+                >
+                    SUBMIT
+                </MatButton>
             </form>
         </ContentFragment>
     </BladeContainer>
