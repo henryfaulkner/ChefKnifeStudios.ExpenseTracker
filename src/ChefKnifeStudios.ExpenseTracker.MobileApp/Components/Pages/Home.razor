@@ -1,11 +1,30 @@
 ﻿@using ChefKnifeStudios.ExpenseTracker.Shared.Components
 @using Shared.Models.EventArgs
 @using ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades
+@using Microsoft.AspNetCore.Components.QuickGrid
 
 @page "/"
 
 <div class="home">
     @* Use https://www.matblazor.com/ExpansionPanel for budget list *@
+    <MatAccordion Multi="true">
+        @foreach (var budget in SearchViewModel.PagedBudgets?.Records ?? [])
+        {
+            <MatExpansionPanel>
+                <MatExpansionPanelSummary>
+                    <MatExpansionPanelHeader>@budget.Name</MatExpansionPanelHeader>
+                </MatExpansionPanelSummary>
+                <MatExpansionPanelDetails>
+                    <QuickGrid Items="@budget.ExpenseDTOs.AsQueryable()">
+                        <PropertyColumn Title="ID" Property="@(x => x.Id)" />
+                        <PropertyColumn Title="Budget ID" Property="@(x => x.BudgetId)" />
+                        <PropertyColumn Title="Cost" Property="@(x => x.Cost)" />
+                        <PropertyColumn Title="Name" Property="@(x => x.Name)" />
+                    </QuickGrid>
+                </MatExpansionPanelDetails>
+            </MatExpansionPanel>
+        }
+    </MatAccordion>
 
     <BudgetBlade />
     <ExpenseBlade />

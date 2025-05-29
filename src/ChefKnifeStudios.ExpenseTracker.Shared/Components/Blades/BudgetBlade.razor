@@ -6,6 +6,12 @@
             <h2>Budget</h2>
 
             <form style="display: flex; flex-direction: column;">
+                <MatTextField 
+                    @bind-Value="@_name"
+                    Label="Name"
+                    Icon="create"
+                    Required="true" 
+                />
                 <MatDatePicker 
                     @bind-Value="_startDate" 
                     Label="Start Date" 

@@ -12,10 +12,30 @@ public partial class Home : ComponentBase
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
 
+    protected override void OnInitialized()
+    {
+        EventNotificationService.EventReceived += HandleEventReceived;
+
+        base.OnInitialized();
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        await SearchViewModel.LoadPagedBudgets();
+        await SearchViewModel.LoadPagedBudgetsAsync();
 
         await base.OnInitializedAsync();
+    }
+
+    async Task HandleEventReceived(object sender, IEventArgs e)
+    {
+        switch (e)
+        {
+            case BudgetEventArgs budgetEvent:
+            case ExpenseEventArgs expenseEvent:
+                await SearchViewModel.LoadPagedBudgetsAsync();
+                break;
+            default:
+                break;
+        }
     }
 }

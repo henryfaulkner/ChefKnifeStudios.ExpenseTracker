@@ -8,9 +8,9 @@ public interface ISearchViewModel : IViewModel
     bool IsLoading { get; }
     PagedResultDTO<BudgetDTO>? PagedBudgets { get; }
 
-    Task LoadPagedBudgets();
-    Task ChangeSearchText(string searchText);
-    Task ChangePageNumber(int pageNumber);
+    Task LoadPagedBudgetsAsync();
+    Task ChangeSearchTextAsync(string searchText);
+    Task ChangePageNumberAsync(int pageNumber);
 }
 
 public class SearchViewModel(IStorageService storageService) : BaseViewModel, ISearchViewModel
@@ -36,7 +36,7 @@ public class SearchViewModel(IStorageService storageService) : BaseViewModel, IS
     string _searchText = string.Empty;
     int _pageNumber = 0;
 
-    public async Task LoadPagedBudgets()
+    public async Task LoadPagedBudgetsAsync()
     {
         IsLoading = true;
         PagedBudgets = await _storageService.SearchBudgetsAsync(
@@ -47,17 +47,17 @@ public class SearchViewModel(IStorageService storageService) : BaseViewModel, IS
         IsLoading = false;
     }
 
-    public async Task ChangeSearchText(string searchText)
+    public async Task ChangeSearchTextAsync(string searchText)
     {
         if (_searchText == searchText) return;
         _searchText = searchText;
-        await LoadPagedBudgets();
+        await LoadPagedBudgetsAsync();
     }
 
-    public async Task ChangePageNumber(int pageNumber)
+    public async Task ChangePageNumberAsync(int pageNumber)
     {
         if (_pageNumber == pageNumber) return;
         _pageNumber = pageNumber;
-        await LoadPagedBudgets();
+        await LoadPagedBudgetsAsync();
     }
 }
