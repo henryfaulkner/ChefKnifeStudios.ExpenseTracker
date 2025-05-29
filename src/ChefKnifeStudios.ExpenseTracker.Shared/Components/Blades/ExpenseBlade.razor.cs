@@ -72,6 +72,13 @@ public partial class ExpenseBlade : ComponentBase
                     Type = BladeEventArgs.Types.Close,
                 }
             );
+            Clear();
         });
+    }
+
+    void Clear()
+    {
+        _name = null;
+        _cost = null;
     }
 }
