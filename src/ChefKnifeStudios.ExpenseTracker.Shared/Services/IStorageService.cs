@@ -6,6 +6,7 @@ public interface IStorageService
 {
     Task AddBudgetAsync(BudgetDTO budgetDTO);
     Task AddExpenseAsync(ExpenseDTO expenseDTO);
+    Task<IEnumerable<BudgetDTO>> GetBudgetsAsync();
     Task<PagedResultDTO<BudgetDTO>> SearchBudgetsAsync(
         string? searchText,
         int pageSize,

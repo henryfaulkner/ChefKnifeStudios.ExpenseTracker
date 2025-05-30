@@ -1,4 +1,5 @@
 ﻿@using MatBlazor
+@using ChefKnifeStudios.ExpenseTracker.Shared.DTOs
 
 <div class="expense-blade">
     <BladeContainer @ref="_bladeContainer">
@@ -8,19 +9,27 @@
             <form style="display: flex; flex-direction: column;">
                 <MatTextField 
                     @bind-Value="@_name" 
-                    Label="Name" 
+                    Label="Choose a Name" 
                     Icon="create" 
                     Required="true" 
                 />
                 <MatTextField 
                     @bind-Value="@_cost" 
-                    Label="Cost" 
+                    Label="Apply a Cost" 
                     Icon="attach_money" 
                     Required="true" 
                 />
+                <MatAutocompleteList 
+                    Items="_budgets"
+                    Icon="list"
+                    TItem="BudgetDTO"
+                    CustomStringSelector="@(x => x.Name)"
+                    @bind-Value="@_selectedBudget"
+                    Label="Pick a Budget" 
+                />
 
                 <MatButton 
-                    OnClick="HandleSubmitPressed"
+                    OnClick="HandleSubmitPressedAsync"
                     Unelevated="true"
                 >
                     SUBMIT

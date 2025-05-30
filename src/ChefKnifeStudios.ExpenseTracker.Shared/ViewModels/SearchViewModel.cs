@@ -6,7 +6,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 public interface ISearchViewModel : IViewModel
 {
     bool IsLoading { get; }
-    PagedResultDTO<BudgetDTO>? PagedBudgets { get; }
+    IEnumerable<BudgetDTO> Budgets { get; }
 
     Task LoadPagedBudgetsAsync();
     Task ChangeSearchTextAsync(string searchText);
@@ -26,11 +26,11 @@ public class SearchViewModel(IStorageService storageService) : BaseViewModel, IS
         private set => SetValue(ref _isLoading, value);
     }
 
-    PagedResultDTO<BudgetDTO>? _pagedBudgets = null!;
-    public PagedResultDTO<BudgetDTO>? PagedBudgets
+    IEnumerable<BudgetDTO>? _budgets = null!;
+    public IEnumerable<BudgetDTO>? Budgets
     {
-        get => _pagedBudgets;
-        private set => SetValue(ref _pagedBudgets, value);
+        get => _budgets;
+        private set => SetValue(ref _budgets, value);
     }
 
     string _searchText = string.Empty;
@@ -39,11 +39,7 @@ public class SearchViewModel(IStorageService storageService) : BaseViewModel, IS
     public async Task LoadPagedBudgetsAsync()
     {
         IsLoading = true;
-        PagedBudgets = await _storageService.SearchBudgetsAsync(
-            _searchText,
-            PAGE_SIZE,
-            _pageNumber
-        );
+        Budgets = await _storageService.GetBudgetsAsync();
         IsLoading = false;
     }
 

@@ -8,6 +8,6 @@ public static class ServiceCollectionExtensions
 {
     public static void RegisterViewModels(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddTransient<ISearchViewModel, SearchViewModel>();
+        services.AddSingleton<ISearchViewModel, SearchViewModel>();
     }
 }

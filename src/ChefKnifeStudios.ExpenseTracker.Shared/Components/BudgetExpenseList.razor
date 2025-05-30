@@ -1,0 +1,66 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+
+<div class="budget-expense-list">
+    @* Use https://www.matblazor.com/ExpansionPanel for budget list *@
+    <MatAccordion Multi="true">
+        @foreach (var budget in SearchViewModel.Budgets ?? [])
+        {
+            <MatExpansionPanel>
+                <MatExpansionPanelSummary>
+                    <MatExpansionPanelHeader>@budget.Name</MatExpansionPanelHeader>
+                    <MatExpansionPanelSubHeader>
+                        @{
+                            string str = $"{FormatAsDollar(budget.ExpenseDTOs?.Sum(x => x.Cost) ?? 0.0m)} / {@FormatAsDollar(budget.ExpenseBudget)}";
+                        }
+                        <span>@str</span>
+                    </MatExpansionPanelSubHeader>
+                </MatExpansionPanelSummary>
+                <MatExpansionPanelDetails>
+                    @if (budget.ExpenseDTOs != null && budget.ExpenseDTOs.Any())
+                    {
+                        <table class="expense-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var expense in budget.ExpenseDTOs)
+                                {
+                                    <tr>
+                                        <td>@expense.Name</td>
+                                        <td>@FormatAsDollar(expense.Cost)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No expenses available for this budget.</p>
+                    }
+                </MatExpansionPanelDetails>
+            </MatExpansionPanel>
+        }
+    </MatAccordion>
+</div>
+
+<style>
+    .expense-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+        .expense-table th, .expense-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .expense-table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+</style>

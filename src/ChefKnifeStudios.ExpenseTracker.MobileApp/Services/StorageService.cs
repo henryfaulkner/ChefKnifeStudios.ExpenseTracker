@@ -3,6 +3,7 @@ using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
+using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
@@ -31,6 +32,13 @@ public class StorageService : IStorageService
     {
         Budget budget = budgetDTO.MapToModel();
         await _budgetRepository.AddAsync(budget);
+    }
+
+    public async Task<IEnumerable<BudgetDTO>> GetBudgetsAsync()
+    {
+        return (await _budgetRepository
+            .ListAsync(new GetBudgetsSpec()))
+            .Select(x => x.MapToDTO());
     }
 
     public async Task<PagedResultDTO<BudgetDTO>> SearchBudgetsAsync(

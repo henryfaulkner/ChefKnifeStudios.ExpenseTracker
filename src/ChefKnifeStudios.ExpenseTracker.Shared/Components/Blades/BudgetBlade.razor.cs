@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 namespace ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades;
 
-public partial class BudgetBlade : ComponentBase
+public partial class BudgetBlade : ComponentBase, IDisposable
 {
     [Inject] ILogger<BudgetBlade> Logger { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
@@ -25,6 +25,11 @@ public partial class BudgetBlade : ComponentBase
         EventNotificationService.EventReceived += HandleEventReceived;
 
         base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        EventNotificationService.EventReceived -= HandleEventReceived;
     }
 
     async Task HandleEventReceived(object sender, IEventArgs e)

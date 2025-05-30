@@ -7,16 +7,18 @@ using Microsoft.Extensions.Logging;
 
 namespace ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades;
 
-public partial class ExpenseBlade : ComponentBase
+public partial class ExpenseBlade : ComponentBase, IDisposable
 {
     [Inject] ILogger<BudgetBlade> Logger { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] IStorageService StorageService { get; set; } = null!;
 
     BladeContainer? _bladeContainer;
+    IEnumerable<BudgetDTO> _budgets = [];
 
     string? _name;
     decimal? _cost;
+    BudgetDTO? _selectedBudget;  
 
     protected override void OnInitialized()
     {
@@ -25,11 +27,17 @@ public partial class ExpenseBlade : ComponentBase
         base.OnInitialized();
     }
 
+    public void Dispose()
+    {
+        EventNotificationService.EventReceived -= HandleEventReceived;
+    }
+
     async Task HandleEventReceived(object sender, IEventArgs e)
     {
         switch (e)
         {
             case BladeEventArgs { Type: BladeEventArgs.Types.Expense }:
+                _budgets = await StorageService.GetBudgetsAsync();
                 _bladeContainer?.Open();
                 StateHasChanged();
                 break;
@@ -44,34 +52,32 @@ public partial class ExpenseBlade : ComponentBase
         await Task.CompletedTask;
     }
 
-    void HandleSubmitPressed(MouseEventArgs e)
+    async Task HandleSubmitPressedAsync(MouseEventArgs e)
     {
-        if (_name is null || !_cost.HasValue)
+        if (_name is null || !_cost.HasValue || _selectedBudget is null)
             return;
 
         ExpenseDTO expense = new()
         {
             Name = _name,
             Cost = _cost.Value,
+            BudgetId = _selectedBudget.Id,
         };
 
-        Task.Run(async () =>
-        {
-            await StorageService.AddExpenseAsync(expense);
-            EventNotificationService.PostEvent(
-                this,
-                new ExpenseEventArgs()
-                { 
-                    Type = ExpenseEventArgs.Types.Added,
-                }
-            );
-            EventNotificationService.PostEvent(
-                this,
-                new BladeEventArgs()
-                {
-                    Type = BladeEventArgs.Types.Close,
-                }
-            );
-        });
+        await StorageService.AddExpenseAsync(expense);
+        EventNotificationService.PostEvent(
+            this,
+            new ExpenseEventArgs()
+            {
+                Type = ExpenseEventArgs.Types.Added,
+            }
+        );
+        EventNotificationService.PostEvent(
+            this,
+            new BladeEventArgs()
+            {
+                Type = BladeEventArgs.Types.Close,
+            }
+        );
     }
 }
