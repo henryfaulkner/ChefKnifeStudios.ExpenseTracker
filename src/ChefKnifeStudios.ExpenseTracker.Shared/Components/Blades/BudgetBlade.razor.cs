@@ -81,6 +81,15 @@ public partial class BudgetBlade : ComponentBase, IDisposable
                     Type = BladeEventArgs.Types.Close,
                 }
             );
+            Clear();
         });
+    }
+
+    void Clear()
+    {
+        _name = null; 
+        _startDate = DateTime.Now;
+        _endDate = DateTime.Now.AddMonths(1);
+        _budget = null;
     }
 }

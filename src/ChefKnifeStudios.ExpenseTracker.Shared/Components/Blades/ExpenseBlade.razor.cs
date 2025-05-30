@@ -80,4 +80,10 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             }
         );
     }
+
+    void Clear()
+    {
+        _name = null;
+        _cost = null;
+    }
 }
