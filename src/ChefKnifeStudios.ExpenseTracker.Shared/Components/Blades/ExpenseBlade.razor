@@ -23,7 +23,7 @@
                     Items="_budgets"
                     Icon="list"
                     TItem="BudgetDTO"
-                    CustomStringSelector="@(x => x.Name)"
+                    CustomStringSelector="@(x => x?.Name)"
                     @bind-Value="@_selectedBudget"
                     Label="Pick a Budget" 
                 />

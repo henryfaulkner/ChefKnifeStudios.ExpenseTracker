@@ -18,23 +18,13 @@
                 <MatExpansionPanelDetails>
                     @if (budget.ExpenseDTOs != null && budget.ExpenseDTOs.Any())
                     {
-                        <table class="expense-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var expense in budget.ExpenseDTOs)
-                                {
-                                    <tr>
-                                        <td>@expense.Name</td>
-                                        <td>@FormatAsDollar(expense.Cost)</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                        <QuickGrid 
+                            Items="@budget.ExpenseDTOs.OrderByDescending(x => x.Id).AsQueryable()" 
+                            Pagination="_pagination"
+                        >
+                            <PropertyColumn Title="Name" Property="@(x => x.Name)" />
+                            <PropertyColumn Title="Cost" Property="@(x => x.Cost)" />
+                        </QuickGrid>
                     }
                     else
                     {
@@ -45,22 +35,3 @@
         }
     </MatAccordion>
 </div>
-
-<style>
-    .expense-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-    }
-
-        .expense-table th, .expense-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .expense-table th {
-            background-color: #f4f4f4;
-            font-weight: bold;
-        }
-</style>

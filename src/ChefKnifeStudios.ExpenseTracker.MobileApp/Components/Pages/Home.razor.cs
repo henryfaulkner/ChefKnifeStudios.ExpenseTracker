@@ -12,6 +12,8 @@ public partial class Home : ComponentBase
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
 
+    bool _isGridVisible = true;
+
     protected override void OnInitialized()
     {
         SentrySdk.CaptureException(new Exception("Hello Sentry"));
@@ -33,7 +35,12 @@ public partial class Home : ComponentBase
         {
             case BudgetEventArgs budgetEvent:
             case ExpenseEventArgs expenseEvent:
+                _isGridVisible = false;
+                StateHasChanged();
                 await SearchViewModel.LoadPagedBudgetsAsync();
+                await Task.Delay(50);
+                _isGridVisible = true;
+                StateHasChanged();
                 break;
             default:
                 break;
