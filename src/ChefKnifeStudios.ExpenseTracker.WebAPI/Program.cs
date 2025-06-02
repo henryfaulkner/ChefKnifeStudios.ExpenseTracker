@@ -38,8 +38,8 @@ app.UseCors(policy =>
 
 app.MapPost("/scan-receipt", async (HttpRequest request) =>
 {
-    string endpoint = Environment.GetEnvironmentVariable("FORM_RECOGNIZER_ENDPOINT");
-    string apiKey = Environment.GetEnvironmentVariable("FORM_RECOGNIZER_KEY");
+    string endpoint = Environment.GetEnvironmentVariable("FormRecognizer:Endpoint");
+    string apiKey = Environment.GetEnvironmentVariable("FormRecognizer:Key");
 
     if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
     {
