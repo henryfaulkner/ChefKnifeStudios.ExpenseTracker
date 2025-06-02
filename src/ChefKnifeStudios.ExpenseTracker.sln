@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTracker.Shared", "ChefKnifeStudios.ExpenseTracker.Shared\ChefKnifeStudios.ExpenseTracker.Shared.csproj", "{813EF380-AF4A-4958-8514-430749CA045B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTracker.WebAPI", "ChefKnifeStudios.ExpenseTracker.WebAPI\ChefKnifeStudios.ExpenseTracker.WebAPI.csproj", "{5CE1420D-90BE-470A-BBFB-7F5203900E74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,6 +30,10 @@ Global
 		{813EF380-AF4A-4958-8514-430749CA045B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{813EF380-AF4A-4958-8514-430749CA045B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{813EF380-AF4A-4958-8514-430749CA045B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CE1420D-90BE-470A-BBFB-7F5203900E74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CE1420D-90BE-470A-BBFB-7F5203900E74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CE1420D-90BE-470A-BBFB-7F5203900E74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CE1420D-90BE-470A-BBFB-7F5203900E74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
