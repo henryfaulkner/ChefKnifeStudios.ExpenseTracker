@@ -2,6 +2,11 @@
 
 public class ReceiptResponse
 {
+    public ReceiptResponse()
+    {
+        Items = new List<Item>();
+    }
+
     public string? MerchantName { get; set; }
     public DateTime? TransactionDate { get; set; }
     public List<Item>? Items { get; set; }
@@ -10,7 +15,7 @@ public class ReceiptResponse
 
 public class Item
 {
-    public required string Description { get; set; }
+    public string? Description { get; set; }
     public decimal? TotalPrice { get; set; }
 }
 

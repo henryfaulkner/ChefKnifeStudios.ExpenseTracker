@@ -13,4 +13,8 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.4.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ChefKnifeStudios.ExpenseTracker.Shared\ChefKnifeStudios.ExpenseTracker.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
