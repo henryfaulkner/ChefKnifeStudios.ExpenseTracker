@@ -34,6 +34,13 @@
                 >
                     SUBMIT
                 </MatButton>
+
+                <hr />
+
+                <MatFileUpload 
+                    OnChange="@HandleFilesReady"
+                    Label="SCAN RECEIPT IMAGE" 
+                />
             </form>
         </ContentFragment>
     </BladeContainer>

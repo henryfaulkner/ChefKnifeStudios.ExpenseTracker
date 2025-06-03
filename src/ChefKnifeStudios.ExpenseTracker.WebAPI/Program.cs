@@ -36,10 +36,11 @@ app.UseCors(policy =>
         .AllowAnyMethod()
         .AllowAnyHeader());
 
-app.MapPost("/scan-receipt", async (HttpRequest request) =>
+app.MapPost("/scan-receipt", async (HttpRequest request, IConfiguration config) =>
 {
-    string endpoint = Environment.GetEnvironmentVariable("FormRecognizer:Endpoint");
-    string apiKey = Environment.GetEnvironmentVariable("FormRecognizer:Key");
+    var section = config.GetSection("FormRecognizer");
+    string? endpoint = section.GetValue<string>("Endpoint");
+    string? apiKey = section.GetValue<string>("Key");
 
     if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
     {
@@ -50,10 +51,14 @@ app.MapPost("/scan-receipt", async (HttpRequest request) =>
     var client = new DocumentIntelligenceClient(new Uri(endpoint), credential);
 
     // Read the uploaded file
-    var formFile = request.Form.Files["file"];
+    if (!request.Form.Files.Any())
+    {
+        return Results.BadRequest("1. No file was uploaded.");
+    }
+    var formFile = request.Form.Files[0];
     if (formFile == null)
     {
-        return Results.BadRequest("No file was uploaded.");
+        return Results.BadRequest("2. No file was uploaded.");
     }
 
     using var stream = formFile.OpenReadStream();
