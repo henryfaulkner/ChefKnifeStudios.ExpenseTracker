@@ -4,5 +4,6 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.Services;
 
 public interface IApiService
 {
-    Task<ApiResponse<ReceiptResponse?>> ScanReceiptAsync(Stream fileStream);
+    Task<ApiResponse<IEnumerable<ReceiptDTO>?>> ScanReceiptAsync(Stream fileStream);
+    Task<ApiResponse<ReceiptLabelsDTO?>> LabelReceiptDetailsAsync(ReceiptDTO receipt);
 }

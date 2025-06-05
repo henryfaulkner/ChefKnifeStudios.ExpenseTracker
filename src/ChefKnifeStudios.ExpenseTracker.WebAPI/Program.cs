@@ -74,11 +74,11 @@ app.MapPost("/scan-receipt", async (HttpRequest request, IConfiguration config) 
     var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions);
 
     var receipts = operation.Value;
-    var resultData = new List<ReceiptResponse>();
+    var resultData = new List<ReceiptDTO>();
 
     foreach (var receipt in receipts.Documents)
     {
-        var receiptResponse = new ReceiptResponse();
+        var receiptResponse = new ReceiptDTO();
 
         if (receipt.Fields.TryGetValue("MerchantName", out var merchantNameField) && merchantNameField.FieldType == DocumentFieldType.String)
         {
@@ -136,11 +136,11 @@ app.MapPost("/scan-receipt", async (HttpRequest request, IConfiguration config) 
 })
 .WithName("ReadReceipt")
 .Accepts<IFormFile>("multipart/form-data")
-.Produces<List<ReceiptResponse>>(StatusCodes.Status200OK)
+.Produces<List<ReceiptDTO>>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status400BadRequest)
 .Produces(StatusCodes.Status500InternalServerError);
 
-app.MapPost("/label-receipt-json", async (HttpRequest request, IConfiguration config, IHttpService httpService) =>
+app.MapPost("/label-receipt-details", async (HttpRequest request, IConfiguration config, IHttpService httpService) =>
 {
     var section = config.GetSection("OpenAI");
     string? endpoint = section.GetValue<string>("Endpoint") ?? string.Empty;
@@ -148,27 +148,34 @@ app.MapPost("/label-receipt-json", async (HttpRequest request, IConfiguration co
 
     httpService.SetBearerAuthentication(apiKey);
 
+    string prompt = string.Empty;
+    using (var reader = new StreamReader(request.Body))
+    {
+        prompt = await reader.ReadToEndAsync();
+    }
 
-    string prompt = "Prewritten prompt";
     var chatGptRequest = new ChatGPTRequest
     {
         Model = "gpt-3.5-turbo",
-        Messages = new List<ChatGPTMessage>
-                {
-                    new ChatGPTMessage { Role = "system", Content = "You are now an advanced machine learning model specifically designed to analyze receipt data. Your sole function is to process receipt details provided in JSON format and generate relevant labels that describe the nature of the receipt. These labels will enhance search functionality by categorizing the receipt effectively.\r\n\r\nGuidelines:\r\nYour output must always be a JSON object containing a single string array property named \"labels\".\r\n\r\nEach label should be concise, descriptive, and accurately represent the receipt's content or purpose.\r\n\r\nPrioritize specificity and clarity to ensure the labels are useful for search and categorization.\r\n\r\nExample:\r\nInput (JSON):\r\n\r\njson\r\nCopy\r\nEdit\r\n{\r\n  \"date\": \"2025-06-01\",\r\n  \"merchant\": \"Starbucks\",\r\n  \"items\": [\"Caffe Latte\", \"Blueberry Muffin\"],\r\n  \"total\": 7.50,\r\n  \"payment_method\": \"Credit Card\"\r\n}\r\nOutput (JSON):\r\n\r\njson\r\nCopy\r\nEdit\r\n{\r\n  \"labels\": [\"Coffee Shop\", \"Breakfast\", \"Food & Beverage\"]\r\n}\r\nPlease proceed with processing the receipt data accordingly." },
-                    new ChatGPTMessage { Role = "user", Content = $"Analyze the following receipt data and generate labels:\n{prompt}" }
-                },
+        Messages = new List<ChatGPTMessage>()
+        {
+            new ChatGPTMessage { Role = "system", Content = "You are now an advanced machine learning model specifically designed to analyze receipt data. Your sole function is to process receipt details provided in JSON format and generate relevant labels that describe the nature of the receipt. These labels will enhance search functionality by categorizing the receipt effectively.\r\n\r\nGuidelines:\r\nYour output must always be a JSON object containing a single string array property named \"labels\".\r\n\r\nEach label should be concise, descriptive, and accurately represent the receipt's content or purpose.\r\n\r\nPrioritize specificity and clarity to ensure the labels are useful for search and categorization.\r\n\r\nExample:\r\nInput (JSON):\r\n\r\njson\r\nCopy\r\nEdit\r\n{\r\n  \"date\": \"2025-06-01\",\r\n  \"merchant\": \"Starbucks\",\r\n  \"items\": [\"Caffe Latte\", \"Blueberry Muffin\"],\r\n  \"total\": 7.50,\r\n  \"payment_method\": \"Credit Card\"\r\n}\r\nOutput (JSON):\r\n\r\njson\r\nCopy\r\nEdit\r\n{\r\n  \"labels\": [\"Coffee Shop\", \"Breakfast\", \"Food & Beverage\"]\r\n}\r\nPlease proceed with processing the receipt data accordingly." },
+            new ChatGPTMessage { Role = "user", Content = $"Analyze the following receipt data and generate labels:\n{prompt}" }
+        },
         Temperature = 0.0f
     };
 
     var res = await httpService.PostAsync<ChatGPTRequest, ChatGPTResponse?>(endpoint, chatGptRequest);
 
     string message = res.Data?.Choices.FirstOrDefault()?.Message.Content ?? "fuck the api failed.";
-    return Results.Ok(message);
+    ReceiptLabelsDTO? labels = 
+        JsonSerializer.Deserialize<ReceiptLabelsDTO>(message)
+            ?? new ReceiptLabelsDTO() { Labels = [] };
+    return Results.Ok(labels);
 })
 .WithName("LabelReceiptJson")
-.Accepts<ReceiptResponse>("application/json")
-.Produces<List<object>>(StatusCodes.Status200OK)
+.Accepts<ReceiptDTO>("application/json")
+.Produces<ReceiptLabelsDTO>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status400BadRequest)
 .Produces(StatusCodes.Status500InternalServerError);
 

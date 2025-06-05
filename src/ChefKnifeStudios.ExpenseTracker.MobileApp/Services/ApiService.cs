@@ -10,6 +10,7 @@ using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using System.Net;
+using System.Net.Http.Json;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
@@ -22,7 +23,7 @@ public class ApiService : IApiService
         _baseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? string.Empty;
     }
 
-    public async Task<ApiResponse<ReceiptResponse?>> ScanReceiptAsync(Stream fileStream)
+    public async Task<ApiResponse<IEnumerable<ReceiptDTO>?>> ScanReceiptAsync(Stream fileStream)
     {
         try
         { 
@@ -42,13 +43,13 @@ public class ApiService : IApiService
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<ReceiptResponse?>(content);
+            var obj = JsonSerializer.Deserialize<IEnumerable<ReceiptDTO>?>(content);
 
-            return new ApiResponse<ReceiptResponse?>(obj);
+            return new ApiResponse<IEnumerable<ReceiptDTO>?>(obj);
         }
         catch (Exception ex)
         {
-            return new ApiResponse<ReceiptResponse?>()
+            return new ApiResponse<IEnumerable<ReceiptDTO>?>()
             {
                 HttpStatusCode = HttpStatusCode.BadRequest,
                 Data = null,
@@ -56,5 +57,33 @@ public class ApiService : IApiService
         }
     }
 
+    public async Task<ApiResponse<ReceiptLabelsDTO?>> LabelReceiptDetailsAsync(ReceiptDTO receipt)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(receipt, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PostAsync($"{_baseUrl}/label-receipt-details", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                // Handle the error response directly.
+                throw new HttpRequestException("label-receipt-details endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<ReceiptLabelsDTO?>(responseContent);
+
+            return new ApiResponse<ReceiptLabelsDTO?>(obj);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<ReceiptLabelsDTO?>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = null,
+            };
+        }
+    }
 }
 

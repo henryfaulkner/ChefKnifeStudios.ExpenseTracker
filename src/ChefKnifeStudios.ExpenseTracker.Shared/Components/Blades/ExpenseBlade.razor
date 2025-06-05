@@ -34,14 +34,22 @@
                 >
                     SUBMIT
                 </MatButton>
-
-                <hr />
-
-                <MatFileUpload 
-                    OnChange="@HandleFilesReady"
-                    Label="SCAN RECEIPT IMAGE" 
-                />
             </form>
+
+            <hr />
+
+            <MatButton 
+                OnClick="@HandlePickPicture"
+                Unelevated="true"
+            >
+                PICK PHOTO
+            </MatButton>
+            <MatButton 
+                OnClick="@HandleTakePicture"
+                Unelevated="true"
+            >
+                CAPTURE PHOTO
+            </MatButton>
         </ContentFragment>
     </BladeContainer>
 </div>
