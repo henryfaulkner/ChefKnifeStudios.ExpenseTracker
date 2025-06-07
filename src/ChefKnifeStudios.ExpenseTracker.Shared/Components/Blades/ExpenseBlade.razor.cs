@@ -22,7 +22,8 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
 
     string? _name;
     decimal? _cost;
-    BudgetDTO? _selectedBudget;  
+    BudgetDTO? _selectedBudget;
+    List<string>? _labels;
 
     protected override void OnInitialized()
     {
@@ -43,11 +44,9 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             case BladeEventArgs { Type: BladeEventArgs.Types.Expense }:
                 _budgets = await StorageService.GetBudgetsAsync();
                 _bladeContainer?.Open();
-                StateHasChanged();
                 break;
             case BladeEventArgs { Type: BladeEventArgs.Types.Close or BladeEventArgs.Types.Budget }:
                 _bladeContainer?.Close();
-                StateHasChanged();
                 break;
             default:
                 Logger.LogWarning("Event handler's switch statement fell through.");
@@ -66,6 +65,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             Name = _name,
             Cost = _cost.Value,
             BudgetId = _selectedBudget.Id,
+            Labels = _labels ?? [],
         };
 
         await StorageService.AddExpenseAsync(expense);
@@ -95,12 +95,22 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     async Task HandlePickPicture()
     {
         var receipt = await ReceiptViewModel.PickPhotoForReceiptAsync();
-        Console.WriteLine(receipt.ToString());
+        if (receipt == null) throw new ApplicationException("Receipt returned null");
+        if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
+
+        _name = receipt.Name;
+        _cost = receipt.Total;
+        _labels = receipt.Labels;
     }
 
     async Task HandleTakePicture()
     {
         var receipt = await ReceiptViewModel.CapturePhotoForReceiptAsync();
-        Console.WriteLine(receipt.ToString());
+        if (receipt == null) throw new ApplicationException("Receipt returned null");
+        if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
+
+        _name = receipt.Name;
+        _cost = receipt.Total;
+        _labels = receipt.Labels;
     }
 }

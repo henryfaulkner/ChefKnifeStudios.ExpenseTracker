@@ -6,4 +6,5 @@ public class ExpenseDTO
     public int BudgetId { get; set; }
     public decimal Cost { get; set; }
     public required string Name { get; set; }
+    public required IEnumerable<string> Labels { get; set; }
 }

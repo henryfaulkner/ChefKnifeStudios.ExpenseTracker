@@ -1,6 +1,7 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using System.Text.Json;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp;
 
@@ -8,12 +9,13 @@ public static class MappingExtensions
 {
     public static ExpenseDTO MapToDTO(this Expense model)
     {
-        ExpenseDTO result = new ()
-        { 
+        ExpenseDTO result = new()
+        {
             Id = model.Id,
             BudgetId = model.BudgetId,
             Name = model.Name,
             Cost = model.Cost,
+            Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson) ?? [],
         };
         return result;
     }
@@ -26,6 +28,7 @@ public static class MappingExtensions
             BudgetId = dto.BudgetId,
             Name = dto.Name,
             Cost = dto.Cost,
+            LabelsJson = JsonSerializer.Serialize(dto.Labels),
         };
         return result;
     }

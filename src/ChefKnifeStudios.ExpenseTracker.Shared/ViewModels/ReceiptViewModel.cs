@@ -57,9 +57,9 @@ public class ReceiptViewModel : BaseViewModel, IReceiptViewModel
             _logger.LogError("Labeling API failed");
             return null;
         }
-        var labels = response2.Data.Labels;
+        var labelsDTO = response2.Data;
 
-        return new Receipt(receiptDTO, labels);
+        return new Receipt(receiptDTO, labelsDTO);
     }
 
     public async Task<Receipt?> CapturePhotoForReceiptAsync()
@@ -81,8 +81,8 @@ public class ReceiptViewModel : BaseViewModel, IReceiptViewModel
             _logger.LogError("Labeling API failed");
             return null;
         }
-        var labels = response2.Data.Labels;
+        var labelsDTO = response2.Data;
 
-        return new Receipt(receiptDTO, labels);
+        return new Receipt(receiptDTO, labelsDTO);
     }
 }

@@ -9,6 +9,9 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 
 public class ReceiptLabelsDTO
 {
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
     [JsonPropertyName("labels")]
     public IEnumerable<string>? Labels { get; set; }
 }

@@ -7,6 +7,8 @@ using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using System.Globalization;
 using ChefKnifeStudios.ExpenseTracker.WebAPI;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
+using OpenAI;
+using OpenAI.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,18 @@ builder.Services
     .AddCors()
     .AddHttpClient()
     .AddTransient<IHttpService, HttpService>();
+
+// Register OpenAIClient with the API key and endpoint
+builder.Services.AddSingleton<OpenAIClient>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var openAiConfig = configuration.GetSection("OpenAI");
+    var apiKey = openAiConfig.GetValue<string>("Key")
+                 ?? throw new InvalidOperationException("OpenAI API Key is missing.");
+
+    // Use the API key to configure the client
+    return new OpenAIClient(apiKey);
+});
 
 var app = builder.Build();
 
@@ -140,38 +154,68 @@ app.MapPost("/scan-receipt", async (HttpRequest request, IConfiguration config) 
 .Produces(StatusCodes.Status400BadRequest)
 .Produces(StatusCodes.Status500InternalServerError);
 
-app.MapPost("/label-receipt-details", async (HttpRequest request, IConfiguration config, IHttpService httpService) =>
+app.MapPost("/label-receipt-details", async (HttpRequest request, IConfiguration config, OpenAIClient openAiClient) =>
 {
-    var section = config.GetSection("OpenAI");
-    string? endpoint = section.GetValue<string>("Endpoint") ?? string.Empty;
-    string? apiKey = section.GetValue<string>("Key") ?? string.Empty;
-
-    httpService.SetBearerAuthentication(apiKey);
-
-    string prompt = string.Empty;
+    // Read the receipt JSON input from the request body
+    string prompt;
     using (var reader = new StreamReader(request.Body))
     {
         prompt = await reader.ReadToEndAsync();
     }
 
-    var chatGptRequest = new ChatGPTRequest
+    // Define the messages for the chat completion
+    var messages = new List<ChatMessage>
     {
-        Model = "gpt-3.5-turbo",
-        Messages = new List<ChatGPTMessage>()
-        {
-            new ChatGPTMessage { Role = "system", Content = "You are now an advanced machine learning model specifically designed to analyze receipt data. Your sole function is to process receipt details provided in JSON format and generate relevant labels that describe the nature of the receipt. These labels will enhance search functionality by categorizing the receipt effectively.\r\n\r\nGuidelines:\r\nYour output must always be a JSON object containing a single string array property named \"labels\".\r\n\r\nEach label should be concise, descriptive, and accurately represent the receipt's content or purpose.\r\n\r\nPrioritize specificity and clarity to ensure the labels are useful for search and categorization.\r\n\r\nExample:\r\nInput (JSON):\r\n\r\njson\r\nCopy\r\nEdit\r\n{\r\n  \"date\": \"2025-06-01\",\r\n  \"merchant\": \"Starbucks\",\r\n  \"items\": [\"Caffe Latte\", \"Blueberry Muffin\"],\r\n  \"total\": 7.50,\r\n  \"payment_method\": \"Credit Card\"\r\n}\r\nOutput (JSON):\r\n\r\njson\r\nCopy\r\nEdit\r\n{\r\n  \"labels\": [\"Coffee Shop\", \"Breakfast\", \"Food & Beverage\"]\r\n}\r\nPlease proceed with processing the receipt data accordingly." },
-            new ChatGPTMessage { Role = "user", Content = $"Analyze the following receipt data and generate labels:\n{prompt}" }
-        },
-        Temperature = 0.0f
+        ChatMessage.CreateSystemMessage(
+            @"You are an advanced machine learning model specifically designed to analyze receipt data. Your sole function is to process receipt details provided in JSON format and generate a relevant name and labels that describe the nature of the receipt. These labels will enhance search functionality by categorizing the receipt effectively.
+            Guidelines:
+            Your output must always be a JSON object containing:
+            - A string property named `name` summarizing the transaction.
+            - A string array property named `labels` describing the receipt's content or purpose.
+
+            Example:
+            Input (JSON):
+            {
+              ""date"": ""2025-06-01"",
+              ""merchant"": ""Starbucks"",
+              ""items"": [""Caffe Latte"", ""Blueberry Muffin""],
+              ""total"": 7.50,
+              ""payment_method"": ""Credit Card""
+            }
+            Output (JSON):
+            {
+             ""name"": ""Starbucks breakfast"",
+             ""labels"": [""Coffee Shop"", ""Breakfast"", ""Food & Beverage""]
+            }
+            Please process the provided receipt data accordingly."
+        ),
+        ChatMessage.CreateUserMessage($"Analyze the following receipt data and generate labels:\n{prompt}")
     };
 
-    var res = await httpService.PostAsync<ChatGPTRequest, ChatGPTResponse?>(endpoint, chatGptRequest);
+    try
+    {
+        // Call the OpenAI API using the SDK
+        var chatClient = openAiClient.GetChatClient("gpt-3.5-turbo");
+        var completionResponse = await chatClient.CompleteChatAsync(messages);
 
-    string message = res.Data?.Choices.FirstOrDefault()?.Message.Content ?? "fuck the api failed.";
-    ReceiptLabelsDTO? labels = 
-        JsonSerializer.Deserialize<ReceiptLabelsDTO>(message)
-            ?? new ReceiptLabelsDTO() { Labels = [] };
-    return Results.Ok(labels);
+        var responseContent = completionResponse.Value.Content.FirstOrDefault()?.Text ?? "The model failed to generate response text";
+
+        if (string.IsNullOrWhiteSpace(responseContent))
+        {
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
+        // Deserialize the response into ReceiptLabelsDTO
+        var labels = JsonSerializer.Deserialize<ReceiptLabelsDTO>(responseContent)
+            ?? new ReceiptLabelsDTO { Labels = Array.Empty<string>() };
+
+        return Results.Ok(labels);
+    }
+    catch (Exception ex)
+    {
+        // Log exception (if necessary) and return error
+        return Results.StatusCode(StatusCodes.Status500InternalServerError);
+    }
 })
 .WithName("LabelReceiptJson")
 .Accepts<ReceiptDTO>("application/json")

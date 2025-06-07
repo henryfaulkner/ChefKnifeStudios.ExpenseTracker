@@ -38,11 +38,9 @@ public partial class BudgetBlade : ComponentBase, IDisposable
         {
             case BladeEventArgs { Type: BladeEventArgs.Types.Budget}:
                 _bladeContainer?.Open();
-                StateHasChanged();
                 break;
             case BladeEventArgs { Type: BladeEventArgs.Types.Close or BladeEventArgs.Types.Expense }:
                 _bladeContainer?.Close();
-                StateHasChanged();
                 break;
             default:
                 Logger.LogWarning("Event handler's switch statement fell through.");
@@ -51,7 +49,7 @@ public partial class BudgetBlade : ComponentBase, IDisposable
         await Task.CompletedTask;
     }
 
-    void HandleSubmitPressed(MouseEventArgs e)
+    async Task HandleSubmitPressed(MouseEventArgs e)
     {
         if (_name is null || !_budget.HasValue)
             return;
@@ -64,25 +62,22 @@ public partial class BudgetBlade : ComponentBase, IDisposable
             ExpenseBudget = _budget.Value,
         };
 
-        Task.Run(async () =>
-        {
-            await StorageService.AddBudgetAsync(budget);
-            EventNotificationService.PostEvent(
-                this,
-                new BudgetEventArgs()
-                {
-                    Type = BudgetEventArgs.Types.Added,
-                }
-            );
-            EventNotificationService.PostEvent(
-                this,
-                new BladeEventArgs()
-                {
-                    Type = BladeEventArgs.Types.Close,
-                }
-            );
-            Clear();
-        });
+        await StorageService.AddBudgetAsync(budget);
+        EventNotificationService.PostEvent(
+            this,
+            new BudgetEventArgs()
+            {
+                Type = BudgetEventArgs.Types.Added,
+            }
+        );
+        EventNotificationService.PostEvent(
+            this,
+            new BladeEventArgs()
+            {
+                Type = BladeEventArgs.Types.Close,
+            }
+        );
+        Clear();
     }
 
     void Clear()
