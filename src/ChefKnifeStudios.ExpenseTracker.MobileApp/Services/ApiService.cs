@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using System.Net;
 using System.Net.Http.Json;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
@@ -38,14 +39,13 @@ public class ApiService : IApiService
 
             if (!response.IsSuccessStatusCode)
             {
-                // Handle the error response directly.
                 throw new HttpRequestException("scan-receipt endpoint failed.");
             }
 
             var content = await response.Content.ReadAsStringAsync();
             var obj = JsonSerializer.Deserialize<IEnumerable<ReceiptDTO>?>(content);
 
-            return new ApiResponse<IEnumerable<ReceiptDTO>?>(obj);
+            return new ApiResponse<IEnumerable<ReceiptDTO>?>(obj, response.StatusCode);
         }
         catch (Exception ex)
         {
@@ -67,18 +67,45 @@ public class ApiService : IApiService
             var response = await httpClient.PostAsync($"{_baseUrl}/label-receipt-details", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                // Handle the error response directly.
                 throw new HttpRequestException("label-receipt-details endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
             var obj = JsonSerializer.Deserialize<ReceiptLabelsDTO?>(responseContent);
 
-            return new ApiResponse<ReceiptLabelsDTO?>(obj);
+            return new ApiResponse<ReceiptLabelsDTO?>(obj, response.StatusCode);
         }
         catch (Exception ex)
         {
             return new ApiResponse<ReceiptLabelsDTO?>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = null,
+            };
+        }
+    }
+
+    public async Task<ApiResponse<SemanticEmbeddingDTO?>> CreateSemanticEmbedding(ReceiptLabelsDTO receiptLabels)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(receiptLabels, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PostAsync($"{_baseUrl}/semantic-embedding", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("semantic-embedding endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<SemanticEmbeddingDTO?>(responseContent);
+
+            return new ApiResponse<SemanticEmbeddingDTO?>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<SemanticEmbeddingDTO?>()
             {
                 HttpStatusCode = HttpStatusCode.BadRequest,
                 Data = null,

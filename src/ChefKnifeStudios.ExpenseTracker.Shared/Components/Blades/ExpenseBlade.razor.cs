@@ -60,12 +60,23 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         if (_name is null || !_cost.HasValue || _selectedBudget is null)
             return;
 
+        ReceiptLabelsDTO receiptLabels = new()
+        {
+            Name = _name,
+            Labels = _labels,
+        };
+
+        var embeddingRes = await ApiService.CreateSemanticEmbedding(receiptLabels);
+        var embedding = embeddingRes.Data;
+        if (embedding is not SemanticEmbeddingDTO) throw new ApplicationException("Embedding data is null.");
+
         ExpenseDTO expense = new()
         {
             Name = _name,
             Cost = _cost.Value,
             BudgetId = _selectedBudget.Id,
             Labels = _labels ?? [],
+            SemanticEmbedding = embedding.EmbeddingJson,
         };
 
         await StorageService.AddExpenseAsync(expense);

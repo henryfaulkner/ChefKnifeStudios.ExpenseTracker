@@ -9,15 +9,31 @@ using ChefKnifeStudios.ExpenseTracker.WebAPI;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
 using OpenAI;
 using OpenAI.Chat;
+using Azure.Core;
+using Microsoft.Extensions.Logging;
+using System.Reflection.Emit;
+using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.InteropServices;
+using Microsoft.SemanticKernel;
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
+if (appSettings == null) throw new ApplicationException("AppSettings are not configured correctly.");
 
 builder.Services
     .AddEndpointsApiExplorer()
     .AddOpenApi()
     .AddCors()
     .AddHttpClient()
-    .AddTransient<IHttpService, HttpService>();
+    .AddTransient<IHttpService, HttpService>()
+    .AddKernel()
+    .ConfigureSemanticKernel(appSettings);
 
 // Register OpenAIClient with the API key and endpoint
 builder.Services.AddSingleton<OpenAIClient>(sp =>
@@ -56,105 +72,118 @@ app.UseCors(policy =>
         .AllowAnyMethod()
         .AllowAnyHeader());
 
-app.MapPost("/scan-receipt", async (HttpRequest request, IConfiguration config) =>
+app.MapPost("/scan-receipt", async (
+    HttpRequest request, 
+    ILogger<Program> logger, 
+    IConfiguration config) =>
 {
-    var section = config.GetSection("FormRecognizer");
-    string? endpoint = section.GetValue<string>("Endpoint");
-    string? apiKey = section.GetValue<string>("Key");
-
-    if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
+    try
     {
-        return Results.Problem("Azure Form Recognizer endpoint and key are not configured.");
-    }
+        var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
+        if (appSettings == null) throw new ApplicationException("AppSettings are not configured correctly.");
 
-    var credential = new AzureKeyCredential(apiKey);
-    var client = new DocumentIntelligenceClient(new Uri(endpoint), credential);
-
-    // Read the uploaded file
-    if (!request.Form.Files.Any())
-    {
-        return Results.BadRequest("No file was uploaded.");
-    }
-    var formFile = request.Form.Files[0];
-    if (formFile == null)
-    {
-        return Results.BadRequest("File upload failed.");
-    }
-
-    using var stream = formFile.OpenReadStream();
-
-    // Analyze the receipt
-    AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(stream));
-    var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions);
-
-    var receipts = operation.Value;
-    var resultData = new List<ReceiptDTO>();
-
-    foreach (var receipt in receipts.Documents)
-    {
-        var receiptResponse = new ReceiptDTO();
-
-        if (receipt.Fields.TryGetValue("MerchantName", out var merchantNameField) && merchantNameField.FieldType == DocumentFieldType.String)
+        if (string.IsNullOrEmpty(appSettings.AzureDocumentIntelligence.Endpoint) || string.IsNullOrEmpty(appSettings.AzureDocumentIntelligence.ApiKey))
         {
-            receiptResponse.MerchantName = merchantNameField.ValueString;
+            return Results.Problem("Azure Form Recognizer endpoint and key are not configured.");
         }
 
-        if (receipt.Fields.TryGetValue("TransactionDate", out var transactionDateField) && transactionDateField.FieldType == DocumentFieldType.Date)
-        {
-            string? transactionDateString = transactionDateField.ValueDate?.ToString("yyyy-MM-dd");
+        var credential = new AzureKeyCredential(appSettings.AzureDocumentIntelligence.ApiKey);
+        var client = new DocumentIntelligenceClient(new Uri(appSettings.AzureDocumentIntelligence.Endpoint), credential);
 
-            if (!string.IsNullOrEmpty(transactionDateString))
-            {
-                receiptResponse.TransactionDate = DateTime.ParseExact(transactionDateString, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                Console.WriteLine("Transaction date string is null or empty.");
-            }
+        // Read the uploaded file
+        if (!request.Form.Files.Any())
+        {
+            return Results.BadRequest("No file was uploaded.");
+        }
+        var formFile = request.Form.Files[0];
+        if (formFile == null)
+        {
+            return Results.BadRequest("File upload failed.");
         }
 
-        if (receipt.Fields.TryGetValue("Items", out var itemsField) && itemsField.FieldType == DocumentFieldType.List)
+        using var stream = formFile.OpenReadStream();
+
+        // Analyze the receipt
+        AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(stream));
+        var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions);
+
+        var receipts = operation.Value;
+        var resultData = new List<ReceiptDTO>();
+
+        foreach (var receipt in receipts.Documents)
         {
-            foreach (var itemField in itemsField.ValueList)
+            var receiptResponse = new ReceiptDTO();
+
+            if (receipt.Fields.TryGetValue("MerchantName", out var merchantNameField) && merchantNameField.FieldType == DocumentFieldType.String)
             {
-                if (itemField.FieldType == DocumentFieldType.Dictionary)
+                receiptResponse.MerchantName = merchantNameField.ValueString;
+            }
+
+            if (receipt.Fields.TryGetValue("TransactionDate", out var transactionDateField) && transactionDateField.FieldType == DocumentFieldType.Date)
+            {
+                string? transactionDateString = transactionDateField.ValueDate?.ToString("yyyy-MM-dd");
+
+                if (!string.IsNullOrEmpty(transactionDateString))
                 {
-                    var item = new Item();
-                    var itemFields = itemField.ValueDictionary;
-
-                    if (itemFields.TryGetValue("Description", out var descriptionField) && descriptionField.FieldType == DocumentFieldType.String)
-                    {
-                        item.Description = descriptionField.ValueString;
-                    }
-
-                    if (itemFields.TryGetValue("TotalPrice", out var totalPriceField) && totalPriceField.FieldType == DocumentFieldType.Currency)
-                    {
-                        item.TotalPrice = (decimal)totalPriceField.ValueCurrency.Amount;
-                    }
-
-                    if (receiptResponse.Items == null) receiptResponse.Items = new List<Item>();
-                    receiptResponse.Items.Add(item);
+                    receiptResponse.TransactionDate = DateTime.ParseExact(transactionDateString, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    Console.WriteLine("Transaction date string is null or empty.");
                 }
             }
+
+            if (receipt.Fields.TryGetValue("Items", out var itemsField) && itemsField.FieldType == DocumentFieldType.List)
+            {
+                foreach (var itemField in itemsField.ValueList)
+                {
+                    if (itemField.FieldType == DocumentFieldType.Dictionary)
+                    {
+                        var item = new Item();
+                        var itemFields = itemField.ValueDictionary;
+
+                        if (itemFields.TryGetValue("Description", out var descriptionField) && descriptionField.FieldType == DocumentFieldType.String)
+                        {
+                            item.Description = descriptionField.ValueString;
+                        }
+
+                        if (itemFields.TryGetValue("TotalPrice", out var totalPriceField) && totalPriceField.FieldType == DocumentFieldType.Currency)
+                        {
+                            item.TotalPrice = (decimal)totalPriceField.ValueCurrency.Amount;
+                        }
+
+                        if (receiptResponse.Items == null) receiptResponse.Items = new List<Item>();
+                        receiptResponse.Items.Add(item);
+                    }
+                }
+            }
+
+            if (receipt.Fields.TryGetValue("Total", out var totalField) && totalField.FieldType == DocumentFieldType.Currency)
+            {
+                receiptResponse.Total = (decimal)totalField.ValueCurrency.Amount;
+            }
+
+            resultData.Add(receiptResponse);
         }
 
-        if (receipt.Fields.TryGetValue("Total", out var totalField) && totalField.FieldType == DocumentFieldType.Currency)
-        {
-            receiptResponse.Total = (decimal)totalField.ValueCurrency.Amount;
-        }
-
-        resultData.Add(receiptResponse);
+        return Results.Ok(resultData);
     }
-
-    return Results.Ok(resultData);
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred.");
+        return Results.StatusCode(StatusCodes.Status500InternalServerError);
+    }
 })
-.WithName("ReadReceipt")
+.WithName("ScanReceipt")
 .Accepts<IFormFile>("multipart/form-data")
 .Produces<List<ReceiptDTO>>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status400BadRequest)
 .Produces(StatusCodes.Status500InternalServerError);
 
-app.MapPost("/label-receipt-details", async (HttpRequest request, IConfiguration config, OpenAIClient openAiClient) =>
+app.MapPost("/label-receipt-details", async (
+    HttpRequest request, 
+    ILogger<Program> logger, 
+    [FromServices] IChatCompletionService chatCompletionService) =>
 {
     // Read the receipt JSON input from the request body
     string prompt;
@@ -164,41 +193,38 @@ app.MapPost("/label-receipt-details", async (HttpRequest request, IConfiguration
     }
 
     // Define the messages for the chat completion
-    var messages = new List<ChatMessage>
-    {
-        ChatMessage.CreateSystemMessage(
-            @"You are an advanced machine learning model specifically designed to analyze receipt data. Your sole function is to process receipt details provided in JSON format and generate a relevant name and labels that describe the nature of the receipt. These labels will enhance search functionality by categorizing the receipt effectively.
-            Guidelines:
-            Your output must always be a JSON object containing:
-            - A string property named `name` summarizing the transaction.
-            - A string array property named `labels` describing the receipt's content or purpose.
+    ChatHistory chatHistory = new ();
+    chatHistory.AddSystemMessage(
+        @"You are an advanced machine learning model specifically designed to analyze receipt data. Your sole function is to process receipt details provided in JSON format and generate a relevant name and labels that describe the nature of the receipt. These labels will enhance search functionality by categorizing the receipt effectively.
+        Guidelines:
+        Your output must always be a JSON object containing:
+        - A string property named `name` summarizing the transaction.
+        - A string array property named `labels` describing the receipt's content or purpose.
 
-            Example:
-            Input (JSON):
-            {
-              ""date"": ""2025-06-01"",
-              ""merchant"": ""Starbucks"",
-              ""items"": [""Caffe Latte"", ""Blueberry Muffin""],
-              ""total"": 7.50,
-              ""payment_method"": ""Credit Card""
-            }
-            Output (JSON):
-            {
-             ""name"": ""Starbucks breakfast"",
-             ""labels"": [""Coffee Shop"", ""Breakfast"", ""Food & Beverage""]
-            }
-            Please process the provided receipt data accordingly."
-        ),
-        ChatMessage.CreateUserMessage($"Analyze the following receipt data and generate labels:\n{prompt}")
-    };
+        Example:
+        Input (JSON):
+        {
+            ""date"": ""2025-06-01"",
+            ""merchant"": ""Starbucks"",
+            ""items"": [""Caffe Latte"", ""Blueberry Muffin""],
+            ""total"": 7.50,
+            ""payment_method"": ""Credit Card""
+        }
+        Output (JSON):
+        {
+            ""name"": ""Starbucks breakfast"",
+            ""labels"": [""Coffee Shop"", ""Breakfast"", ""Food & Beverage""]
+        }
+        Please process the provided receipt data accordingly."
+    );
+    chatHistory.AddUserMessage($"Analyze the following receipt data and generate labels:\n{prompt}");
 
     try
     {
-        // Call the OpenAI API using the SDK
-        var chatClient = openAiClient.GetChatClient("gpt-3.5-turbo");
-        var completionResponse = await chatClient.CompleteChatAsync(messages);
+        // Call chat service
+        var message = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
-        var responseContent = completionResponse.Value.Content.FirstOrDefault()?.Text ?? "The model failed to generate response text";
+        var responseContent = message.Content ?? "The model failed to generate response text";
 
         if (string.IsNullOrWhiteSpace(responseContent))
         {
@@ -213,13 +239,52 @@ app.MapPost("/label-receipt-details", async (HttpRequest request, IConfiguration
     }
     catch (Exception ex)
     {
-        // Log exception (if necessary) and return error
+        logger.LogError(ex, "An error occurred.");
         return Results.StatusCode(StatusCodes.Status500InternalServerError);
     }
 })
 .WithName("LabelReceiptJson")
 .Accepts<ReceiptDTO>("application/json")
 .Produces<ReceiptLabelsDTO>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status400BadRequest)
+.Produces(StatusCodes.Status500InternalServerError);
+
+app.MapPost("semantic-embedding", async (
+    HttpRequest request, 
+    ILogger<Program> logger, 
+    [FromKernelServices] IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator) =>
+{
+    try
+    { 
+        string reqBody;
+        using (var reader = new StreamReader(request.Body))
+        {
+            reqBody = await reader.ReadToEndAsync();
+        }
+        var reqDTO = JsonSerializer.Deserialize<ReceiptLabelsDTO>(reqBody);
+
+        List<string> list = reqDTO?.Labels?.ToList() ?? new List<string>();
+        if (!string.IsNullOrWhiteSpace(reqDTO?.Name)) list.Add(reqDTO.Name);
+
+        var text = string.Join(" ", list); 
+        var embedding = await embeddingGenerator.GenerateAsync(text);
+
+        SemanticEmbeddingDTO result = new()
+        {
+            EmbeddingJson = JsonSerializer.Serialize(embedding),
+        };
+
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred.");
+        return Results.StatusCode(StatusCodes.Status500InternalServerError);
+    }
+})
+.WithName("CreateSemanticEmbedding")
+.Accepts<ReceiptLabelsDTO>("application/json")
+.Produces<SemanticEmbeddingDTO>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status400BadRequest)
 .Produces(StatusCodes.Status500InternalServerError);
 

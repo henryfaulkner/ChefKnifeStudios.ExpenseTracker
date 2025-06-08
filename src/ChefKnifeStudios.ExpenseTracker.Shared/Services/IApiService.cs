@@ -6,4 +6,5 @@ public interface IApiService
 {
     Task<ApiResponse<IEnumerable<ReceiptDTO>?>> ScanReceiptAsync(Stream fileStream);
     Task<ApiResponse<ReceiptLabelsDTO?>> LabelReceiptDetailsAsync(ReceiptDTO receipt);
+    Task<ApiResponse<SemanticEmbeddingDTO?>> CreateSemanticEmbedding(ReceiptLabelsDTO receiptLabels);
 }

@@ -16,6 +16,7 @@ public static class MappingExtensions
             Name = model.Name,
             Cost = model.Cost,
             Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson) ?? [],
+            SemanticEmbedding = model.SemanticEmbedding,
         };
         return result;
     }
@@ -29,6 +30,7 @@ public static class MappingExtensions
             Name = dto.Name,
             Cost = dto.Cost,
             LabelsJson = JsonSerializer.Serialize(dto.Labels),
+            SemanticEmbedding = dto.SemanticEmbedding,
         };
         return result;
     }
