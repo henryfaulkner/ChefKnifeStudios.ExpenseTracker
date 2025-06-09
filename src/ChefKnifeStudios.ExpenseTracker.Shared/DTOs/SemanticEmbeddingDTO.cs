@@ -2,5 +2,5 @@
 
 public class SemanticEmbeddingDTO
 {
-    public required string EmbeddingJson { get; set; }
+    public required ReadOnlyMemory<float> Embedding { get; set; }
 }

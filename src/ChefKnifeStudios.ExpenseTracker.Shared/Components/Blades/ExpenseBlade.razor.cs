@@ -76,7 +76,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             Cost = _cost.Value,
             BudgetId = _selectedBudget.Id,
             Labels = _labels ?? [],
-            SemanticEmbedding = embedding.EmbeddingJson,
+            SemanticEmbedding = embedding.Embedding,
         };
 
         await StorageService.AddExpenseAsync(expense);

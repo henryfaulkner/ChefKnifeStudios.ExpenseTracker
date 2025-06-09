@@ -12,7 +12,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Data;
 
 public static class ServiceCollectionExtensions
 {
-    public static void RegisterDataServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection RegisterDataServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<AppDbContext>(optionsBuilder =>
         {
@@ -23,5 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped(typeof(IReadRepository<>), typeof(EfReadRepository<>));
 
         services.AddTransient<IBudgetSearchRepository, BudgetSearchRepository>();
+
+        return services;
     }
 }

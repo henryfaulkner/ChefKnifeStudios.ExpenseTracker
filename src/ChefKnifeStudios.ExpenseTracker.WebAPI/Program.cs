@@ -1,25 +1,26 @@
-using Microsoft.AspNetCore.Mvc;
-using Scalar.AspNetCore;
-using System.Text.Json;
 using Azure;
 using Azure.AI.DocumentIntelligence;
+using ChefKnifeStudios.ExpenseTracker.Data;
+using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using System.Globalization;
 using ChefKnifeStudios.ExpenseTracker.WebAPI;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
-using OpenAI;
-using OpenAI.Chat;
-using Azure.Core;
-using Microsoft.Extensions.Logging;
-using System.Reflection.Emit;
-using static System.Net.Mime.MediaTypeNames;
-using System.Runtime.InteropServices;
-using Microsoft.SemanticKernel;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI;
+using OpenAI.VectorStores;
+using Scalar.AspNetCore;
+using System.Globalization;
+using Microsoft.SemanticKernel.Data;
+using OpenAI;
+using System.Text.Json;
+using Microsoft.SemanticKernel.Connectors.SqliteVec;
+using System.Collections;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,10 @@ builder.Services
     .AddCors()
     .AddHttpClient()
     .AddTransient<IHttpService, HttpService>()
+    .RegisterDataServices(builder.Configuration)
+    .AddSqliteVectorStore(_ => "Data Source=:memory:");
+
+builder.Services
     .AddKernel()
     .ConfigureSemanticKernel(appSettings);
 
@@ -271,7 +276,7 @@ app.MapPost("semantic-embedding", async (
 
         SemanticEmbeddingDTO result = new()
         {
-            EmbeddingJson = JsonSerializer.Serialize(embedding),
+            Embedding = embedding.Vector,
         };
 
         return Results.Ok(result);
@@ -287,5 +292,62 @@ app.MapPost("semantic-embedding", async (
 .Produces<SemanticEmbeddingDTO>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status400BadRequest)
 .Produces(StatusCodes.Status500InternalServerError);
+
+app.MapPost("expense/search", async (
+    HttpRequest request,
+    ILogger<Program> logger,
+    IRepository<Expense> expenseRepository,
+    SqliteVectorStore vectorStore,
+    [FromKernelServices] IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator) =>
+{
+    string reqBody;
+    using (var reader = new StreamReader(request.Body))
+    {
+        reqBody = await reader.ReadToEndAsync();
+    }
+    var reqDTO = JsonSerializer.Deserialize<ExpenseSearchDTO>(reqBody);
+    if (reqDTO is null) throw new ApplicationException("ReqDTO is null.");
+
+    Embedding<float> queryEmbedding = await embeddingGenerator.GenerateAsync(reqDTO.SearchText);
+
+    // Get and create collection if it doesn't exist.
+    var collectionName = "expenses";
+    var expenseCollection = vectorStore.GetCollection<int, Expense>(collectionName);
+    await expenseCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+
+    List<Expense> result = [];
+    var searchResult = expenseCollection.SearchAsync(queryEmbedding, top: 20);
+    await foreach (var expenseVectorResult in searchResult)
+    {
+        result.Add(expenseVectorResult.Record);
+    }
+
+    return result;
+})
+.WithName("SearchExpenses")
+.Accepts<ExpenseSearchDTO>("application/json")
+.Produces<IEnumerable<ExpenseDTO>>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status400BadRequest)
+.Produces(StatusCodes.Status500InternalServerError);
+
+// Initial vector store setup: upsert all Expense embeddings
+using (var scope = app.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    var expenseRepository = serviceProvider.GetRequiredService<IRepository<Expense>>();
+    var vectorStore = serviceProvider.GetRequiredService<SqliteVectorStore>();
+
+    string collectionName = "expenses";
+    var expenseCollection = vectorStore.GetCollection<int, Expense>(collectionName);
+    await expenseCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+
+    // Fetch all expenses
+    var expenses = await expenseRepository.ListAsync();
+
+    foreach (var expense in expenses)
+    {
+        await expenseCollection.UpsertAsync(expense);
+    }
+}
 
 app.Run();

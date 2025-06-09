@@ -7,5 +7,5 @@ public class ExpenseDTO
     public decimal Cost { get; set; }
     public required string Name { get; set; }
     public required IEnumerable<string> Labels { get; set; }
-    public required string SemanticEmbedding { get; set; }
+    public required ReadOnlyMemory<float> SemanticEmbedding { get; set; }
 }
