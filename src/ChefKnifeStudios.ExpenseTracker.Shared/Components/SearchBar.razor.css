@@ -1,0 +1,15 @@
+﻿.search-bar {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: 3fr 1fr;
+    grid-template-rows: auto;
+    grid-template: "search-text search-btn";
+}
+
+#search-text {
+    grid-area: search-text;
+}
+
+#search-btn {
+    grid-area: search-btn;
+}

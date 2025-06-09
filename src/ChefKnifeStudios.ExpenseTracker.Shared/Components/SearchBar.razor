@@ -1,0 +1,16 @@
+﻿<div class="search-bar">
+    <MatTextField 
+        @bind-Value="@_searchText" 
+        Label="Search..." 
+        Icon="search" 
+        Id="search-text"
+    />
+
+    <MatButton 
+        OnClick="HandleSearch"
+        Unelevated="true"
+        Id="search-btn"
+    >
+        SUBMIT
+    </MatButton>
+</div>

@@ -7,10 +7,14 @@
 @page "/"
 
 <div class="home">
-    @if (_isGridVisible)
-    {
-        <BudgetExpenseList />
-    }
+    <div class="main-container">
+        <SearchBar />
+        @if (_isGridVisible)
+        {
+            <BudgetExpenseList />
+        }
+    </div>
+
     <BudgetBlade />
     <ExpenseBlade />
     <ActionBtns />
