@@ -33,10 +33,8 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
     		builder.Logging.AddDebug();
             #endif
 
-            builder.Services.RegisterDataServices(builder.Configuration);
-
             builder.Services.AddTransient<IStorageService, StorageService>();
-            builder.Services.AddTransient<IApiService, ApiService>();
+            builder.Services.AddTransient<ISemanticService, SemanticService>();
             builder.Services.AddTransient<ICameraService, CameraService>();
             builder.Services.AddSingleton<IEventNotificationService, EventNotificationService>();
 

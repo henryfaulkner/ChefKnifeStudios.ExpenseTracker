@@ -14,7 +14,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     [Inject] ILogger<BudgetBlade> Logger { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] IStorageService StorageService { get; set; } = null!;
-    [Inject] IApiService ApiService { get; set; } = null!;
+    [Inject] ISemanticService SemanticService { get; set; } = null!;
     [Inject] IReceiptViewModel ReceiptViewModel { get; set; } = null!;
 
     BladeContainer? _bladeContainer;
@@ -66,7 +66,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             Labels = _labels,
         };
 
-        var embeddingRes = await ApiService.CreateSemanticEmbedding(receiptLabels);
+        var embeddingRes = await SemanticService.CreateSemanticEmbeddingAsync(receiptLabels);
         var embedding = embeddingRes.Data;
         if (embedding is not SemanticEmbeddingDTO) throw new ApplicationException("Embedding data is null.");
 
@@ -80,6 +80,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         };
 
         await StorageService.AddExpenseAsync(expense);
+        await SemanticService.UpsertExpenseAsync(expense);
         EventNotificationService.PostEvent(
             this,
             new ExpenseEventArgs()

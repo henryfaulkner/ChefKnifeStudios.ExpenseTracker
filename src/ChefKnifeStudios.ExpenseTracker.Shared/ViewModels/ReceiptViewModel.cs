@@ -24,17 +24,17 @@ public class ReceiptViewModel : BaseViewModel, IReceiptViewModel
 {
     readonly IStorageService _storageService;
     readonly ICameraService _cameraService;
-    readonly IApiService _apiService;
+    readonly ISemanticService _semanticService;
     readonly ILogger<ReceiptViewModel> _logger;
 
     public ReceiptViewModel(IStorageService storageService,
         ICameraService cameraService,
-        IApiService apiService,
+        ISemanticService semanticService,
         ILogger<ReceiptViewModel> logger)
     {
         _storageService = storageService;
         _cameraService = cameraService;
-        _apiService = apiService;
+        _semanticService = semanticService;
         _logger = logger;
     }
 
@@ -43,7 +43,7 @@ public class ReceiptViewModel : BaseViewModel, IReceiptViewModel
         PhotoResult? photo = await _cameraService.PickPhotoAsync();
         if (photo?.FileStream is null) return null;
 
-        var response = await _apiService.ScanReceiptAsync(photo.FileStream);
+        var response = await _semanticService.ScanReceiptAsync(photo.FileStream);
         if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data?.FirstOrDefault() is null)
         {
             _logger.LogError("Scanning API failed");
@@ -51,7 +51,7 @@ public class ReceiptViewModel : BaseViewModel, IReceiptViewModel
         }
         var receiptDTO = response.Data.First();
 
-        var response2 = await _apiService.LabelReceiptDetailsAsync(receiptDTO);
+        var response2 = await _semanticService.LabelReceiptDetailsAsync(receiptDTO);
         if (response2.HttpStatusCode != HttpStatusCode.OK || response2?.Data?.Labels is null)
         {
             _logger.LogError("Labeling API failed");
@@ -67,7 +67,7 @@ public class ReceiptViewModel : BaseViewModel, IReceiptViewModel
         PhotoResult? photo = await _cameraService.CapturePhotoAsync();
         if (photo?.FileStream is null) return null;
 
-        var response = await _apiService.ScanReceiptAsync(photo.FileStream);
+        var response = await _semanticService.ScanReceiptAsync(photo.FileStream);
         if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data?.FirstOrDefault() is null)
         {
             _logger.LogError("Scanning API failed");
@@ -75,7 +75,7 @@ public class ReceiptViewModel : BaseViewModel, IReceiptViewModel
         }
         var receiptDTO = response.Data.First();
 
-        var response2 = await _apiService.LabelReceiptDetailsAsync(receiptDTO);
+        var response2 = await _semanticService.LabelReceiptDetailsAsync(receiptDTO);
         if (response2.HttpStatusCode != HttpStatusCode.OK || response2?.Data?.Labels is null)
         {
             _logger.LogError("Labeling API failed");

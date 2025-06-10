@@ -3,6 +3,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Data;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.InteropServices;
 
 public class Expense : BaseEntity
 {
@@ -17,15 +18,20 @@ public class Expense : BaseEntity
     [TextSearchResultValue]
     public required string Name { get; set; }
 
-    [VectorStoreData]
     public decimal Cost { get; set; }
 
     [VectorStoreData]
     public required string LabelsJson { get; set; }
 
-    [VectorStoreVector(1536)] // Use the correct dimension for your embedding model
-    public required ReadOnlyMemory<float> SemanticEmbedding { get; set; }
+    public byte[]? SemanticEmbedding { get; set; }
 
-    [ForeignKey(nameof(BudgetId))]
-    public Budget? Budget { get; set; }
+    [NotMapped]
+    [VectorStoreVector(1536)]
+    public ReadOnlyMemory<float> SemanticEmbeddingVectors
+    {
+        get => SemanticEmbedding == null
+            ? ReadOnlyMemory<float>.Empty
+            : MemoryMarshal.Cast<byte, float>(SemanticEmbedding).ToArray();
+        set => SemanticEmbedding = MemoryMarshal.AsBytes(value.Span).ToArray();
+    }
 }

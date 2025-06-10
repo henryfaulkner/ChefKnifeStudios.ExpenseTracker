@@ -1,9 +1,10 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
-namespace ChefKnifeStudios.ExpenseTracker.MobileApp;
+namespace ChefKnifeStudios.ExpenseTracker.WebAPI;
 
 public static class MappingExtensions
 {
@@ -16,21 +17,21 @@ public static class MappingExtensions
             Name = model.Name,
             Cost = model.Cost,
             Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson) ?? [],
-            SemanticEmbedding = model.SemanticEmbedding,
+            SemanticEmbedding = MemoryMarshal.Cast<byte, float>(model.SemanticEmbedding).ToArray(),
         };
         return result;
     }
 
     public static Expense MapToModel(this ExpenseDTO dto)
     {
-        Expense result = new ()
-        { 
+        Expense result = new()
+        {
             Id = dto.Id,
             BudgetId = dto.BudgetId,
             Name = dto.Name,
             Cost = dto.Cost,
             LabelsJson = JsonSerializer.Serialize(dto.Labels),
-            SemanticEmbedding = dto.SemanticEmbedding,
+            SemanticEmbedding = MemoryMarshal.AsBytes(dto.SemanticEmbedding.Span).ToArray(),
         };
         return result;
     }

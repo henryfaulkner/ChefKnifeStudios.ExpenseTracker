@@ -1,52 +1,130 @@
-﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
-using ChefKnifeStudios.ExpenseTracker.Data.Repos;
+﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
-using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using ChefKnifeStudios.ExpenseTracker.Data.Search;
-using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Net;
+using System.Text.Json;
+using ChefKnifeStudios.ExpenseTracker.Shared;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
 public class StorageService : IStorageService
 {
-    readonly IRepository<Expense> _expenseRepository;
-    readonly IRepository<Budget> _budgetRepository;
-    readonly IBudgetSearchRepository _budgetSearchRepository;
+    readonly string _baseUrl = string.Empty;
 
-    public StorageService(IRepository<Expense> expenseRepository, 
-        IRepository<Budget> budgetRepository,
-        IBudgetSearchRepository budgetSearchRepository)
+    public StorageService(IConfiguration configuration)
     {
-        _expenseRepository = expenseRepository;
-        _budgetRepository = budgetRepository;
-        _budgetSearchRepository = budgetSearchRepository;
+        _baseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? string.Empty;
+        _baseUrl += "/storage";
     }
 
-    public async Task AddExpenseAsync(ExpenseDTO expenseDTO)
+    public async Task<ApiResponse<bool>> AddExpenseAsync(ExpenseDTO expenseDTO)
     {
-        Expense expense = expenseDTO.MapToModel();
-        await _expenseRepository.AddAsync(expense);
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(expenseDTO, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PostAsync($"{_baseUrl}/expense", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("expense endpoint failed.");
+            }
+
+            return new ApiResponse<bool>(true, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = false,
+            };
+        }
     }
 
-    public async Task AddBudgetAsync(BudgetDTO budgetDTO)
+    public async Task<ApiResponse<bool>> AddBudgetAsync(BudgetDTO budgetDTO)
     {
-        Budget budget = budgetDTO.MapToModel();
-        await _budgetRepository.AddAsync(budget);
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(budgetDTO, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PostAsync($"{_baseUrl}/budget", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("budget endpoint failed.");
+            }
+
+            return new ApiResponse<bool>(true, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = false,
+            };
+        }
     }
 
-    public async Task<IEnumerable<BudgetDTO>> GetBudgetsAsync()
+    public async Task<ApiResponse<IEnumerable<BudgetDTO>?>> GetBudgetsAsync()
     {
-        return (await _budgetRepository
-            .ListAsync(new GetBudgetsSpec()))
-            .Select(x => x.MapToDTO());
+        try
+        {
+            using var httpClient = new HttpClient();
+            
+            var response = await httpClient.GetAsync($"{_baseUrl}/budgets");
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("budgets endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<IEnumerable<BudgetDTO>?>(responseContent);
+
+            return new ApiResponse<IEnumerable<BudgetDTO>?>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<IEnumerable<BudgetDTO>?>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = null,
+            };
+        }
     }
 
-    public async Task<PagedResultDTO<BudgetDTO>> SearchBudgetsAsync(
+    public async Task<ApiResponse<PagedResultDTO<BudgetDTO>?>> SearchBudgetsAsync(
         string? searchText,
         int pageSize,
         int pageNumber)
     {
-        PagedResult<Budget> pagedResult = await _budgetSearchRepository.GetFilteredResultAsync(searchText, pageSize, pageNumber);
-        return pagedResult.MapToDTO();
+        try
+        {
+            using var httpClient = new HttpClient();
+            
+            var response = await httpClient
+                .GetAsync($"{_baseUrl}/budgets/search?searchText={searchText}&pageSize={pageSize}&pageNumber={pageNumber}");
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(" endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<PagedResultDTO<BudgetDTO>?>(responseContent);
+
+            return new ApiResponse<PagedResultDTO<BudgetDTO>?>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<PagedResultDTO<BudgetDTO>?>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = null,
+            };
+        }
     }
 }

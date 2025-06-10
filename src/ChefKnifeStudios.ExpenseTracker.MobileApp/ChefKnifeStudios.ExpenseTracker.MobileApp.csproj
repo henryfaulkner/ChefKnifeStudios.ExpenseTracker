@@ -71,7 +71,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ChefKnifeStudios.ExpenseTracker.Data\ChefKnifeStudios.ExpenseTracker.Data.csproj" />
       <ProjectReference Include="..\ChefKnifeStudios.ExpenseTracker.Shared\ChefKnifeStudios.ExpenseTracker.Shared.csproj" />
     </ItemGroup>
 

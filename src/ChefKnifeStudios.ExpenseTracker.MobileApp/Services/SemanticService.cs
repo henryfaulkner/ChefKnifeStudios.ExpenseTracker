@@ -15,13 +15,14 @@ using ChefKnifeStudios.ExpenseTracker.Shared.Models;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
-public class ApiService : IApiService
+public class SemanticService : ISemanticService
 {
     readonly string _baseUrl = string.Empty;
 
-    public ApiService(IConfiguration configuration)
+    public SemanticService(IConfiguration configuration)
     {
         _baseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? string.Empty;
+        _baseUrl += "/semantic";
     }
 
     public async Task<ApiResponse<IEnumerable<ReceiptDTO>?>> ScanReceiptAsync(Stream fileStream)
@@ -85,7 +86,7 @@ public class ApiService : IApiService
         }
     }
 
-    public async Task<ApiResponse<SemanticEmbeddingDTO?>> CreateSemanticEmbedding(ReceiptLabelsDTO receiptLabels)
+    public async Task<ApiResponse<SemanticEmbeddingDTO?>> CreateSemanticEmbeddingAsync(ReceiptLabelsDTO receiptLabels)
     {
         try
         {
@@ -109,6 +110,62 @@ public class ApiService : IApiService
             {
                 HttpStatusCode = HttpStatusCode.BadRequest,
                 Data = null,
+            };
+        }
+    }
+
+    public async Task<ApiResponse<bool>> UpsertExpenseAsync(ExpenseDTO expense)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(expense, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PostAsync($"{_baseUrl}/upsert-expense", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("upsert-expense endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<bool>(responseContent);
+
+            return new ApiResponse<bool>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = false,
+            };
+        }
+    }
+
+    public async Task<ApiResponse<IEnumerable<ExpenseDTO>>> SearchExpensesAsync(ExpenseSearchDTO searchBody)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(searchBody, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PostAsync($"{_baseUrl}/expense/search", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("expense/search endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<IEnumerable<ExpenseDTO>>(responseContent);
+
+            return new ApiResponse<IEnumerable<ExpenseDTO>>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<IEnumerable<ExpenseDTO>>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = [],
             };
         }
     }
