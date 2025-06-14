@@ -15,6 +15,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] IStorageService StorageService { get; set; } = null!;
     [Inject] ISemanticService SemanticService { get; set; } = null!;
+    [Inject] IToastService ToastService { get; set; } = null!;
     [Inject] IReceiptViewModel ReceiptViewModel { get; set; } = null!;
 
     BladeContainer? _bladeContainer;
@@ -42,7 +43,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         switch (e)
         {
             case BladeEventArgs { Type: BladeEventArgs.Types.Expense }:
-                _budgets = await StorageService.GetBudgetsAsync();
+                var res = await StorageService.GetBudgetsAsync();
                 _bladeContainer?.Open();
                 break;
             case BladeEventArgs { Type: BladeEventArgs.Types.Close or BladeEventArgs.Types.Budget }:

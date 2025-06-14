@@ -13,9 +13,10 @@ public interface ISearchViewModel : IViewModel
     Task ChangePageNumberAsync(int pageNumber);
 }
 
-public class SearchViewModel(IStorageService storageService) : BaseViewModel, ISearchViewModel
+public class SearchViewModel(IStorageService storageService, IToastService toastService) : BaseViewModel, ISearchViewModel
 {
     readonly IStorageService _storageService = storageService;
+    readonly IToastService _toastService = toastService;
 
     const int PAGE_SIZE = 10;
 
@@ -39,8 +40,10 @@ public class SearchViewModel(IStorageService storageService) : BaseViewModel, IS
     public async Task LoadPagedBudgetsAsync()
     {
         IsLoading = true;
-        Budgets = await _storageService.GetBudgetsAsync();
-        IsLoading = false;
+        var res = await _storageService.GetBudgetsAsync();
+        if (res.IsSuccess) Budgets = res.Data;
+        else _toastService.ShowError("Budgets failed to load");
+            IsLoading = false;
     }
 
     public async Task ChangeSearchTextAsync(string searchText)
