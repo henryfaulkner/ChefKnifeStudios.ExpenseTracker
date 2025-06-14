@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.AI.DocumentIntelligence;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
+using ChefKnifeStudios.ExpenseTracker.Shared;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,8 @@ public static class SemanticEndpoints
 {
     public static IEndpointRouteBuilder MapSemanticEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/semantic");
+        var group = app.MapGroup("/semantic")
+            .WithName("Semantic");
 
         group.MapPost("/scan-receipt", async (
             HttpRequest request,
@@ -180,7 +182,7 @@ public static class SemanticEndpoints
                 }
 
                 // Deserialize the response into ReceiptLabelsDTO
-                var labels = JsonSerializer.Deserialize<ReceiptLabelsDTO>(responseContent)
+                var labels = JsonSerializer.Deserialize<ReceiptLabelsDTO>(responseContent, Shared.JsonOptions.Get())
                     ?? new ReceiptLabelsDTO { Labels = Array.Empty<string>() };
 
                 return Results.Ok(labels);
@@ -209,7 +211,7 @@ public static class SemanticEndpoints
                 {
                     reqBody = await reader.ReadToEndAsync();
                 }
-                var reqDTO = JsonSerializer.Deserialize<ReceiptLabelsDTO>(reqBody);
+                var reqDTO = JsonSerializer.Deserialize<ReceiptLabelsDTO>(reqBody, Shared.JsonOptions.Get());
 
                 List<string> list = reqDTO?.Labels?.ToList() ?? new List<string>();
                 if (!string.IsNullOrWhiteSpace(reqDTO?.Name)) list.Add(reqDTO.Name);
@@ -248,7 +250,7 @@ public static class SemanticEndpoints
                 {
                     reqBody = await reader.ReadToEndAsync();
                 }
-                var reqDTO = JsonSerializer.Deserialize<ExpenseDTO>(reqBody);
+                var reqDTO = JsonSerializer.Deserialize<ExpenseDTO>(reqBody, Shared.JsonOptions.Get());
                 if (reqDTO is null) throw new ApplicationException("ReqDTO is null.");
                 var expense = reqDTO.MapToModel();
 
@@ -282,7 +284,7 @@ public static class SemanticEndpoints
                 {
                     reqBody = await reader.ReadToEndAsync();
                 }
-                var reqDTO = JsonSerializer.Deserialize<ExpenseSearchDTO>(reqBody);
+                var reqDTO = JsonSerializer.Deserialize<ExpenseSearchDTO>(reqBody, Shared.JsonOptions.Get());
                 if (reqDTO is null) throw new ApplicationException("ReqDTO is null.");
 
                 Embedding<float> queryEmbedding = await embeddingGenerator.GenerateAsync(reqDTO.SearchText);

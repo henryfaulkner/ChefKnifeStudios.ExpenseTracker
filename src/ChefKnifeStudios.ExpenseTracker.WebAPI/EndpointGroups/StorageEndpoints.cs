@@ -11,7 +11,8 @@ public static class StorageEndpoints
 {
     public static IEndpointRouteBuilder MapStorageEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/storage");
+        var group = app.MapGroup("/storage")
+            .WithName("Storage");
 
         // Add Expense
         group.MapPost("/expense", async (

@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Net;
 using System.Net.Http.Json;
 using ChefKnifeStudios.ExpenseTracker.Shared.Models;
+using System.Text.Json.Serialization.Metadata;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
@@ -44,7 +45,7 @@ public class SemanticService : ISemanticService
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<IEnumerable<ReceiptDTO>?>(content);
+            var obj = JsonSerializer.Deserialize<IEnumerable<ReceiptDTO>?>(content, JsonOptions.Get());
 
             return new ApiResponse<IEnumerable<ReceiptDTO>?>(obj, response.StatusCode);
         }
@@ -72,7 +73,7 @@ public class SemanticService : ISemanticService
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<ReceiptLabelsDTO?>(responseContent);
+            var obj = JsonSerializer.Deserialize<ReceiptLabelsDTO?>(responseContent, JsonOptions.Get());
 
             return new ApiResponse<ReceiptLabelsDTO?>(obj, response.StatusCode);
         }
@@ -100,7 +101,7 @@ public class SemanticService : ISemanticService
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<SemanticEmbeddingDTO?>(responseContent);
+            var obj = JsonSerializer.Deserialize<SemanticEmbeddingDTO?>(responseContent, JsonOptions.Get());
 
             return new ApiResponse<SemanticEmbeddingDTO?>(obj, response.StatusCode);
         }
@@ -128,7 +129,7 @@ public class SemanticService : ISemanticService
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<bool>(responseContent);
+            var obj = JsonSerializer.Deserialize<bool>(responseContent, JsonOptions.Get());
 
             return new ApiResponse<bool>(obj, response.StatusCode);
         }
@@ -156,7 +157,7 @@ public class SemanticService : ISemanticService
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<IEnumerable<ExpenseDTO>>(responseContent);
+            var obj = JsonSerializer.Deserialize<IEnumerable<ExpenseDTO>>(responseContent, JsonOptions.Get());
 
             return new ApiResponse<IEnumerable<ExpenseDTO>>(obj, response.StatusCode);
         }

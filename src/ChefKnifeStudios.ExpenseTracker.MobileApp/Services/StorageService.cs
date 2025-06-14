@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Net;
 using System.Text.Json;
 using ChefKnifeStudios.ExpenseTracker.Shared;
+using System.Text.Json.Serialization.Metadata;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
@@ -83,7 +84,7 @@ public class StorageService : IStorageService
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<IEnumerable<BudgetDTO>?>(responseContent);
+            var obj = JsonSerializer.Deserialize<IEnumerable<BudgetDTO>?>(responseContent, JsonOptions.Get());
 
             return new ApiResponse<IEnumerable<BudgetDTO>?>(obj, response.StatusCode);
         }
@@ -114,7 +115,7 @@ public class StorageService : IStorageService
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<PagedResultDTO<BudgetDTO>?>(responseContent);
+            var obj = JsonSerializer.Deserialize<PagedResultDTO<BudgetDTO>?>(responseContent, JsonOptions.Get());
 
             return new ApiResponse<PagedResultDTO<BudgetDTO>?>(obj, response.StatusCode);
         }

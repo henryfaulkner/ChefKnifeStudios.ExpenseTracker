@@ -44,7 +44,7 @@ public class HttpService : IHttpService
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<T?>(content, GetJsonSerializerOptions());
+            var obj = JsonSerializer.Deserialize<T?>(content, Shared.JsonOptions.Get());
 
             return new ApiResponse<T?>(obj);
         }
@@ -64,7 +64,7 @@ public class HttpService : IHttpService
         {
             var client = CreateClient();
             var jsonContent = new StringContent(
-                JsonSerializer.Serialize(data, GetJsonSerializerOptions()),
+                JsonSerializer.Serialize(data, Shared.JsonOptions.Get()),
                 Encoding.UTF8,
                 "application/json"
             );
@@ -77,7 +77,7 @@ public class HttpService : IHttpService
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<Y?>(content, GetJsonSerializerOptions());
+            var obj = JsonSerializer.Deserialize<Y?>(content, Shared.JsonOptions.Get());
             return new ApiResponse<Y?>(obj);
         }
         catch (Exception ex)
@@ -101,7 +101,7 @@ public class HttpService : IHttpService
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<Y?>(content, GetJsonSerializerOptions());
+            var obj = JsonSerializer.Deserialize<Y?>(content, Shared.JsonOptions.Get());
 
             return new ApiResponse<Y?>(obj);
         }
@@ -117,7 +117,7 @@ public class HttpService : IHttpService
         {
             var client = CreateClient();
             var jsonContent = new StringContent(
-                JsonSerializer.Serialize(data, GetJsonSerializerOptions()),
+                JsonSerializer.Serialize(data, Shared.JsonOptions.Get()),
                 Encoding.UTF8,
                 "application/json"
             );
@@ -130,7 +130,7 @@ public class HttpService : IHttpService
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<Y?>(content, GetJsonSerializerOptions());
+            var obj = JsonSerializer.Deserialize<Y?>(content, Shared.JsonOptions.Get());
             return new ApiResponse<Y?>(obj);
         }
         catch (Exception ex)
@@ -152,7 +152,7 @@ public class HttpService : IHttpService
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<T?>(content, GetJsonSerializerOptions());
+            var obj = JsonSerializer.Deserialize<T?>(content, Shared.JsonOptions.Get());
             return new ApiResponse<T?>(obj);
         }
         catch (Exception ex)
@@ -238,15 +238,6 @@ public class HttpService : IHttpService
             IsSuccessful = false,
             Data = default,
             Exception = null,
-        };
-    }
-
-    private JsonSerializerOptions GetJsonSerializerOptions()
-    {
-        return new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
     }
 }

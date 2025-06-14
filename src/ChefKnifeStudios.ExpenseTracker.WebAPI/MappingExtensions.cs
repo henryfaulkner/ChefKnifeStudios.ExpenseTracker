@@ -16,7 +16,7 @@ public static class MappingExtensions
             BudgetId = model.BudgetId,
             Name = model.Name,
             Cost = model.Cost,
-            Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson) ?? [],
+            Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
             SemanticEmbedding = MemoryMarshal.Cast<byte, float>(model.SemanticEmbedding).ToArray(),
         };
         return result;
