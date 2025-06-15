@@ -24,13 +24,16 @@
                     <MatExpansionPanelDetails>
                         @if (budget.ExpenseDTOs != null && budget.ExpenseDTOs.Any())
                         {
-                            <QuickGrid 
-                                Items="@budget.ExpenseDTOs.OrderByDescending(x => x.Id).AsQueryable()" 
-                                Pagination="_pagination"
-                            >
-                                <PropertyColumn Title="Name" Property="@(x => x.Name)" />
-                                <PropertyColumn Title="Cost" Property="@(x => x.Cost)" />
-                            </QuickGrid>
+                            <MatTable Items="budget.ExpenseDTOs.OrderByDescending(x => x.Id)">
+                                <MatTableHeader>
+                                    <th>Name</th>
+                                    <th>Cost</th>
+                                </MatTableHeader>
+                                <MatTableRow>
+                                    <td>@context.Name</td>
+                                    <td>@FormatAsDollar(context.Cost)</td>
+                                </MatTableRow>
+                            </MatTable>
                         }
                         else
                         {

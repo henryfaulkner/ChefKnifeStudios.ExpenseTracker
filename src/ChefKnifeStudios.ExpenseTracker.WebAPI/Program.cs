@@ -22,6 +22,7 @@ using Microsoft.SemanticKernel.Connectors.SqliteVec;
 using System.Collections;
 using Microsoft.Extensions.Logging;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
+using ChefKnifeStudios.ExpenseTracker.Data.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,19 +88,19 @@ app.MapStorageEndpoints()
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
-    var expenseRepository = serviceProvider.GetRequiredService<IRepository<Expense>>();
+    var expenseSemanticRepository = serviceProvider.GetRequiredService<IRepository<ExpenseSemantic>>();
     var vectorStore = serviceProvider.GetRequiredService<SqliteVectorStore>();
 
-    string collectionName = "expenses";
-    var expenseCollection = vectorStore.GetCollection<int, Expense>(collectionName);
-    await expenseCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+    string collectionName = "ExpenseSemantics";
+    var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
+    await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
     // Fetch all expenses
-    var expenses = await expenseRepository.ListAsync();
+    var expenseSemantics = await expenseSemanticRepository.ListAsync();
 
-    foreach (var expense in expenses)
+    foreach (var expenseSemantic in expenseSemantics)
     {
-        await expenseCollection.UpsertAsync(expense);
+        await expenseSemanticCollection.UpsertAsync(expenseSemantic);
     }
 }
 

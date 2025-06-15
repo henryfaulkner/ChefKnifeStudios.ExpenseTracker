@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.AI.DocumentIntelligence;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
+using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Shared;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
@@ -255,11 +256,11 @@ public static class SemanticEndpoints
                 var expense = reqDTO.MapToModel();
 
                 // Get and create collection if it doesn't exist.
-                var collectionName = "expenses";
-                var expenseCollection = vectorStore.GetCollection<int, Expense>(collectionName);
-                await expenseCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+                var collectionName = "ExpenseSemantics";
+                var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
+                await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
-                await expenseCollection.UpsertAsync(expense);
+                await expenseSemanticCollection.UpsertAsync(expense.ExpenseSemantic);
 
                 return Results.Ok(true);
             }
@@ -290,14 +291,18 @@ public static class SemanticEndpoints
                 Embedding<float> queryEmbedding = await embeddingGenerator.GenerateAsync(reqDTO.SearchText);
 
                 // Get and create collection if it doesn't exist.
-                var collectionName = "expenses";
-                var expenseCollection = vectorStore.GetCollection<int, Expense>(collectionName);
-                await expenseCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+                var collectionName = "ExpenseSemantics";
+                var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
+                await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
-                List<Expense> result = [];
-                var searchResult = expenseCollection.SearchAsync(queryEmbedding, top: 20);
+                List<ExpenseSemantic> result = [];
+                var searchResult = expenseSemanticCollection.SearchAsync(queryEmbedding, top: 20);
                 await foreach (var expenseVectorResult in searchResult)
                 {
+                    if (expenseVectorResult.Record.ExpenseId == 4)
+                    {
+                        Console.WriteLine();
+                    }
                     result.Add(expenseVectorResult.Record);
                 }
 
@@ -311,7 +316,7 @@ public static class SemanticEndpoints
         })
         .WithName("SearchExpenses")
         .Accepts<ExpenseSearchDTO>("application/json")
-        .Produces<IEnumerable<ExpenseDTO>>(StatusCodes.Status200OK)
+        .Produces<IEnumerable<ExpenseSemantic>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 

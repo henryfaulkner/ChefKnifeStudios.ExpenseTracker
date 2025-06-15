@@ -44,6 +44,8 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         {
             case BladeEventArgs { Type: BladeEventArgs.Types.Expense }:
                 var res = await StorageService.GetBudgetsAsync();
+                if (!res.IsSuccess) ToastService.ShowWarning("Budgets failed to load.");
+                _budgets = res.Data ?? [];
                 _bladeContainer?.Open();
                 break;
             case BladeEventArgs { Type: BladeEventArgs.Types.Close or BladeEventArgs.Types.Budget }:
@@ -77,7 +79,10 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             Cost = _cost.Value,
             BudgetId = _selectedBudget.Id,
             Labels = _labels ?? [],
-            SemanticEmbedding = embedding.Embedding,
+            ExpenseSemantic = new()
+            {
+                SemanticEmbedding = embedding.Embedding,
+            }
         };
 
         await StorageService.AddExpenseAsync(expense);

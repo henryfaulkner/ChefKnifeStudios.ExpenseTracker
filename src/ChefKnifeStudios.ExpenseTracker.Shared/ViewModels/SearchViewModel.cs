@@ -13,9 +13,13 @@ public interface ISearchViewModel : IViewModel
     Task ChangePageNumberAsync(int pageNumber);
 }
 
-public class SearchViewModel(IStorageService storageService, IToastService toastService) : BaseViewModel, ISearchViewModel
+public class SearchViewModel
+    (IStorageService storageService, 
+    IToastService toastService,
+    ISemanticService semanticService) : BaseViewModel, ISearchViewModel
 {
     readonly IStorageService _storageService = storageService;
+    readonly ISemanticService _semanticService = semanticService;
     readonly IToastService _toastService = toastService;
 
     const int PAGE_SIZE = 10;
@@ -51,6 +55,9 @@ public class SearchViewModel(IStorageService storageService, IToastService toast
         if (_searchText == searchText) return;
         _searchText = searchText;
         await LoadPagedBudgetsAsync();
+
+        ExpenseSearchDTO reqBody = new () { SearchText = searchText };
+        await _semanticService.SearchExpensesAsync(reqBody);
     }
 
     public async Task ChangePageNumberAsync(int pageNumber)

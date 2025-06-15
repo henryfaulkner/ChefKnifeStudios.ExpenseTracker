@@ -52,6 +52,7 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
             builder.Services.AddTransient<IToastService, ToastService>();
             builder.Services.AddTransient<ICommonJsInteropService, CommonJsInteropService>();
             builder.Services.AddSingleton<IEventNotificationService, EventNotificationService>();
+            builder.Services.AddScoped<HttpClient>();
 
             builder.Services.RegisterViewModels(builder.Configuration);
 

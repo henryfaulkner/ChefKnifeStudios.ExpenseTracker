@@ -1,6 +1,7 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -17,7 +18,14 @@ public static class MappingExtensions
             Name = model.Name,
             Cost = model.Cost,
             Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
-            SemanticEmbedding = MemoryMarshal.Cast<byte, float>(model.SemanticEmbedding).ToArray(),
+            ExpenseSemantic = model.ExpenseSemantic is null ? null
+                : new()
+                {
+                    Id = model.ExpenseSemantic.Id,
+                    ExpenseId = model.ExpenseSemantic.ExpenseId,
+                    LabelsJson = model.LabelsJson,
+                    SemanticEmbedding = MemoryMarshal.Cast<byte, float>(model.ExpenseSemantic.SemanticEmbedding).ToArray(),
+                },
         };
         return result;
     }
@@ -31,7 +39,14 @@ public static class MappingExtensions
             Name = dto.Name,
             Cost = dto.Cost,
             LabelsJson = JsonSerializer.Serialize(dto.Labels),
-            SemanticEmbedding = MemoryMarshal.AsBytes(dto.SemanticEmbedding.Span).ToArray(),
+            ExpenseSemantic = dto.ExpenseSemantic is null ? null
+            : new()
+            {
+                Id = dto.ExpenseSemantic.Id,
+                ExpenseId = dto.ExpenseSemantic.ExpenseId,
+                LabelsJson = dto.ExpenseSemantic.LabelsJson,
+                SemanticEmbedding = MemoryMarshal.AsBytes<float>(dto.ExpenseSemantic.SemanticEmbedding.Span).ToArray(),
+            },
         };
         return result;
     }

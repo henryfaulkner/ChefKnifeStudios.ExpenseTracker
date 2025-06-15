@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\" />
     <Folder Include="Models\Views\" />
     <Folder Include="SqlScripts\Views\" />
   </ItemGroup>
