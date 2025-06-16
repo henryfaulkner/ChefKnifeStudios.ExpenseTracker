@@ -6,35 +6,42 @@
         <ContentFragment>
             <h2>Expense</h2>
 
-            <form style="display: flex; flex-direction: column;">
-                <MatTextField 
-                    @bind-Value="@_name" 
-                    Label="Choose a Name" 
-                    Icon="create" 
-                    Required="true" 
-                />
-                <MatTextField 
-                    @bind-Value="@_cost" 
-                    Label="Apply a Cost" 
-                    Icon="attach_money" 
-                    Required="true" 
-                />
-                <MatAutocompleteList 
-                    Items="_budgets"
-                    Icon="list"
-                    TItem="BudgetDTO"
-                    CustomStringSelector="@(x => x?.Name)"
-                    @bind-Value="@_selectedBudget"
-                    Label="Pick a Budget" 
-                />
+            @if (_isLoading)
+            {
+                <MatProgressCircle Indeterminate="true" Size="MatProgressCircleSize.Large" />
+            }
+            else
+            {
+                <form style="display: flex; flex-direction: column;">
+                    <MatTextField 
+                        @bind-Value="@_name" 
+                        Label="Choose a Name" 
+                        Icon="create" 
+                        Required="true" 
+                    />
+                    <MatTextField 
+                        @bind-Value="@_cost" 
+                        Label="Apply a Cost" 
+                        Icon="attach_money" 
+                        Required="true" 
+                    />
+                    <MatAutocompleteList 
+                        Items="_budgets"
+                        Icon="list"
+                        TItem="BudgetDTO"
+                        CustomStringSelector="@(x => x?.Name)"
+                        @bind-Value="@_selectedBudget"
+                        Label="Pick a Budget" 
+                    />
 
-                <MatButton 
-                    OnClick="HandleSubmitPressedAsync"
-                    Unelevated="true"
-                >
-                    SUBMIT
-                </MatButton>
-            </form>
+                    <MatButton 
+                        OnClick="HandleSubmitPressedAsync"
+                        Unelevated="true"
+                    >
+                        SUBMIT
+                    </MatButton>
+                </form>
+            }
 
             <hr />
 

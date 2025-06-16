@@ -4,6 +4,10 @@ using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 using Microsoft.AspNetCore.Mvc;
+using Azure.Core;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 
@@ -17,10 +21,12 @@ public static class StorageEndpoints
         // Add Expense
         group.MapPost("/expense", async (
             [FromBody] ExpenseDTO expenseDTO,
-            [FromServices] IRepository<Expense> expenseRepository) =>
+            [FromServices] IRepository<Expense> expenseRepository,
+            SqliteVectorStore vectorStore) =>
         {
             var expense = expenseDTO.MapToModel();
             await expenseRepository.AddAsync(expense);
+            await UpsertExpense(expense, vectorStore);
             return Results.Ok();
         })
         .WithName("AddExpense")
@@ -73,5 +79,24 @@ public static class StorageEndpoints
         .Produces(StatusCodes.Status500InternalServerError);
 
         return app;
+    }
+
+    private static async Task<bool> UpsertExpense(Expense expense,
+            SqliteVectorStore vectorStore)
+    {
+        try
+        {
+            // Get and create collection if it doesn't exist.
+            var collectionName = "ExpenseSemantics";
+            var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
+            await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+
+            await expenseSemanticCollection.UpsertAsync(expense.ExpenseSemantic);
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+        return true;
     }
 }

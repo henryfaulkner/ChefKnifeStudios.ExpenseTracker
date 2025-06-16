@@ -13,6 +13,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Data;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.Extensions.Logging;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 
@@ -222,6 +225,7 @@ public static class SemanticEndpoints
 
                 SemanticEmbeddingDTO result = new()
                 {
+                    Labels = text,
                     Embedding = embedding.Vector,
                 };
 
@@ -238,38 +242,6 @@ public static class SemanticEndpoints
         .Produces<SemanticEmbeddingDTO>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
-
-        group.MapPost("upsert-expense", async (
-            HttpRequest request,
-            ILogger<Program> logger,
-            SqliteVectorStore vectorStore) =>
-        {
-            try
-            {
-                string reqBody;
-                using (var reader = new StreamReader(request.Body))
-                {
-                    reqBody = await reader.ReadToEndAsync();
-                }
-                var reqDTO = JsonSerializer.Deserialize<ExpenseDTO>(reqBody, Shared.JsonOptions.Get());
-                if (reqDTO is null) throw new ApplicationException("ReqDTO is null.");
-                var expense = reqDTO.MapToModel();
-
-                // Get and create collection if it doesn't exist.
-                var collectionName = "ExpenseSemantics";
-                var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
-                await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
-
-                await expenseSemanticCollection.UpsertAsync(expense.ExpenseSemantic);
-
-                return Results.Ok(true);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An error occurred.");
-                return Results.StatusCode(StatusCodes.Status500InternalServerError);
-            }
-        });
 
         group.MapPost("expense/search", async (
             HttpRequest request,
@@ -296,14 +268,14 @@ public static class SemanticEndpoints
                 await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
                 List<ExpenseSemantic> result = [];
+                // uses distance
+                // Lower score = more similar
+                // Higher score = less similar
                 var searchResult = expenseSemanticCollection.SearchAsync(queryEmbedding, top: 20);
                 await foreach (var expenseVectorResult in searchResult)
                 {
-                    if (expenseVectorResult.Record.ExpenseId == 4)
-                    {
-                        Console.WriteLine();
-                    }
-                    result.Add(expenseVectorResult.Record);
+                    if (expenseVectorResult.Score < 0.3f)
+                        result.Add(expenseVectorResult.Record);
                 }
 
                 return Results.Ok(result);

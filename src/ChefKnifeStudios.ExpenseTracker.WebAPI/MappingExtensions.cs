@@ -23,7 +23,7 @@ public static class MappingExtensions
                 {
                     Id = model.ExpenseSemantic.Id,
                     ExpenseId = model.ExpenseSemantic.ExpenseId,
-                    LabelsJson = model.LabelsJson,
+                    Labels = model.ExpenseSemantic.Labels,
                     SemanticEmbedding = MemoryMarshal.Cast<byte, float>(model.ExpenseSemantic.SemanticEmbedding).ToArray(),
                 },
         };
@@ -44,7 +44,7 @@ public static class MappingExtensions
             {
                 Id = dto.ExpenseSemantic.Id,
                 ExpenseId = dto.ExpenseSemantic.ExpenseId,
-                LabelsJson = dto.ExpenseSemantic.LabelsJson,
+                Labels = dto.ExpenseSemantic.Labels,
                 SemanticEmbedding = MemoryMarshal.AsBytes<float>(dto.ExpenseSemantic.SemanticEmbedding.Span).ToArray(),
             },
         };

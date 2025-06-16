@@ -6,6 +6,7 @@ using MatBlazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades;
 
@@ -25,6 +26,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     decimal? _cost;
     BudgetDTO? _selectedBudget;
     List<string>? _labels;
+    bool _isLoading = false;
 
     protected override void OnInitialized()
     {
@@ -63,6 +65,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         if (_name is null || !_cost.HasValue || _selectedBudget is null)
             return;
 
+        _isLoading = true;
         ReceiptLabelsDTO receiptLabels = new()
         {
             Name = _name,
@@ -81,12 +84,14 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             Labels = _labels ?? [],
             ExpenseSemantic = new()
             {
+                Labels = embedding.Labels,
                 SemanticEmbedding = embedding.Embedding,
             }
         };
 
         await StorageService.AddExpenseAsync(expense);
         await SemanticService.UpsertExpenseAsync(expense);
+        _isLoading = false;
         EventNotificationService.PostEvent(
             this,
             new ExpenseEventArgs()
@@ -112,6 +117,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
 
     async Task HandlePickPicture()
     {
+        _isLoading = true;
         var receipt = await ReceiptViewModel.PickPhotoForReceiptAsync();
         if (receipt == null) throw new ApplicationException("Receipt returned null");
         if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
@@ -119,10 +125,12 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         _name = receipt.Name;
         _cost = receipt.Total;
         _labels = receipt.Labels;
+        _isLoading = false;
     }
 
     async Task HandleTakePicture()
     {
+        _isLoading = true;
         var receipt = await ReceiptViewModel.CapturePhotoForReceiptAsync();
         if (receipt == null) throw new ApplicationException("Receipt returned null");
         if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
@@ -130,5 +138,6 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         _name = receipt.Name;
         _cost = receipt.Total;
         _labels = receipt.Labels;
+        _isLoading = false;
     }
 }

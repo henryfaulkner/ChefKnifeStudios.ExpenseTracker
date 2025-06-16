@@ -19,7 +19,7 @@ public class ExpenseSemantic : IAggregateRoot
 
     [VectorStoreData]
     [TextSearchResultValue]
-    public required string LabelsJson { get; set; } 
+    public required string Labels { get; set; } 
 
     [VectorStoreData]
     public byte[]? SemanticEmbedding { get; set; }
