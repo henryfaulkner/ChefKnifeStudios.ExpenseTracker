@@ -1,16 +1,4 @@
-﻿:root {
-    --height: 120px;
-    --container-width: 300px;
-    --container-horizontal-padding: 20px;
-    --label-width: 0px;
-    --mvc-header-height: 70px;
-    --now-green-secondary: #88cc88; /* Replace with the actual value */
-    --white: #ffffff; /* Replace with the actual value */
-    --font-weight-bold: 700; /* Replace with the actual value */
-    --font-size-extra-large: 24px; /* Replace with the actual value */
-}
-
-.valid.modified:not([type=checkbox]) {
+﻿.valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
 
