@@ -3,9 +3,11 @@
 <div class="budget-blade">
     <BladeContainer @ref="_bladeContainer">
         <ContentFragment>
-            <h2>Budget</h2>
+            <MatH4 class="clr-on-1t-container">
+                Budget
+            </MatH4>
 
-            <form style="display: flex; flex-direction: column;">
+            <form>
                 <MatTextField 
                     @bind-Value="@_name"
                     Label="Name"

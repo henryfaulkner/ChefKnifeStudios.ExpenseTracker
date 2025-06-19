@@ -1,8 +1,9 @@
 ﻿<div id="@_elementId" class="blade-container @( _isOpen ? "open" : "" )">
-    <div class="controls-container">
-        <div class="cross">
-            <a @onclick="HandleClosePressed">🗙</a>
-        </div>
+    <button class="cross">
+        <a @onclick="HandleClosePressed">🗙</a>
+    </button>
+
+    <div class="content-container">
         @ContentFragment
     </div>
 </div>

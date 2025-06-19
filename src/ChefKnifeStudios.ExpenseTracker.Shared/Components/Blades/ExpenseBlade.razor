@@ -4,7 +4,9 @@
 <div class="expense-blade">
     <BladeContainer @ref="_bladeContainer">
         <ContentFragment>
-            <h2>Expense</h2>
+            <MatH4 class="clr-on-1t-container">
+                Expense
+            </MatH4>
 
             @if (_isLoading)
             {
@@ -12,7 +14,7 @@
             }
             else
             {
-                <form style="display: flex; flex-direction: column;">
+                <form>
                     <MatTextField 
                         @bind-Value="@_name" 
                         Label="Choose a Name" 
@@ -44,19 +46,22 @@
             }
 
             <hr />
+            
+            <div class="btns">
+                <MatButton 
+                    OnClick="@HandlePickPicture"
+                    Unelevated="true"
+                >
+                    PICK PHOTO
+                </MatButton>
 
-            <MatButton 
-                OnClick="@HandlePickPicture"
-                Unelevated="true"
-            >
-                PICK PHOTO
-            </MatButton>
-            <MatButton 
-                OnClick="@HandleTakePicture"
-                Unelevated="true"
-            >
-                CAPTURE PHOTO
-            </MatButton>
+                <MatButton 
+                    OnClick="@HandleTakePicture"
+                    Unelevated="true"
+                >
+                    CAPTURE PHOTO
+                </MatButton>
+            </div>
         </ContentFragment>
     </BladeContainer>
 </div>

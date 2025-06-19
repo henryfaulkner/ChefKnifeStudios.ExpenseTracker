@@ -3,7 +3,7 @@
 <div class="budget-expense-list">
     @if (SearchViewModel.IsLoading)
     {
-        <p>Loading...</p>
+        <MatBody1>Loading...</MatBody1>
     }
     else
     {
@@ -18,7 +18,7 @@
                             @{
                                 string str = $"{FormatAsDollar(budget.ExpenseDTOs?.Sum(x => x.Cost) ?? 0.0m)} / {@FormatAsDollar(budget.ExpenseBudget)}";
                             }
-                            <span>@str</span>
+                            <MatBody2 style="margin: 0;">@str</MatBody2>
                         </MatExpansionPanelSubHeader>
                     </MatExpansionPanelSummary>
                     <MatExpansionPanelDetails>
@@ -37,7 +37,7 @@
                         }
                         else
                         {
-                            <p>No expenses available for this budget.</p>
+                            <MatBody1>No expenses available for this budget.</MatBody1>
                         }
                     </MatExpansionPanelDetails>
                 </MatExpansionPanel>

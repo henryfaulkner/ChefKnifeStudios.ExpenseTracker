@@ -1,6 +1,6 @@
 ﻿.search-bar {
     display: grid;
-    gap: 0.5rem;
+    gap: 0.0rem;
     grid-template-columns: 3fr 1fr;
     grid-template-rows: auto;
     grid-template: "search-text search-btn";
@@ -12,4 +12,8 @@
 
 #search-btn {
     grid-area: search-btn;
+}
+
+::deep .search-btn {
+    height: 100%;
 }
