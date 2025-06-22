@@ -40,13 +40,7 @@ public partial class Home : ComponentBase, IDisposable
         {
             case BudgetEventArgs budgetEvent:
             case ExpenseEventArgs expenseEvent:
-                // HACK: this resolves a quickgrid disposed component issue
-                //_isGridVisible = false;
-                //StateHasChanged();
                 await SearchViewModel.LoadPagedBudgetsAsync();
-                //await Task.Delay(50);
-                //_isGridVisible = true;
-                //StateHasChanged();
                 break;
             default:
                 break;

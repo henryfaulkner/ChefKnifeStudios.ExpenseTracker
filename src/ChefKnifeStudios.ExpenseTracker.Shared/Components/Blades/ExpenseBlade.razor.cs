@@ -6,6 +6,7 @@ using MatBlazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel;
 using System.Text.Json;
 
 namespace ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades;
@@ -21,17 +22,21 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     [Inject] IMicrophoneService MicrophoneService { get; set; } = null!;
 
     BladeContainer? _bladeContainer;
-    IEnumerable<BudgetDTO> _budgets = [];
 
     string? _name;
     decimal? _cost;
-    BudgetDTO? _selectedBudget;
     List<string>? _labels;
     bool _isLoading = false;
+
+    readonly string[] _subscriptions =
+    [
+        nameof(IExpenseViewModel.IsListening),
+    ];
 
     protected override void OnInitialized()
     {
         EventNotificationService.EventReceived += HandleEventReceived;
+        ExpenseViewModel.PropertyChanged += ViewModel_OnPropertyChanged;
 
         base.OnInitialized();
     }
@@ -39,6 +44,13 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     public void Dispose()
     {
         EventNotificationService.EventReceived -= HandleEventReceived;
+        ExpenseViewModel.PropertyChanged -= ViewModel_OnPropertyChanged;
+    }
+
+    void ViewModel_OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (_subscriptions.Contains(e.PropertyName) is false) return;
+        Task.Run(async () => await InvokeAsync(StateHasChanged));
     }
 
     async Task HandleEventReceived(object sender, IEventArgs e)
@@ -46,9 +58,6 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         switch (e)
         {
             case BladeEventArgs { Type: BladeEventArgs.Types.Expense }:
-                var res = await StorageService.GetBudgetsAsync();
-                if (!res.IsSuccess) ToastService.ShowWarning("Budgets failed to load.");
-                _budgets = res.Data ?? [];
                 _bladeContainer?.Open();
                 break;
             case BladeEventArgs { Type: BladeEventArgs.Types.Close or BladeEventArgs.Types.Budget }:
@@ -63,7 +72,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
 
     async Task HandleSubmitPressedAsync(MouseEventArgs e)
     {
-        if (_name is null || !_cost.HasValue || _selectedBudget is null)
+        if (_name is null || !_cost.HasValue)
             return;
 
         _isLoading = true;
@@ -81,7 +90,6 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         {
             Name = _name,
             Cost = _cost.Value,
-            BudgetId = _selectedBudget.Id,
             Labels = _labels ?? [],
             ExpenseSemantic = new()
             {
@@ -159,7 +167,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
 
         _name = data.Name;
         _cost = data.Price;
-        _labels = data.Labels.ToList();
+        _labels = data.Labels?.ToList();
 
         _isLoading = false;
     }

@@ -13,11 +13,12 @@ public partial class BudgetBlade : ComponentBase, IDisposable
     [Inject] ILogger<BudgetBlade> Logger { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] IStorageService StorageService { get; set; } = null!;
+    [Inject] IToastService ToastService { get; set; } = null!;
+
+    IEnumerable<BudgetDTO> _budgets = [];
 
     BladeContainer? _bladeContainer;
-    string? _name; 
-    DateTime _startDate = DateTime.Now;
-    DateTime _endDate = DateTime.Now.AddMonths(1);
+    BudgetDTO? _selectedBudget;
     decimal? _budget;
 
     protected override void OnInitialized()
@@ -37,6 +38,9 @@ public partial class BudgetBlade : ComponentBase, IDisposable
         switch (e)
         {
             case BladeEventArgs { Type: BladeEventArgs.Types.Budget}:
+                var res = await StorageService.GetBudgetsAsync();
+                if (!res.IsSuccess) ToastService.ShowWarning("Budgets failed to load.");
+                _budgets = res.Data ?? [];
                 _bladeContainer?.Open();
                 break;
             case BladeEventArgs { Type: BladeEventArgs.Types.Close or BladeEventArgs.Types.Expense }:
@@ -51,18 +55,18 @@ public partial class BudgetBlade : ComponentBase, IDisposable
 
     async Task HandleSubmitPressed(MouseEventArgs e)
     {
-        if (_name is null || !_budget.HasValue)
-            return;
-
-        BudgetDTO budget = new()
+        if (_selectedBudget is null)
         {
-            Name = _name,
-            StartDate = _startDate,
-            EndDate = _endDate,
-            ExpenseBudget = _budget.Value,
-        };
+            ToastService.ShowWarning("A budget is required");
+            return;
+        }
 
-        await StorageService.AddBudgetAsync(budget);
+        if (!_budget.HasValue)
+            return;
+        
+        _selectedBudget.ExpenseBudget = _budget.Value;
+
+        await StorageService.UpdateBudgetAsync(_selectedBudget);
         EventNotificationService.PostEvent(
             this,
             new BudgetEventArgs()
@@ -82,9 +86,7 @@ public partial class BudgetBlade : ComponentBase, IDisposable
 
     void Clear()
     {
-        _name = null; 
-        _startDate = DateTime.Now;
-        _endDate = DateTime.Now.AddMonths(1);
+        _selectedBudget = null;
         _budget = null;
     }
 }

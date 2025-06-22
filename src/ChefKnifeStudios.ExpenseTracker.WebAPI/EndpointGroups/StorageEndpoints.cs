@@ -22,9 +22,36 @@ public static class StorageEndpoints
         group.MapPost("/expense", async (
             [FromBody] ExpenseDTO expenseDTO,
             [FromServices] IRepository<Expense> expenseRepository,
+            [FromServices] IRepository<Budget> budgetRepository,
             SqliteVectorStore vectorStore) =>
         {
+            // Determine the month/year for the budget
+            var now = DateTime.Now;
+            var budgetName = now.ToString("MMMM yyyy");
+            var startDate = new DateTime(now.Year, now.Month, 1);
+            var endDate = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
+
+            // Try to find an existing budget for this month/year
+            var budgets = await budgetRepository.ListAsync(new GetBudgetsSpec());
+            var budget = budgets.FirstOrDefault(b => b.Name == budgetName);
+
+            // If not found, create a new budget for this month
+            if (budget == null)
+            {
+                budget = new Budget
+                {
+                    Name = budgetName,
+                    StartDateUtc = startDate,
+                    EndDateUtc = endDate,
+                    ExpenseBudget = 0 // or a default value
+                };
+                await budgetRepository.AddAsync(budget);
+            }
+
+            // Assign the budget ID to the expense
             var expense = expenseDTO.MapToModel();
+            expense.BudgetId = budget.Id;
+
             await expenseRepository.AddAsync(expense);
             await UpsertExpense(expense, vectorStore);
             return Results.Ok();
@@ -47,6 +74,32 @@ public static class StorageEndpoints
         .WithName("AddBudget")
         .Accepts<BudgetDTO>("application/json")
         .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
+
+        // Update Budget
+        group.MapPut("/budget", async (
+            [FromBody] BudgetDTO budgetDTO,
+            [FromServices] IRepository<Budget> budgetRepository) =>
+        {
+            // Find the existing budget by Id
+            var existing = await budgetRepository.GetByIdAsync(budgetDTO.Id);
+            if (existing == null)
+                return Results.NotFound();
+
+            // Update properties
+            existing.Name = budgetDTO.Name;
+            existing.ExpenseBudget = budgetDTO.ExpenseBudget;
+            existing.StartDateUtc = budgetDTO.StartDate;
+            existing.EndDateUtc = budgetDTO.EndDate;
+
+            await budgetRepository.UpdateAsync(existing);
+            return Results.Ok();
+        })
+        .WithName("UpdateBudget")
+        .Accepts<BudgetDTO>("application/json")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
