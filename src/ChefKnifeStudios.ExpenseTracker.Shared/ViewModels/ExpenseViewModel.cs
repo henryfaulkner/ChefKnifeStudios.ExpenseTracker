@@ -1,21 +1,14 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Models;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 
 public interface IExpenseViewModel : IViewModel
 {
+    bool IsListening { get; }
     Task<Receipt?> PickPhotoForReceiptAsync();
     Task<Receipt?> CapturePhotoForReceiptAsync();
     Task StartListeningForExpenseAsync();
@@ -29,6 +22,13 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
     readonly ISemanticService _semanticService;
     readonly IMicrophoneService _microphoneService;
     readonly ILogger<ExpenseViewModel> _logger;
+
+    bool _isListening = false;
+    public bool IsListening
+    {
+        get => _isListening;
+        private set => SetValue(ref _isListening, value);
+    }
 
     public ExpenseViewModel(IStorageService storageService,
         ICameraService cameraService,
@@ -94,12 +94,14 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
     public async Task StartListeningForExpenseAsync()
     {
         await _microphoneService.StartListeningAsync();
+        IsListening = true;
     }
 
     public async Task<TextToExpenseResponseDTO?> StopListeningForExpenseAsync()
     {
         TextToExpenseResponseDTO? result = null;
         string recognizedText = await _microphoneService.StopListeningAsync();
+        IsListening = false;
         TextToExpenseRequestDTO req = new() { Text = recognizedText, };
         var response = await _semanticService.TextToExpenseAsync(req);
         if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data is null)

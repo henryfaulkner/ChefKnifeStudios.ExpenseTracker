@@ -8,71 +8,66 @@
                 Expense
             </MatH4>
 
-            @if (_isLoading)
-            {
-                <MatProgressCircle Indeterminate="true" Size="MatProgressCircleSize.Large" />
-            }
-            else
-            {
-                <form>
-                    <MatTextField 
-                        @bind-Value="@_name" 
-                        Label="Choose a Name" 
-                        Icon="create" 
-                        Required="true" 
-                    />
-                    <MatTextField 
-                        @bind-Value="@_cost" 
-                        Label="Apply a Cost" 
-                        Icon="attach_money" 
-                        Required="true" 
-                    />
-                    <MatAutocompleteList 
-                        Items="_budgets"
-                        Icon="list"
-                        TItem="BudgetDTO"
-                        CustomStringSelector="@(x => x?.Name)"
-                        @bind-Value="@_selectedBudget"
-                        Label="Pick a Budget" 
-                    />
+            <form>
+                <MatTextField 
+                    @bind-Value="@_name" 
+                    Label="Choose a Name" 
+                    Icon="create" 
+                    Required="true" 
+                    Disabled="_isLoading"
+                />
+                <MatTextField 
+                    @bind-Value="@_cost" 
+                    Label="Apply a Cost" 
+                    Icon="attach_money"
+                    Required="true"
+                    Disabled="_isLoading" />
 
-                    <MatButton 
-                        OnClick="HandleSubmitPressedAsync"
-                        Unelevated="true"
-                        Label="SUBMIT"
-                    />
-                </form>
-            }
+                <MatButton 
+                    OnClick="HandleSubmitPressedAsync"
+                    Unelevated="true"
+                    Label="SUBMIT"
+                    Disabled="_isLoading" />
+            </form>
 
             <hr />
-            
+
             <div class="btns">
                 <MatButton 
                     OnClick="@HandlePickPictureAsync"
                     Unelevated="true"
                     Label="PICK PHOTO"
-                           Icon="insert_photo" />
+                    Icon="insert_photo" 
+                    Disabled="_isLoading"
+                />
 
                 <MatButton
                     OnClick="@HandleTakePictureAsync"
                     Unelevated="true"
                     Label="CAPTURE PHOTO"
-                    Icon="add_a_photo"
-                />
+                           Icon="add_a_photo"
+                           Disabled="_isLoading" />
 
-                <MatButton
-                    OnClick="@HandleStartListeningAsync"
-                    Unelevated="true"
-                    Label="TELL ME"
-                    Icon="mic"
-                />
+                <hr />
 
-                <MatButton
-                    OnClick="@HandleStopListeningAsync"
-                    Unelevated="true"
-                    Label="STOP LISTENING"
-                    Icon="mic_off"
-                />
+                @if (!ExpenseViewModel.IsListening)
+                {
+                    <MatButton
+                        OnClick="@HandleStartListeningAsync"
+                        Unelevated="true"
+                        Label="TELL ME"
+                        Icon="mic"
+                    />
+                }
+                else
+                {
+                    <MatButton
+                        OnClick="@HandleStopListeningAsync"
+                        Unelevated="true"
+                        Label="STOP LISTENING"
+                        Icon="mic_off"
+                    />
+                }
             </div>
         </ContentFragment>
     </BladeContainer>

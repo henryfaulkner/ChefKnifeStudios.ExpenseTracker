@@ -71,6 +71,31 @@ public class StorageService : IStorageService
         }
     }
 
+    public async Task<ApiResponse<bool>> UpdateBudgetAsync(BudgetDTO budgetDTO)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(budgetDTO, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PutAsync($"{_baseUrl}/budget", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("update budget endpoint failed.");
+            }
+
+            return new ApiResponse<bool>(true, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = false,
+            };
+        }
+    }
+
     public async Task<ApiResponse<IEnumerable<BudgetDTO>?>> GetBudgetsAsync()
     {
         try

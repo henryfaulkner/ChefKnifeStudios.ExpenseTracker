@@ -1,4 +1,5 @@
 ﻿@using MatBlazor
+@using ChefKnifeStudios.ExpenseTracker.Shared.DTOs
 
 <div class="budget-blade">
     <BladeContainer @ref="_bladeContainer">
@@ -8,22 +9,15 @@
             </MatH4>
 
             <form>
-                <MatTextField 
-                    @bind-Value="@_name"
-                    Label="Name"
-                    Icon="create"
-                    Required="true" 
+                <MatAutocompleteList 
+                    Items="_budgets"
+                    Icon="list"
+                    TItem="BudgetDTO"
+                    CustomStringSelector="@(x => x?.Name)"
+                    @bind-Value="@_selectedBudget"
+                    Label="Pick a Budget"
                 />
-                <MatDatePicker 
-                    @bind-Value="_startDate" 
-                    Label="Start Date" 
-                    Format="MMMM dd, yyyy" 
-                />
-                <MatDatePicker 
-                    @bind-Value="_endDate" 
-                    Label="End Date" 
-                    Format="MMMM dd, yyyy" 
-                />
+
                 <MatTextField 
                     @bind-Value="@_budget" 
                     Label="Budget" 
