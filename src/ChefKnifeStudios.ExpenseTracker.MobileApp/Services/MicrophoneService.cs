@@ -1,15 +1,16 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using CommunityToolkit.Maui.Media;
 using System.Globalization;
+using System.Text;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
 public class MicrophoneService : IMicrophoneService
 {
-    readonly ISpeechToText _speechToText;
-    readonly IToastService _toastService;
-
-    public string RecognitionText { get; private set; }
+    private readonly ISpeechToText _speechToText;
+    private readonly IToastService _toastService;
+    private readonly StringBuilder _resultBuilder = new();
+    private readonly object _lock = new();
 
     public MicrophoneService(ISpeechToText speechToText, IToastService toastService)
     {
@@ -17,34 +18,77 @@ public class MicrophoneService : IMicrophoneService
         _toastService = toastService;
     }
 
-    public async Task StartListening(CancellationToken cancellationToken)
+    public async Task StartListeningAsync(CancellationToken cancellationToken = default)
     {
-        var isGranted = await _speechToText.RequestPermissions(cancellationToken);
-        if (!isGranted)
+        try
         {
-            _toastService.ShowWarning("Permission not granted");
-            return;
+            var isGranted = await _speechToText.RequestPermissions(cancellationToken);
+            if (!isGranted)
+            {
+                _toastService.ShowWarning("Permission not granted");
+                return;
+            }
+
+            _speechToText.RecognitionResultUpdated += OnRecognitionTextUpdated;
+            _speechToText.RecognitionResultCompleted += OnRecognitionTextCompleted;
+
+            _resultBuilder.Clear(); // Reset the recognition text
+            await _speechToText.StartListenAsync(
+                new SpeechToTextOptions
+                {
+                    Culture = CultureInfo.CurrentCulture,
+                    ShouldReportPartialResults = true
+                },
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _toastService.ShowError($"Error starting speech recognition: {ex.Message}");
+        }
+    }
+
+    public string GetCurrentText()
+    {
+        return _resultBuilder.ToString();
+    }
+
+    public async Task<string> StopListeningAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _speechToText.StopListenAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _toastService.ShowError($"Error stopping speech recognition: {ex.Message}");
+        }
+        finally
+        {
+            _speechToText.RecognitionResultUpdated -= OnRecognitionTextUpdated;
+            _speechToText.RecognitionResultCompleted -= OnRecognitionTextCompleted;
         }
 
-        _speechToText.RecognitionResultUpdated += OnRecognitionTextUpdated;
-        _speechToText.RecognitionResultCompleted += OnRecognitionTextCompleted;
-        await SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture, ShouldReportPartialResults = true }, CancellationToken.None);
+        // Return the aggregated recognition text
+        lock (_lock)
+        {
+            return _resultBuilder.ToString();
+        }
     }
 
-    public async Task StopListening(CancellationToken cancellationToken)
+    private void OnRecognitionTextUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs args)
     {
-        await _speechToText.StopListenAsync(CancellationToken.None);
-        _speechToText.RecognitionResultUpdated -= OnRecognitionTextUpdated;
-        _speechToText.RecognitionResultCompleted -= OnRecognitionTextCompleted;
+        lock (_lock)
+        {
+            _resultBuilder.Append(args.RecognitionResult);
+        }
     }
 
-    void OnRecognitionTextUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs args)
+    private void OnRecognitionTextCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs args)
     {
-        RecognitionText += args.RecognitionResult;
-    }
-
-    void OnRecognitionTextCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs args)
-    {
-        RecognitionText = args.RecognitionResult.Text ?? string.Empty;
+        lock (_lock)
+        {
+            _resultBuilder.Clear();
+            _resultBuilder.Append(args.RecognitionResult.Text ?? string.Empty);
+        }
     }
 }

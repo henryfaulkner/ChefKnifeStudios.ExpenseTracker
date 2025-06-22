@@ -39,9 +39,8 @@
                     <MatButton 
                         OnClick="HandleSubmitPressedAsync"
                         Unelevated="true"
-                    >
-                        SUBMIT
-                    </MatButton>
+                        Label="SUBMIT"
+                    />
                 </form>
             }
 
@@ -49,18 +48,31 @@
             
             <div class="btns">
                 <MatButton 
-                    OnClick="@HandlePickPicture"
+                    OnClick="@HandlePickPictureAsync"
                     Unelevated="true"
-                >
-                    PICK PHOTO
-                </MatButton>
+                    Label="PICK PHOTO"
+                           Icon="insert_photo" />
 
-                <MatButton 
-                    OnClick="@HandleTakePicture"
+                <MatButton
+                    OnClick="@HandleTakePictureAsync"
                     Unelevated="true"
-                >
-                    CAPTURE PHOTO
-                </MatButton>
+                    Label="CAPTURE PHOTO"
+                    Icon="add_a_photo"
+                />
+
+                <MatButton
+                    OnClick="@HandleStartListeningAsync"
+                    Unelevated="true"
+                    Label="TELL ME"
+                    Icon="mic"
+                />
+
+                <MatButton
+                    OnClick="@HandleStopListeningAsync"
+                    Unelevated="true"
+                    Label="STOP LISTENING"
+                    Icon="mic_off"
+                />
             </div>
         </ContentFragment>
     </BladeContainer>

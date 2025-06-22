@@ -16,6 +16,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.Extensions.Logging;
+using Azure.Core;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 
@@ -133,6 +134,74 @@ public static class SemanticEndpoints
         .Produces<List<ReceiptDTO>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
+
+        group.MapPost("/text-to-expense", async (
+            HttpRequest request,
+            ILogger < Program > logger,
+            [FromServices] IChatCompletionService chatCompletionService) =>
+        {
+            string prompt;
+            using (var reader = new StreamReader(request.Body))
+            {
+                prompt = await reader.ReadToEndAsync();
+            }
+
+            ChatHistory chatHistory = new();
+            chatHistory.AddSystemMessage(
+                @"
+                    You are an advanced machine learning model specifically designed to analyze text, extract a price, and summarize the text into a name and descriptive labels. Your sole function is to process text details provided in JSON format and extract a price and generate a relevant name and labels that describe the nature of the text. The text will most likely be describing a merchant expense. The labels will enhance search functionality by categorizing the text effectively as a merchant expense
+.                   Guidelines:
+                    Your output must always be a JSON object containing:
+                    - A decimal property named `price` reflecting the transactions total cost. 
+                    - A string property named `name` summarizing the transaction.
+                    - A string array property named `labels` describing the receipt's content or purpose.
+
+                    Example:
+                    Input (JSON):
+                    {
+                        ""text"": ""I spent five dollars a the grocery store.""
+                    }
+                    Output (JSON):
+                    {
+                        ""price"": 5.00
+                        ""name"": ""Grocery Shopping"",
+                        ""labels"": [""Food"", ""Groceries"", ""Food & Beverage"", ""Shopping"", ""Essentials""]
+                    }
+                    Please process the provided expense data accordingly.
+                "
+            );
+            chatHistory.AddUserMessage($"Analyze the following text and generate an output according to the provided guideline document:\n{prompt}");
+
+            try
+            {
+                // Call chat service
+                var message = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+
+                var responseContent = message.Content ?? "The model failed to generate response text";
+
+                if (string.IsNullOrWhiteSpace(responseContent))
+                {
+                    return Results.StatusCode(StatusCodes.Status500InternalServerError);
+                }
+
+                // Deserialize the response into ReceiptLabelsDTO
+                var labels = JsonSerializer.Deserialize<TextToExpenseResponseDTO>(responseContent, Shared.JsonOptions.Get())
+                    ?? new TextToExpenseResponseDTO { Name = string.Empty, Labels = Array.Empty<string>() };
+
+                return Results.Ok(labels);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred.");
+                return Results.StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        })
+        .WithName("TextToExpense")
+        .Accepts<TextToExpenseRequestDTO>("application/json")
+        .Produces<TextToExpenseResponseDTO>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError); ;
+
 
         group.MapPost("/label-receipt-details", async (
             HttpRequest request,

@@ -8,7 +8,7 @@ public static class ServiceCollectionExtensions
 {
     public static void RegisterViewModels(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<ISearchViewModel, SearchViewModel>();
-        services.AddSingleton<IReceiptViewModel, ReceiptViewModel>();
+        services.AddScoped<ISearchViewModel, SearchViewModel>();
+        services.AddScoped<IExpenseViewModel, ExpenseViewModel>();
     }
 }

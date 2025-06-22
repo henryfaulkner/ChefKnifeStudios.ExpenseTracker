@@ -59,6 +59,34 @@ public class SemanticService : ISemanticService
         }
     }
 
+    public async Task<ApiResponse<TextToExpenseResponseDTO?>> TextToExpenseAsync(TextToExpenseRequestDTO request)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(request, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PostAsync($"{_baseUrl}/text-to-expense", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("text-to-expense endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<TextToExpenseResponseDTO?>(responseContent, JsonOptions.Get());
+
+            return new ApiResponse<TextToExpenseResponseDTO?>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<TextToExpenseResponseDTO?>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = null,
+            };
+        }
+    }
+
     public async Task<ApiResponse<ReceiptLabelsDTO?>> LabelReceiptDetailsAsync(ReceiptDTO receipt)
     {
         try

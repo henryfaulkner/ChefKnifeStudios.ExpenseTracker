@@ -61,6 +61,10 @@
 
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Maui" Version="12.0.0" />
+        <PackageReference Include="CommunityToolkit.Maui.Camera" Version="2.0.3" />
+        <PackageReference Include="CommunityToolkit.Maui.Maps" Version="3.0.2" />
+        <PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.1" />
+        <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="6.0.2" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageReference Include="MatBlazor" Version="2.10.0" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />

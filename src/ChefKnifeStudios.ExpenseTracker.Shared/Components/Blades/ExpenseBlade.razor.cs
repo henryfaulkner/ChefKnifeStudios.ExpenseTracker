@@ -17,7 +17,8 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     [Inject] IStorageService StorageService { get; set; } = null!;
     [Inject] ISemanticService SemanticService { get; set; } = null!;
     [Inject] IToastService ToastService { get; set; } = null!;
-    [Inject] IReceiptViewModel ReceiptViewModel { get; set; } = null!;
+    [Inject] IExpenseViewModel ExpenseViewModel { get; set; } = null!;
+    [Inject] IMicrophoneService MicrophoneService { get; set; } = null!;
 
     BladeContainer? _bladeContainer;
     IEnumerable<BudgetDTO> _budgets = [];
@@ -115,10 +116,10 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         _cost = null;
     }
 
-    async Task HandlePickPicture()
+    async Task HandlePickPictureAsync()
     {
         _isLoading = true;
-        var receipt = await ReceiptViewModel.PickPhotoForReceiptAsync();
+        var receipt = await ExpenseViewModel.PickPhotoForReceiptAsync();
         if (receipt == null) throw new ApplicationException("Receipt returned null");
         if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
 
@@ -128,16 +129,38 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         _isLoading = false;
     }
 
-    async Task HandleTakePicture()
+    async Task HandleTakePictureAsync()
     {
         _isLoading = true;
-        var receipt = await ReceiptViewModel.CapturePhotoForReceiptAsync();
+        var receipt = await ExpenseViewModel.CapturePhotoForReceiptAsync();
         if (receipt == null) throw new ApplicationException("Receipt returned null");
         if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
 
         _name = receipt.Name;
         _cost = receipt.Total;
         _labels = receipt.Labels;
+        _isLoading = false;
+    }
+
+    async Task HandleStartListeningAsync()
+    {
+        _isLoading = true;
+        await ExpenseViewModel.StartListeningForExpenseAsync();
+    }
+
+    async Task HandleStopListeningAsync()
+    {
+        var data = await ExpenseViewModel.StopListeningForExpenseAsync();
+        if (data is null)
+        {
+            ToastService.ShowWarning("Expense could not be created from description.");
+            return;
+        }
+
+        _name = data.Name;
+        _cost = data.Price;
+        _labels = data.Labels.ToList();
+
         _isLoading = false;
     }
 }
