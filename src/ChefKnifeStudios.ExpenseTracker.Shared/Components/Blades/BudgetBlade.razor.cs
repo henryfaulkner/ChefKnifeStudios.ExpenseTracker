@@ -43,7 +43,7 @@ public partial class BudgetBlade : ComponentBase, IDisposable
                 _budgets = res.Data ?? [];
                 _bladeContainer?.Open();
                 break;
-            case BladeEventArgs { Type: BladeEventArgs.Types.Close or BladeEventArgs.Types.Expense }:
+            case BladeEventArgs { Type: not BladeEventArgs.Types.Budget }:
                 _bladeContainer?.Close();
                 break;
             default:

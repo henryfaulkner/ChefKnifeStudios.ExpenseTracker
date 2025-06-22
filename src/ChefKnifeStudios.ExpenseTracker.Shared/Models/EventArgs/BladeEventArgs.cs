@@ -14,6 +14,7 @@ public class BladeEventArgs : IEventArgs
         Close,
         Expense,
         Budget,
+        Search,
     }
 
     public required Types Type { get; init; }

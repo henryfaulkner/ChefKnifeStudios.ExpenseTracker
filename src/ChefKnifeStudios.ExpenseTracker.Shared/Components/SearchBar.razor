@@ -8,10 +8,10 @@
     />
 
     <MatSelect  
-    @bind-Value="@_topNStr"
-    Id="page-size"
-    Class="page-size"
-    Label="#"
+        @bind-Value="@_topNStr"
+        Id="page-size"
+        Class="page-size"
+        Label="#"
     >
         <MatOptionString Value="10">10</MatOptionString>
         <MatOptionString Value="50">50</MatOptionString>
@@ -27,24 +27,4 @@
     >
         SEARCH
     </MatButton>
-
-    @if (_expenseList.Count > 0)
-    {
-        <MatList Id="result-list" Class="result-list">
-            @{ int i = 0; } 
-            @foreach (var expense in _expenseList)
-            {
-                i += 1;
-                int ii = i;
-                <MatListItem Class="list-item">
-                    <span>@expense.ExpenseName</span>
-                    <span>@expense.BudgetName</span>
-                </MatListItem>
-                @if (ii != _expenseList.Count)
-                {
-                    <MatListDivider></MatListDivider>
-                }
-            }
-        </MatList>
-    }
 </div>

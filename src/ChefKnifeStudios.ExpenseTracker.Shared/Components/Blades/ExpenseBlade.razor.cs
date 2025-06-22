@@ -60,7 +60,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             case BladeEventArgs { Type: BladeEventArgs.Types.Expense }:
                 _bladeContainer?.Open();
                 break;
-            case BladeEventArgs { Type: BladeEventArgs.Types.Close or BladeEventArgs.Types.Budget }:
+            case BladeEventArgs { Type: not BladeEventArgs.Types.Expense }:
                 _bladeContainer?.Close();
                 break;
             default:

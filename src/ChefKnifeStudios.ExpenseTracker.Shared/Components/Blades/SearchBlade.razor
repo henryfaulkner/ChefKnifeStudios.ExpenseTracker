@@ -1,0 +1,28 @@
+﻿<div class="search-blade">
+    <BladeContainer @ref="_bladeContainer">
+        <ContentFragment>
+            <MatH4 class="clr-on-1t-container">
+                Search Results
+            </MatH4>
+
+            <MatList Id="result-list" Class="result-list">
+                @{
+                    int i = 0;
+                }
+                @foreach (var expense in SearchViewModel.SearchedExpenses)
+                {
+                    i += 1;
+                    int ii = i;
+                    <MatListItem Class="list-item">
+                        <span>@expense.ExpenseName</span>
+                        <span>@expense.BudgetName</span>
+                    </MatListItem>
+                    @if (ii != SearchViewModel.SearchedExpenses.Count())
+                    {
+                        <MatListDivider></MatListDivider>
+                    }
+                }
+            </MatList>
+        </ContentFragment>
+    </BladeContainer>
+</div>

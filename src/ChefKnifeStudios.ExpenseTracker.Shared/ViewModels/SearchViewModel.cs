@@ -7,9 +7,10 @@ public interface ISearchViewModel : IViewModel
 {
     bool IsLoading { get; }
     IEnumerable<BudgetDTO> Budgets { get; }
+    IEnumerable<ExpenseSearchResponseDTO> SearchedExpenses { get; }
 
     Task LoadPagedBudgetsAsync();
-    Task ChangeSearchTextAsync(string searchText);
+    Task ChangeSearchTextAsync(string searchText, int topN);
     Task ChangePageNumberAsync(int pageNumber);
 }
 
@@ -38,26 +39,38 @@ public class SearchViewModel
         private set => SetValue(ref _budgets, value);
     }
 
+    IEnumerable<ExpenseSearchResponseDTO> _searchedExpenses = [];
+    public IEnumerable<ExpenseSearchResponseDTO> SearchedExpenses
+    {
+        get => _searchedExpenses;
+        private set => SetValue(ref _searchedExpenses, value);
+    }
+
     string _searchText = string.Empty;
     int _pageNumber = 0;
 
     public async Task LoadPagedBudgetsAsync()
     {
         IsLoading = true;
-        var res = await _storageService.GetBudgetsAsync();
-        if (res.IsSuccess) Budgets = res.Data;
-        else _toastService.ShowError("Budgets failed to load");
+        try
+        {
+            var res = await _storageService.GetBudgetsAsync();
+            if (res.IsSuccess) Budgets = res.Data;
+            else _toastService.ShowError("Budgets failed to load");
+        }
+        finally
+        {
             IsLoading = false;
+        }
     }
 
-    public async Task ChangeSearchTextAsync(string searchText)
+    public async Task ChangeSearchTextAsync(string searchText, int topN)
     {
-        if (_searchText == searchText) return;
         _searchText = searchText;
-        await LoadPagedBudgetsAsync();
-
-        ExpenseSearchDTO reqBody = new () { SearchText = searchText, TopN = 100, };
-        await _semanticService.SearchExpensesAsync(reqBody);
+        ExpenseSearchDTO reqBody = new () { SearchText = searchText, TopN = topN, };
+        var res = await _semanticService.SearchExpensesAsync(reqBody);
+        if (res.IsSuccess) SearchedExpenses = res.Data;
+        else _toastService.ShowError("Budgets failed to load");
     }
 
     public async Task ChangePageNumberAsync(int pageNumber)
