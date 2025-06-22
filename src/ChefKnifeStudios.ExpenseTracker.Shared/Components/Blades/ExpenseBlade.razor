@@ -30,7 +30,7 @@
                     Disabled="_isLoading" />
             </form>
 
-            <hr />
+            <MatDivider Style="margin: 0.5rem 0;" />
 
             <div class="btns">
                 <MatButton 
@@ -45,10 +45,10 @@
                     OnClick="@HandleTakePictureAsync"
                     Unelevated="true"
                     Label="CAPTURE PHOTO"
-                           Icon="add_a_photo"
-                           Disabled="_isLoading" />
+                    Icon="add_a_photo"
+                    Disabled="_isLoading" />
 
-                <hr />
+                <MatDivider />
 
                 @if (!ExpenseViewModel.IsListening)
                 {

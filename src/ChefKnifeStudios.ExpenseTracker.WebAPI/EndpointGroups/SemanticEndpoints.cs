@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.Extensions.Logging;
 using Azure.Core;
+using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 
@@ -336,15 +337,45 @@ public static class SemanticEndpoints
                 var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
                 await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
-                List<ExpenseSemantic> result = [];
+                List<ExpenseSemantic> semanticResult = [];
                 // uses distance
                 // Lower score = more similar
                 // Higher score = less similar
-                var searchResult = expenseSemanticCollection.SearchAsync(queryEmbedding, top: 20);
+                var searchResult = expenseSemanticCollection.SearchAsync(queryEmbedding, top: reqDTO.TopN);
                 await foreach (var expenseVectorResult in searchResult)
                 {
-                    if (expenseVectorResult.Score < 0.3f)
-                        result.Add(expenseVectorResult.Record);
+                    if (!expenseVectorResult.Score.HasValue) continue;
+                    var record = expenseVectorResult.Record;
+                    record.Score = expenseVectorResult.Score.Value;
+                    semanticResult.Add(record);
+                }
+
+                var expenseIds = semanticResult
+                    .OrderBy(x => x.Score)
+                    .Select(x => x.ExpenseId)
+                    .ToList();
+                var expenses = await expenseRepository.ListAsync(
+                    new GetExpensesByIdsSpec(expenseIds)
+                );
+                // Must return in the same order as expenseIds
+                // Could be optimize to sort out of memory
+                var orderedExpenses = expenseIds
+                    .Select(id => expenses.FirstOrDefault(e => e.Id == id))
+                    .Where(e => e != null) // Exclude nulls in case some IDs are not found
+                    .ToList();
+
+                List<ExpenseSearchResponseDTO> result = [];
+                foreach (var expense in orderedExpenses)
+                {
+                    result.Add(
+                        new()
+                        { 
+                            ExpenseId = expense.Id,
+                            ExpenseName = expense.Name,
+                            Cost = expense.Cost,
+                            BudgetName = expense.Budget?.Name ?? string.Empty,
+                        }
+                    );
                 }
 
                 return Results.Ok(result);
@@ -357,7 +388,7 @@ public static class SemanticEndpoints
         })
         .WithName("SearchExpenses")
         .Accepts<ExpenseSearchDTO>("application/json")
-        .Produces<IEnumerable<ExpenseSemantic>>(StatusCodes.Status200OK)
+        .Produces<IEnumerable<ExpenseSearchResponseDTO>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 

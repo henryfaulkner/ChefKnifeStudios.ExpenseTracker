@@ -128,7 +128,11 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     {
         _isLoading = true;
         var receipt = await ExpenseViewModel.PickPhotoForReceiptAsync();
-        if (receipt == null) throw new ApplicationException("Receipt returned null");
+        if (receipt == null)
+        {
+            ToastService.ShowWarning("The receipt could not be processed");
+            return;
+        }
         if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
 
         _name = receipt.Name;
@@ -141,7 +145,11 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     {
         _isLoading = true;
         var receipt = await ExpenseViewModel.CapturePhotoForReceiptAsync();
-        if (receipt == null) throw new ApplicationException("Receipt returned null");
+        if (receipt == null)
+        {
+            ToastService.ShowWarning("The receipt could not be processed");
+            return;
+        }
         if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
 
         _name = receipt.Name;

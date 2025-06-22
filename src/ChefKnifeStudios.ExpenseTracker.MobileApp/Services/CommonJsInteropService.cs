@@ -33,7 +33,7 @@ internal class CommonJsInteropService(
         }
     }
 
-    public void AddClickOusideCallback(Action callback, Guid? key = null)
+    public void AddClickOutsideCallback(Action callback, Guid? key = null)
     {
         if (!key.HasValue) key = Guid.NewGuid();
         _clickOutsideCallbackDict.Add(key.Value, callback);

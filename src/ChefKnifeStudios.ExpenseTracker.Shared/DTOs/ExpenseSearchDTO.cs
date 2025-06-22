@@ -9,4 +9,5 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 public class ExpenseSearchDTO
 {
     public required string SearchText { get; set; }
+    public int TopN { get; set; }
 }

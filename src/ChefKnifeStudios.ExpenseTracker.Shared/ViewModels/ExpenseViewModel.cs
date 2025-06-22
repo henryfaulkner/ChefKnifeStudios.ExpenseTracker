@@ -45,50 +45,66 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
 
     public async Task<Receipt?> PickPhotoForReceiptAsync()
     {
-        PhotoResult? photo = await _cameraService.PickPhotoAsync();
-        if (photo?.FileStream is null) return null;
-
-        var response = await _semanticService.ScanReceiptAsync(photo.FileStream);
-        if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data?.FirstOrDefault() is null)
+        try
         {
-            _logger.LogError("Scanning API failed");
+            PhotoResult? photo = await _cameraService.PickPhotoAsync();
+            if (photo?.FileStream is null) return null;
+
+            var response = await _semanticService.ScanReceiptAsync(photo.FileStream);
+            if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data?.FirstOrDefault() is null)
+            {
+                _logger.LogError("Scanning API failed");
+                return null;
+            }
+            var receiptDTO = response.Data.First();
+
+            var response2 = await _semanticService.LabelReceiptDetailsAsync(receiptDTO);
+            if (response2.HttpStatusCode != HttpStatusCode.OK || response2?.Data?.Labels is null)
+            {
+                _logger.LogError("Labeling API failed");
+                return null;
+            }
+            var labelsDTO = response2.Data;
+
+            return new Receipt(receiptDTO, labelsDTO);
+        }
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex, "An error occurred");
             return null;
         }
-        var receiptDTO = response.Data.First();
-
-        var response2 = await _semanticService.LabelReceiptDetailsAsync(receiptDTO);
-        if (response2.HttpStatusCode != HttpStatusCode.OK || response2?.Data?.Labels is null)
-        {
-            _logger.LogError("Labeling API failed");
-            return null;
-        }
-        var labelsDTO = response2.Data;
-
-        return new Receipt(receiptDTO, labelsDTO);
     }
 
     public async Task<Receipt?> CapturePhotoForReceiptAsync()
     {
-        PhotoResult? photo = await _cameraService.CapturePhotoAsync();
-        if (photo?.FileStream is null) return null;
+        try
+        { 
+            PhotoResult? photo = await _cameraService.CapturePhotoAsync();
+            if (photo?.FileStream is null) return null;
 
-        var response = await _semanticService.ScanReceiptAsync(photo.FileStream);
-        if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data?.FirstOrDefault() is null)
+            var response = await _semanticService.ScanReceiptAsync(photo.FileStream);
+            if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data?.FirstOrDefault() is null)
+            {
+                _logger.LogError("Scanning API failed");
+                return null;
+            }
+            var receiptDTO = response.Data.First();
+
+            var response2 = await _semanticService.LabelReceiptDetailsAsync(receiptDTO);
+            if (response2.HttpStatusCode != HttpStatusCode.OK || response2?.Data?.Labels is null)
+            {
+                _logger.LogError("Labeling API failed");
+                return null;
+            }
+            var labelsDTO = response2.Data;
+
+            return new Receipt(receiptDTO, labelsDTO);
+        }
+        catch (Exception ex)
         {
-            _logger.LogError("Scanning API failed");
+            _logger.LogError(ex, "An error occurred");
             return null;
         }
-        var receiptDTO = response.Data.First();
-
-        var response2 = await _semanticService.LabelReceiptDetailsAsync(receiptDTO);
-        if (response2.HttpStatusCode != HttpStatusCode.OK || response2?.Data?.Labels is null)
-        {
-            _logger.LogError("Labeling API failed");
-            return null;
-        }
-        var labelsDTO = response2.Data;
-
-        return new Receipt(receiptDTO, labelsDTO);
     }
 
     public async Task StartListeningForExpenseAsync()

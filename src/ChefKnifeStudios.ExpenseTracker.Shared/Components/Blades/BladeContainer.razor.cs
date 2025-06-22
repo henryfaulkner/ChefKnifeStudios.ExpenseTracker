@@ -26,13 +26,14 @@ public partial class BladeContainer : ComponentBase, IDisposable
 
     public void Dispose()
     {
+        CommonJsInteropService.RemoveClickOutsideCallback(_uid);
     }
 
     public void Open()
     {
         _lastOpenedUtc = DateTime.UtcNow;
         _isOpen = true;
-        CommonJsInteropService.AddClickOusideCallback(HandleClosePressed, _uid);
+        CommonJsInteropService.AddClickOutsideCallback(HandleClosePressed, _uid);
         StateHasChanged();
     }
 

@@ -16,7 +16,7 @@
                         <MatExpansionPanelHeader>@budget.Name</MatExpansionPanelHeader>
                         <MatExpansionPanelSubHeader>
                             @{
-                                string str = $"{FormatAsDollar(budget.ExpenseDTOs?.Sum(x => x.Cost) ?? 0.0m)} / {@FormatAsDollar(budget.ExpenseBudget)}";
+                                string str = $"{(budget.ExpenseDTOs?.Sum(x => x.Cost) ?? decimal.Zero).FormatAsDollar()} / {@budget.ExpenseBudget.FormatAsDollar()}";
                             }
                             <MatBody2 style="margin: 0;">@str</MatBody2>
                         </MatExpansionPanelSubHeader>
@@ -31,7 +31,7 @@
                                 </MatTableHeader>
                                 <MatTableRow>
                                     <td>@context.Name</td>
-                                    <td>@FormatAsDollar(context.Cost)</td>
+                                    <td>@context.Cost.FormatAsDollar()</td>
                                 </MatTableRow>
                             </MatTable>
                         }

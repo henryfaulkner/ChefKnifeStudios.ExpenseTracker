@@ -33,6 +33,9 @@ public class ExpenseSemantic : IAggregateRoot
             : MemoryMarshal.Cast<byte, float>(SemanticEmbedding).ToArray();
     }
 
+    [NotMapped]
+    public double Score { get; set; }
+
     [ForeignKey(nameof(ExpenseId))]
     public Expense? Expense { get; set; }
 }

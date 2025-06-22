@@ -6,6 +6,6 @@ public interface ICommonJsInteropService
 {
 
     Task RegisterClickOutside(string elementId);
-    void AddClickOusideCallback(Action callback, Guid? key = null);
+    void AddClickOutsideCallback(Action callback, Guid? key = null);
     void RemoveClickOutsideCallback(Guid key);
 }

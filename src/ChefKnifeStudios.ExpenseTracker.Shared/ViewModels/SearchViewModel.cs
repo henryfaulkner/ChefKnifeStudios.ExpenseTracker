@@ -56,7 +56,7 @@ public class SearchViewModel
         _searchText = searchText;
         await LoadPagedBudgetsAsync();
 
-        ExpenseSearchDTO reqBody = new () { SearchText = searchText };
+        ExpenseSearchDTO reqBody = new () { SearchText = searchText, TopN = 100, };
         await _semanticService.SearchExpensesAsync(reqBody);
     }
 

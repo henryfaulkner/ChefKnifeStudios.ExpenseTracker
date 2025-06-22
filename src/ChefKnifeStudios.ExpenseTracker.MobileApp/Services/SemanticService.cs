@@ -171,7 +171,7 @@ public class SemanticService : ISemanticService
         }
     }
 
-    public async Task<ApiResponse<IEnumerable<ExpenseDTO>>> SearchExpensesAsync(ExpenseSearchDTO searchBody)
+    public async Task<ApiResponse<IEnumerable<ExpenseSearchResponseDTO>>> SearchExpensesAsync(ExpenseSearchDTO searchBody)
     {
         try
         {
@@ -185,13 +185,13 @@ public class SemanticService : ISemanticService
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var obj = JsonSerializer.Deserialize<IEnumerable<ExpenseDTO>>(responseContent, JsonOptions.Get());
+            var obj = JsonSerializer.Deserialize<IEnumerable<ExpenseSearchResponseDTO>>(responseContent, JsonOptions.Get());
 
-            return new ApiResponse<IEnumerable<ExpenseDTO>>(obj, response.StatusCode);
+            return new ApiResponse<IEnumerable<ExpenseSearchResponseDTO>>(obj, response.StatusCode);
         }
         catch (Exception ex)
         {
-            return new ApiResponse<IEnumerable<ExpenseDTO>>()
+            return new ApiResponse<IEnumerable<ExpenseSearchResponseDTO>>()
             {
                 HttpStatusCode = HttpStatusCode.BadRequest,
                 Data = [],

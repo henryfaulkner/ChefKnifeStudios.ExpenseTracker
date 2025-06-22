@@ -38,9 +38,4 @@ public partial class BudgetExpenseList : ComponentBase, IDisposable
         if (_subscriptions.Contains(e.PropertyName) is false) return;
         Task.Run(async () => await InvokeAsync(StateHasChanged));
     }
-
-    static string FormatAsDollar(decimal amount)
-    {
-        return amount.ToString("C", CultureInfo.GetCultureInfo("en-US"));
-    }
 }
