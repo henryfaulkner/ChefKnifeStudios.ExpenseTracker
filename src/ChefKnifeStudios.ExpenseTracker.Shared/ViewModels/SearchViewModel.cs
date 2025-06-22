@@ -70,7 +70,7 @@ public class SearchViewModel
         ExpenseSearchDTO reqBody = new () { SearchText = searchText, TopN = topN, };
         var res = await _semanticService.SearchExpensesAsync(reqBody);
         if (res.IsSuccess) SearchedExpenses = res.Data;
-        else _toastService.ShowError("Budgets failed to load");
+        else _toastService.ShowError("Search results failed to load");
     }
 
     public async Task ChangePageNumberAsync(int pageNumber)
