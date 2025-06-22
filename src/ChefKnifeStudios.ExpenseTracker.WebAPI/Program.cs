@@ -1,28 +1,14 @@
-using Azure;
-using Azure.AI.DocumentIntelligence;
 using ChefKnifeStudios.ExpenseTracker.Data;
-using ChefKnifeStudios.ExpenseTracker.Data.Repos;
-using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using ChefKnifeStudios.ExpenseTracker.WebAPI;
-using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI;
-using OpenAI.VectorStores;
-using Scalar.AspNetCore;
-using System.Globalization;
-using Microsoft.SemanticKernel.Data;
-using OpenAI;
-using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
-using System.Collections;
-using Microsoft.Extensions.Logging;
-using ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
+using ChefKnifeStudios.ExpenseTracker.Data.Repos;
+using ChefKnifeStudios.ExpenseTracker.WebAPI;
+using ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
+using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.SqliteVec;
+using OpenAI;
+using Scalar.AspNetCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
