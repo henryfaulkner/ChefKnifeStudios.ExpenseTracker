@@ -8,6 +8,14 @@
     z-index: 1000;
     transform: translateX(100%); /* Start off-screen */
     transition: transform 0.3s ease-in-out;
+
+    overflow-y: scroll;
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Firefox, Safari 18.2+, Chromium 121+ */
+}
+
+.blade-container::-webkit-scrollbar {
+    display: none; /* Older Safari and Chromium */
 }
 
 .blade-container.open {
