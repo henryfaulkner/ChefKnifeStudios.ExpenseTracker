@@ -1,12 +1,9 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
-using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
+using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using ChefKnifeStudios.ExpenseTracker.WebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Azure.Core;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
@@ -21,40 +18,12 @@ public static class StorageEndpoints
         // Add Expense
         group.MapPost("/expense", async (
             [FromBody] ExpenseDTO expenseDTO,
-            [FromServices] IRepository<Expense> expenseRepository,
+            [FromServices] IStorageService storageService,
             [FromServices] IRepository<Budget> budgetRepository,
             SqliteVectorStore vectorStore) =>
         {
-            // Determine the month/year for the budget
-            var now = DateTime.Now;
-            var budgetName = now.ToString("MMMM yyyy");
-            var startDate = new DateTime(now.Year, now.Month, 1);
-            var endDate = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
-
-            // Try to find an existing budget for this month/year
-            var budgets = await budgetRepository.ListAsync(new GetBudgetsSpec());
-            var budget = budgets.FirstOrDefault(b => b.Name == budgetName);
-
-            // If not found, create a new budget for this month
-            if (budget == null)
-            {
-                budget = new Budget
-                {
-                    Name = budgetName,
-                    StartDateUtc = startDate,
-                    EndDateUtc = endDate,
-                    ExpenseBudget = 0 // or a default value
-                };
-                await budgetRepository.AddAsync(budget);
-            }
-
-            // Assign the budget ID to the expense
-            var expense = expenseDTO.MapToModel();
-            expense.BudgetId = budget.Id;
-
-            await expenseRepository.AddAsync(expense);
-            await UpsertExpense(expense, vectorStore);
-            return Results.Ok();
+            var result = await storageService.AddExpenseAsync(expenseDTO);
+            return result ? Results.Ok() : Results.Problem("Failed to add expense");
         })
         .WithName("AddExpense")
         .Accepts<ExpenseDTO>("application/json")
@@ -65,11 +34,11 @@ public static class StorageEndpoints
         // Add Budget
         group.MapPost("/budget", async (
             [FromBody] BudgetDTO budgetDTO,
-            [FromServices] IRepository<Budget> budgetRepository) =>
+            [FromServices] IStorageService storageService) =>
         {
             var budget = budgetDTO.MapToModel();
-            await budgetRepository.AddAsync(budget);
-            return Results.Ok();
+            var result = await storageService.AddBudgetAsync(budget);
+            return result ? Results.Ok() : Results.Problem("Failed to add budget");
         })
         .WithName("AddBudget")
         .Accepts<BudgetDTO>("application/json")
@@ -80,6 +49,7 @@ public static class StorageEndpoints
         // Update Budget
         group.MapPut("/budget", async (
             [FromBody] BudgetDTO budgetDTO,
+            [FromServices] IStorageService storageService,
             [FromServices] IRepository<Budget> budgetRepository) =>
         {
             // Find the existing budget by Id
@@ -93,8 +63,8 @@ public static class StorageEndpoints
             existing.StartDateUtc = budgetDTO.StartDate;
             existing.EndDateUtc = budgetDTO.EndDate;
 
-            await budgetRepository.UpdateAsync(existing);
-            return Results.Ok();
+            var result = await storageService.UpdateBudgetAsync(existing);
+            return result ? Results.Ok() : Results.Problem("Failed to update budget");
         })
         .WithName("UpdateBudget")
         .Accepts<BudgetDTO>("application/json")
@@ -105,10 +75,9 @@ public static class StorageEndpoints
 
         // Get Budgets
         group.MapGet("/budgets", async (
-            [FromServices] IRepository<Budget> budgetRepository) =>
+            [FromServices] IStorageService storageService) =>
         {
-            var budgets = await budgetRepository.ListAsync(new GetBudgetsSpec());
-            var result = budgets.Select(x => x.MapToDTO());
+            var result = await storageService.GetBudgetsAsync();
             return Results.Ok(result);
         })
         .WithName("GetBudgets")
@@ -120,9 +89,9 @@ public static class StorageEndpoints
             [FromQuery] string? searchText,
             [FromQuery] int pageSize,
             [FromQuery] int pageNumber,
-            [FromServices] IBudgetSearchRepository budgetSearchRepository) =>
+            [FromServices] IStorageService storageService) =>
         {
-            var pagedResult = await budgetSearchRepository.GetFilteredResultAsync(searchText, pageSize, pageNumber);
+            var pagedResult = await storageService.SearchBudgetsAsync(searchText, pageSize, pageNumber);
             var dto = pagedResult.MapToDTO();
             return Results.Ok(dto);
         })
@@ -131,25 +100,31 @@ public static class StorageEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
+        group.MapPost("/recurring-expense", async (
+            [FromBody] RecurringExpenseConfigDTO recurringExpenseDTO,
+            [FromServices] IStorageService storageService) =>
+        {
+            var recurringExpense = recurringExpenseDTO.MapToModel();
+            var result = await storageService.AddRecurringExpenseAsync(recurringExpense);
+            return result ? Results.Ok() : Results.Problem("Failed to add recurring expense");
+        })
+        .WithName("AddRecurringExpense")
+        .Accepts<RecurringExpenseConfigDTO>("application/json")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("/process-recurring-expenses", async (
+            [FromServices] IStorageService storageService) =>
+        {
+            await storageService.ProcessRecurringExpensesAsync();
+            return Results.Ok();
+        })
+        .WithName("ProcessRecurringExpenses")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
+
         return app;
-    }
-
-    private static async Task<bool> UpsertExpense(Expense expense,
-            SqliteVectorStore vectorStore)
-    {
-        try
-        {
-            // Get and create collection if it doesn't exist.
-            var collectionName = "ExpenseSemantics";
-            var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
-            await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
-
-            await expenseSemanticCollection.UpsertAsync(expense.ExpenseSemantic);
-        }
-        catch (Exception ex)
-        {
-            return false;
-        }
-        return true;
     }
 }

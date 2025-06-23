@@ -4,12 +4,12 @@ using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.WebAPI;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
+using ChefKnifeStudios.ExpenseTracker.WebAPI.Services;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 using OpenAI;
 using Scalar.AspNetCore;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +23,8 @@ builder.Services
     .AddHttpClient()
     .AddTransient<IHttpService, HttpService>()
     .RegisterDataServices(builder.Configuration)
+    .AddScoped<IStorageService, StorageService>()
+    .AddScoped<ISemanticService, SemanticService>()
     .AddSqliteVectorStore(_ => builder.Configuration.GetConnectionString("ExpenseTrackerDB"));
 
 builder.Services

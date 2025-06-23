@@ -108,4 +108,28 @@ public static class MappingExtensions
 
         return result;
     }
+
+    public static RecurringExpenseConfigDTO MapToDTO(this RecurringExpenseConfig model)
+    {
+        RecurringExpenseConfigDTO result = new()
+        {
+            Id = model.Id,
+            Name = model.Name,
+            Cost = model.Cost,
+            Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
+        };
+        return result;
+    }
+
+    public static RecurringExpenseConfig MapToModel(this RecurringExpenseConfigDTO dto)
+    {
+        RecurringExpenseConfig result = new()
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Cost = dto.Cost,
+            LabelsJson = JsonSerializer.Serialize(dto.Labels),
+        };
+        return result;
+    }
 }
