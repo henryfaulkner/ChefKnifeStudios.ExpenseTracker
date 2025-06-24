@@ -185,7 +185,7 @@ public class SemanticService : ISemanticService
             Guidelines:
             Your output must always be a JSON object containing:
             - A string property named `name` summarizing the transaction.
-            - A string array property named `labels` describing the receipt's content or purpose.
+            - A string array property named `labels` describing the receipt's content or purpose, the date the transaction occurred, and any ancillary details able to be divined in order to support search.
 
             Example:
             Input (JSON):
