@@ -13,3 +13,8 @@ form {
     flex-direction: column;
     gap: 0.5rem;
 }
+
+form ::deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
+    background-color: var(--mdc-theme-primary, #6200ee);
+    border-color: var(--mdc-theme-primary, #6200ee);
+}

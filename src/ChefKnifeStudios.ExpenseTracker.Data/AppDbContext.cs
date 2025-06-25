@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
 	public DbSet<Budget> Budgets { get; set; }
 	public DbSet<Expense> Expenses { get; set; }
 	public DbSet<ExpenseSemantic> ExpenseSemantics { get; set; }
+	public DbSet<RecurringExpenseConfig> RecurringExpenseConfigs { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration configuration)
         : base(options)

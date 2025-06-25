@@ -153,4 +153,32 @@ public class StorageService : IStorageService
             };
         }
     }
+
+    public async Task<ApiResponse<bool>> AddRecurringExpenseAsync(RecurringExpenseConfigDTO recurringExpense)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var bodyContent = JsonContent.Create(recurringExpense, new MediaTypeHeaderValue("application/json"));
+
+            var response = await httpClient.PostAsync($"{_baseUrl}/recurring-expense", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException("Recurring expense endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<bool>(responseContent, JsonOptions.Get());
+
+            return new ApiResponse<bool>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = false,
+            };
+        }
+    }
 }

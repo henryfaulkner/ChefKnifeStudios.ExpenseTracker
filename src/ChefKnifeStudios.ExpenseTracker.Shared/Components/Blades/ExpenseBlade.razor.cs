@@ -25,6 +25,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
 
     string? _name;
     decimal? _cost;
+    bool _isRecurring = false;
     List<string>? _labels;
     bool _isLoading = false;
 
@@ -100,6 +101,18 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
 
         await StorageService.AddExpenseAsync(expense);
         await SemanticService.UpsertExpenseAsync(expense);
+
+        if (_isRecurring)
+        {
+            RecurringExpenseConfigDTO recurringExpense = new()
+            { 
+                Name = expense.Name,
+                Cost = expense.Cost,
+                Labels = expense.Labels ?? [],
+            };
+            await StorageService.AddRecurringExpenseAsync(recurringExpense);
+        }
+
         _isLoading = false;
         EventNotificationService.PostEvent(
             this,

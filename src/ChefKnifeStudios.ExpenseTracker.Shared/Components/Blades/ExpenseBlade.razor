@@ -1,5 +1,4 @@
-﻿@using MatBlazor
-@using ChefKnifeStudios.ExpenseTracker.Shared.DTOs
+﻿@using ChefKnifeStudios.ExpenseTracker.Shared.DTOs
 
 <div class="expense-blade">
     <BladeContainer @ref="_bladeContainer">
@@ -16,12 +15,19 @@
                     Required="true" 
                     Disabled="_isLoading"
                 />
+
                 <MatTextField 
                     @bind-Value="@_cost" 
                     Label="Apply a Cost" 
                     Icon="attach_money"
                     Required="true"
-                    Disabled="_isLoading" />
+                    Disabled="_isLoading" 
+                />
+
+                <MatCheckbox
+                    @bind-Value="@_isRecurring"
+                    Label="Is this a recurring expense?"
+                />
 
                 <MatButton 
                     OnClick="HandleSubmitPressedAsync"
