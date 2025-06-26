@@ -404,4 +404,5 @@ appsettings.machine-*
 **/.DS_Store
 
 assets/
+**/appsettings.json
 **/appsettings.Development.json
