@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Views\**" />
+    <Compile Remove="SqlScripts\**" />
+    <EmbeddedResource Remove="Models\Views\**" />
+    <EmbeddedResource Remove="SqlScripts\**" />
+    <None Remove="Models\Views\**" />
+    <None Remove="SqlScripts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="9.1.0" />
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="9.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
@@ -22,11 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.55.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\Views\" />
-    <Folder Include="SqlScripts\Views\" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
   </ItemGroup>
 
 </Project>

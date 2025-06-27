@@ -15,7 +15,7 @@ dotnet tool update dotnet-ef --version 8.0.3 --global
 =====================
 EF Core Migration Commands
 
-Run these from Overcast.ServerApps/src/Overcast.Auditing/Overcast.Auditing.Data/
+Run these from ChefKnifeStudios.ExpenseTracker/src/ChefKnifeStudios.ExpenseTracker/ChefKnifeStudios.ExpenseTracker.Data/
 =====================
 
 -- list migrations

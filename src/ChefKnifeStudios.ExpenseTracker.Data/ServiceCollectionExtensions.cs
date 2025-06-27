@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<AppDbContext>(optionsBuilder =>
         {
-            optionsBuilder.UseSqlite();
+            optionsBuilder.UseNpgsql();
         });
 
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
