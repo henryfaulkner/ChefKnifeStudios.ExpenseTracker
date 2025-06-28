@@ -7,7 +7,7 @@ using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
+using Microsoft.SemanticKernel.Connectors.PgVector;
 using System.Globalization;
 using System.Text.Json;
 
@@ -29,7 +29,7 @@ public class SemanticService : ISemanticService
     private readonly IChatCompletionService _chatCompletionService;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly IRepository<Expense> _expenseRepository;
-    private readonly SqliteVectorStore _vectorStore;
+    private readonly PostgresVectorStore _vectorStore;
 
     public SemanticService(
         ILogger<SemanticService> logger,
@@ -37,7 +37,7 @@ public class SemanticService : ISemanticService
         IChatCompletionService chatCompletionService,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IRepository<Expense> expenseRepository,
-        SqliteVectorStore vectorStore)
+        PostgresVectorStore vectorStore)
     {
         _logger = logger;
         _config = config;

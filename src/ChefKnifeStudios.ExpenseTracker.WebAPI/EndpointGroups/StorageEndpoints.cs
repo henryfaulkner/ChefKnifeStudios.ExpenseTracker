@@ -1,10 +1,8 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
-using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 
@@ -19,8 +17,7 @@ public static class StorageEndpoints
         group.MapPost("/expense", async (
             [FromBody] ExpenseDTO expenseDTO,
             [FromServices] IStorageService storageService,
-            [FromServices] IRepository<Budget> budgetRepository,
-            SqliteVectorStore vectorStore) =>
+            [FromServices] IRepository<Budget> budgetRepository) =>
         {
             var result = await storageService.AddExpenseAsync(expenseDTO);
             return result ? Results.Ok() : Results.Problem("Failed to add expense");

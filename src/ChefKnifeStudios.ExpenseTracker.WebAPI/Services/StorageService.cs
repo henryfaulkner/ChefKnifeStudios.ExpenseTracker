@@ -3,7 +3,7 @@ using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
+using Microsoft.SemanticKernel.Connectors.PgVector;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -27,7 +27,7 @@ public class StorageService : IStorageService
     private readonly IRepository<RecurringExpenseConfig> _recurringExpenseRepository;
     private readonly IBudgetSearchRepository _budgetSearchRepository;
     private readonly ISemanticService _semanticService;
-    private readonly SqliteVectorStore _vectorStore;
+    private readonly PostgresVectorStore _vectorStore;
 
     public StorageService(
         IRepository<Expense> expenseRepository,
@@ -35,7 +35,7 @@ public class StorageService : IStorageService
         IRepository<RecurringExpenseConfig> recurringExpenseRepository,
         IBudgetSearchRepository budgetSearchRepository,
         ISemanticService semanticService,
-        SqliteVectorStore vectorStore)
+        PostgresVectorStore vectorStore)
     {
         _expenseRepository = expenseRepository;
         _budgetRepository = budgetRepository;

@@ -16,3 +16,6 @@ ENV ASPNETCORE_HTTP_PORTS=80
 COPY --from=publish /app/publish .
 
 ENTRYPOINT ["dotnet", "/app/publish/ChefKnifeStudios.ExpenseTracker.WebAPI.dll"]
+
+# Build image with: docker build -f src/ChefKnifeStudios.ExpenseTracker.WebAPI/Dockerfile -t expense-tracker-api-image .
+# Run image with: docker run -d -p 5268:5268 --name expense-tracker-api-container expense-tracker-api-image

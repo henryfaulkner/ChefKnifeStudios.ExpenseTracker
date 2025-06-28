@@ -7,7 +7,8 @@ using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.Services;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
+using Microsoft.SemanticKernel.Connectors.PgVector;
+using Npgsql;
 using OpenAI;
 using Scalar.AspNetCore;
 
@@ -25,7 +26,7 @@ builder.Services
     .RegisterDataServices(builder.Configuration)
     .AddScoped<IStorageService, StorageService>()
     .AddScoped<ISemanticService, SemanticService>()
-    .AddSqliteVectorStore(_ => builder.Configuration.GetConnectionString("ExpenseTrackerDB"));
+    .AddPostgresVectorStore(_ => builder.Configuration.GetConnectionString("ExpenseTrackerDB")!); //https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/postgres-connector?pivots=programming-language-csharp
 
 builder.Services
     .AddKernel()
@@ -77,7 +78,7 @@ using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
     var expenseSemanticRepository = serviceProvider.GetRequiredService<IRepository<ExpenseSemantic>>();
-    var vectorStore = serviceProvider.GetRequiredService<SqliteVectorStore>();
+    var vectorStore = serviceProvider.GetRequiredService<PostgresVectorStore>();
 
     string collectionName = "ExpenseSemantics";
     var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
