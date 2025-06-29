@@ -7,12 +7,18 @@ namespace ChefKnifeStudios.ExpenseTracker.Data;
 
 public class AppDbContext : DbContext
 {
-    readonly IConfiguration _configuration;
-    
-	public DbSet<Budget> Budgets { get; set; }
+    readonly IConfiguration? _configuration;
+    readonly string? _explicitConnectionString;
+
+    public DbSet<Budget> Budgets { get; set; }
 	public DbSet<Expense> Expenses { get; set; }
 	public DbSet<ExpenseSemantic> ExpenseSemantics { get; set; }
 	public DbSet<RecurringExpenseConfig> RecurringExpenseConfigs { get; set; }
+
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
 
     public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration configuration)
         : base(options)
@@ -20,10 +26,28 @@ public class AppDbContext : DbContext
         _configuration = configuration;
     }
 
+    public AppDbContext(DbContextOptions<AppDbContext> options, string connectionString)
+        : base(options)
+    {
+        _explicitConnectionString = connectionString;
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var connectionString = _configuration.GetConnectionString("ExpenseTrackerDB");
-        optionsBuilder.UseNpgsql(connectionString);
+        if (!optionsBuilder.IsConfigured)
+        {
+            // Use explicit connection string if provided
+            if (!string.IsNullOrEmpty(_explicitConnectionString))
+            {
+                optionsBuilder.UseNpgsql(_explicitConnectionString);
+            }
+            // Fallback to configuration if available
+            else if (_configuration != null)
+            {
+                var connectionString = _configuration.GetConnectionString("ExpenseTrackerDB");
+                optionsBuilder.UseNpgsql(connectionString);
+            }
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
