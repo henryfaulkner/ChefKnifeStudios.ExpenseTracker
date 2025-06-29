@@ -76,7 +76,7 @@ stages:
           # DB Migration
           - script: |
               echo "CONNECTIONSTRINGS__ExpenseTrackerDB=$(CONNECTIONSTRINGS__ExpenseTrackerDB)"
-              docker run --rm $(migration-container) "$(CONNECTIONSTRINGS__ExpenseTrackerDB)"
+              docker run --rm -e CONNECTIONSTRINGS__ExpenseTrackerDB=$(CONNECTIONSTRINGS__ExpenseTrackerDB) $(migration-container) "$CONNECTIONSTRINGS__ExpenseTrackerDB"
             displayName: 'Run DB Migrations'
 
           # Deploy API Container App
