@@ -62,24 +62,7 @@ stages:
         deploy:
           steps:
           - checkout: self
-            persistCredentials: true # Required for git tagging 
-
-          - task: Docker@2
-            inputs:
-              containerRegistry: '$(container-registry-service-connection)'
-              command: 'login'
-
-          # Push Images to Prod Docker Registry
-          - task: AzureCLI@2
-            displayName: Push docker images to registry
-            inputs:
-              azureSubscription: '$(azure-subscription-service-connection)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az acr login --name chefknife
-                docker push $(api-container)
-                docker push $(migration-container)  
+            persistCredentials: true # Required for git tagging  
 
           # DB Migration
           - script: |
