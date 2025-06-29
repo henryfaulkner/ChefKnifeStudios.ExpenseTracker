@@ -52,7 +52,6 @@ stages:
     - script: |
         docker push $(api-container)
         docker push $(migration-container)
-        docker push $(function-container)
       displayName: Docker push images
 
 - stage: DeployProd
