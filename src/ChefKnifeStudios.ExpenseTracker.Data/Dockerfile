@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY ["./src", "/src"]
+COPY ["./src/ChefKnifeStudios.ExpenseTracker.WebAPI/appsettings.json" "./src/ChefKnifeStudios.ExpenseTracker.Data/appsettings.json"]
 
 WORKDIR /src/ChefKnifeStudios.ExpenseTracker.Data
 
@@ -12,7 +13,6 @@ WORKDIR /src/ChefKnifeStudios.ExpenseTracker.Data
 
 RUN dotnet tool install dotnet-ef -g --version 9.0.5 
 ENV PATH="$PATH:/root/.dotnet/tools"
-COPY ../ChefKnifeStudios.ExpenseTracker.WebAPI/appsettings.json ./
 RUN dotnet ef migrations bundle --self-contained -r linux-x64 --output /app/publish/chefknifestudios.expensetracker.efbundle
 
 FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
