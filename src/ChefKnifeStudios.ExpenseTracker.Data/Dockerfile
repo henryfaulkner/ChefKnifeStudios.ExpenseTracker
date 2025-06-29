@@ -1,7 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY ["./src", "/src"]
-COPY ["./src/ChefKnifeStudios.ExpenseTracker.WebAPI/appsettings.json", "./src/ChefKnifeStudios.ExpenseTracker.Data/appsettings.json"]
 
 WORKDIR /src/ChefKnifeStudios.ExpenseTracker.Data
 
