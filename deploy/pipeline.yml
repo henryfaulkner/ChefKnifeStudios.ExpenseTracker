@@ -17,9 +17,9 @@ variables:
   container-registry: chefknife.azurecr.io
   container-tag: $(Build.BuildNumber)
   container-registry-service-connection: AzureContainerRegistrySC
-  api-container-name: expense-tracker-api
+  api-container-name: chefknifestudios.expensetracker.webapi
   api-container: $(container-registry)/$(api-container-name):$(container-tag)
-  migration-container-name: expense-tracker-migrationrunner
+  migration-container-name: chefknifestudios.expensetracker.data
   migration-container: $(container-registry)/$(migration-container-name):$(container-tag)
 
 stages:
