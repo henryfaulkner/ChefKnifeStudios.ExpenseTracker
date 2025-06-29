@@ -71,8 +71,8 @@ class Program
             {
                 Name = month.ToString("MMMM yyyy"),
                 ExpenseBudget = random.Next(800, 2000),
-                StartDateUtc = new DateTime(month.Year, month.Month, 1),
-                EndDateUtc = new DateTime(month.Year, month.Month, DateTime.DaysInMonth(month.Year, month.Month)),
+                StartDateUtc = new DateTime(month.Year, month.Month, 1).ToUniversalTime(),
+                EndDateUtc = new DateTime(month.Year, month.Month, DateTime.DaysInMonth(month.Year, month.Month)).ToUniversalTime(),
             };
             budgets.Add(budget);
         }

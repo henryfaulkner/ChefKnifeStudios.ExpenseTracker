@@ -63,8 +63,8 @@ public static class MappingExtensions
             Id = model.Id,
             Name = model.Name,
             ExpenseBudget = model.ExpenseBudget,
-            StartDate = model.StartDateUtc, // convert from UTC to Local
-            EndDate = model.EndDateUtc, // convert from UTC to Local
+            StartDate = DateTime.SpecifyKind(model.StartDateUtc, DateTimeKind.Utc).ToLocalTime(),
+            EndDate = DateTime.SpecifyKind(model.EndDateUtc, DateTimeKind.Utc).ToLocalTime(),
             ExpenseDTOs = expenseDTOs,
         };
         
@@ -83,8 +83,8 @@ public static class MappingExtensions
             Id = dto.Id,
             Name = dto.Name,
             ExpenseBudget = dto.ExpenseBudget,
-            StartDateUtc = dto.StartDate, // convert from Local to UTC
-            EndDateUtc = dto.EndDate, // convert from Local to UTC
+            StartDateUtc = dto.StartDate.Kind == DateTimeKind.Utc ? dto.StartDate : dto.StartDate.ToUniversalTime(),
+            EndDateUtc = dto.EndDate.Kind == DateTimeKind.Utc ? dto.EndDate : dto.EndDate.ToUniversalTime(),
             Expenses = expenses,
         };
 

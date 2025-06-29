@@ -99,18 +99,31 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             }
         };
 
-        await StorageService.AddExpenseAsync(expense);
-        await SemanticService.UpsertExpenseAsync(expense);
-
-        if (_isRecurring)
+        var res1 = await StorageService.AddExpenseAsync(expense);
+        if (!res1.IsSuccess)
         {
-            RecurringExpenseConfigDTO recurringExpense = new()
-            { 
-                Name = expense.Name,
-                Cost = expense.Cost,
-                Labels = expense.Labels ?? [],
-            };
-            await StorageService.AddRecurringExpenseAsync(recurringExpense);
+            ToastService.ShowError("Expense could not be created");
+        }
+        else
+        {
+
+            await SemanticService.UpsertExpenseAsync(expense);
+
+            if (_isRecurring)
+            {
+                RecurringExpenseConfigDTO recurringExpense = new()
+                {
+                    Name = expense.Name,
+                    Cost = expense.Cost,
+                    Labels = expense.Labels ?? [],
+                };
+                await StorageService.AddRecurringExpenseAsync(recurringExpense);
+                if (!res1.IsSuccess)
+                {
+                    ToastService.ShowError("Recurring expense could not be created");
+                    return;
+                }
+            }
         }
 
         _isLoading = false;

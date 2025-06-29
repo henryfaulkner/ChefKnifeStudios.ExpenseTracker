@@ -1,0 +1,107 @@
+
+name: $(SourceBranchName)-expesne-tracker-$(Date:yyyyMMdd).$(Rev:r)
+
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+    - deploy
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  container-registry: chefknife.azurecr.io
+  container-registry-service-connection: AzureContainerRegistrySC
+  api-container-name: expense-tracker-api
+  api-container-tag: $(Build.BuildNumber)
+  api-container: $(container-registry)/$(api-container-name):$(api-container-tag)
+  migration-container-name: expense-tracker-migrationrunner
+  migration-container-tag: $(Build.BuildNumber)
+  migration-container: $(container-registry)/$(migration-container-name):$(migration-container-tag)
+
+stages:
+- stage: BuildAndPublish
+  displayName: Build and Publish ChefKnifeStudios.ExpenseTracker.WebAPI
+  jobs:
+  - job: BuildAndPublish
+    displayName: Build and Publish ChefKnifeStudios.ExpenseTracker.WebAPI
+
+    variables:
+      buildConfiguration: 'Release'
+
+    steps:
+    - checkout: self
+      persistCredentials: true # Required for git tagging 
+
+    # Build and push Api container
+    - script: | 
+        docker build -f src/ChefKnifeStudios.ExpenseTracker.WebAPI/Dockerfile \
+        -t $(api-container) .
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(container-registry-service-connection)'
+        repository: '$(api-container-name)'
+        command: 'push'
+        tags: '$(api-container-tag)'
+
+- stage: DeployProd
+  displayName: Deploy Production
+  jobs: 
+  - deployment: DeployProd
+    displayName: Deploy ChefKnifeStudios.ExpenseTracker.WebAPI to Prod
+    environment: 'Prod'
+    variables:
+    - group: 'Prod-ExpenseTracker'
+    strategy:
+      runOnce:   
+        deploy:
+          steps:
+          - checkout: self
+            persistCredentials: true # Required for git tagging 
+
+          - task: Docker@2
+            inputs:
+              containerRegistry: '$(container-registry-service-connection)'
+              command: 'login'
+
+          # Push Images to Prod Docker Registry
+          - task: AzureCLI@2
+            displayName: Push docker images to registry
+            inputs:
+              azureSubscription: 'ChefKnifeStudiosSC'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az acr login --name chefknife
+                docker push $(api-container)
+                docker push $(migration-container)  
+
+          # DB Migration
+          - script: |
+              docker run --rm -e CONNECTIONSTRINGS__ExpenseTrackerDB $(migration-container)
+            displayName: 'Run DB Migrations'
+            env:
+              CONNECTIONSTRINGS__ExpenseTrackerDB: $(ConnectionStrings-ExpenseTrackerDB)
+
+          # Deploy API Container App
+          - task: AzureContainerApps@1
+            displayName: "Deploy API Container App"
+            inputs:
+              azureSubscription: 'ChefKnifeStudiosSC'
+              imageToDeploy: '$(api-container)'
+              containerAppName: '$(api-container-name)'
+              resourceGroup: 'expense-tracker'
+              containerAppEnvironment: 'expense-tracker-api-env'
+              environmentVariables: |
+                ASPNETCORE_ENVIRONMENT=prod
+
+          # Copy swagger.json from docker
+          - script: |
+              id=$(docker create $(api-container))
+              docker cp $id:/app/swagger.json ./swagger.json
+              docker rm -v $id
+            displayName: 'Get swagger.json'

@@ -48,10 +48,10 @@ public class StorageService : IStorageService
     public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO)
     {
         // Determine the month/year for the budget
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var budgetName = now.ToString("MMMM yyyy");
-        var startDate = new DateTime(now.Year, now.Month, 1);
-        var endDate = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
+        var startDate = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
+        var endDate = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month)), DateTimeKind.Utc);
 
         // Try to find an existing budget for this month/year
         var budgets = await _budgetRepository.ListAsync(new GetBudgetsSpec());

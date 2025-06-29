@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace ChefKnifeStudios.ExpenseTracker.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitCreateTables : Migration
+    public partial class Init_Tables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,15 +20,15 @@ namespace ChefKnifeStudios.ExpenseTracker.Data.Migrations
                 schema: "ExpenseTracker",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ExpenseBudget = table.Column<decimal>(type: "TEXT", nullable: false),
-                    StartDateUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    EndDateUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedOnUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ModifiedOnUtc = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ExpenseBudget = table.Column<decimal>(type: "numeric", nullable: false),
+                    StartDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EndDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -39,14 +40,14 @@ namespace ChefKnifeStudios.ExpenseTracker.Data.Migrations
                 schema: "ExpenseTracker",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Cost = table.Column<decimal>(type: "TEXT", nullable: false),
-                    LabelsJson = table.Column<string>(type: "TEXT", maxLength: 2000, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedOnUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ModifiedOnUtc = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Cost = table.Column<decimal>(type: "numeric", nullable: false),
+                    LabelsJson = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -58,15 +59,15 @@ namespace ChefKnifeStudios.ExpenseTracker.Data.Migrations
                 schema: "ExpenseTracker",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    BudgetId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Cost = table.Column<decimal>(type: "TEXT", nullable: false),
-                    LabelsJson = table.Column<string>(type: "TEXT", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedOnUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ModifiedOnUtc = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    BudgetId = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Cost = table.Column<decimal>(type: "numeric", nullable: false),
+                    LabelsJson = table.Column<string>(type: "text", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -85,11 +86,11 @@ namespace ChefKnifeStudios.ExpenseTracker.Data.Migrations
                 schema: "ExpenseTracker",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    ExpenseId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Labels = table.Column<string>(type: "TEXT", nullable: false),
-                    SemanticEmbedding = table.Column<byte[]>(type: "BLOB", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ExpenseId = table.Column<int>(type: "integer", nullable: false),
+                    Labels = table.Column<string>(type: "text", nullable: false),
+                    SemanticEmbedding = table.Column<byte[]>(type: "bytea", nullable: true)
                 },
                 constraints: table =>
                 {
