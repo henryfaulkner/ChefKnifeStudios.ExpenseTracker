@@ -10,16 +10,23 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        // Locate configuration file
+        // If a connection string is passed as an argument, use it
+        var connectionStringArg = args.FirstOrDefault(a => a.StartsWith("--connection="));
+        if (connectionStringArg != null)
+        {
+            var connectionString = connectionStringArg.Split('=', 2)[1];
+            optionsBuilder.UseNpgsql(connectionString);
+            return new AppDbContext(optionsBuilder.Options, connectionString);
+        }
+
+        // Fallback to appsettings.json if no connection string argument is provided
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        // Retrieve connection string from configuration
-        var connectionString = configuration.GetConnectionString("ExpenseTrackerDB");
-
-        optionsBuilder.UseNpgsql(connectionString);
+        var connectionStringFromConfig = configuration.GetConnectionString("ExpenseTrackerDB");
+        optionsBuilder.UseNpgsql(connectionStringFromConfig);
 
         return new AppDbContext(optionsBuilder.Options, configuration);
     }
