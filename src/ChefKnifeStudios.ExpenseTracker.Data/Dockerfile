@@ -2,11 +2,11 @@
 WORKDIR /src
 COPY [".", "."]
 
-WORKDIR /src/Server
+WORKDIR /src
 
 RUN dotnet build -c Release
 
-FROM build as publish
+FROM build AS publish
 
 WORKDIR /src/ChefKnifeStudios.ExpenseTracker.Data
 
