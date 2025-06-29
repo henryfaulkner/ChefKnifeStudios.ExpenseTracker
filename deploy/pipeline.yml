@@ -36,7 +36,6 @@ stages:
     - checkout: self
       persistCredentials: true # Required for git tagging 
 
-    # Build and push Api container
     - task: Docker@2
       inputs:
         containerRegistry: '$(container-registry-service-connection)'
@@ -68,6 +67,11 @@ stages:
           steps:
           - checkout: self
             persistCredentials: true # Required for git tagging  
+
+          - task: Docker@2
+            inputs:
+              containerRegistry: '$(container-registry-service-connection)'
+              command: 'login'
 
           # DB Migration
           - script: |
