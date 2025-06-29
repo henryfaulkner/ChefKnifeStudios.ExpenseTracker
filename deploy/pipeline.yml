@@ -18,6 +18,7 @@ variables:
   container-tag: $(Build.BuildNumber)
   container-registry-service-connection: AzureContainerRegistrySC
   api-container-name: chefknifestudios.expensetracker.webapi
+  api-container-app-name: chefknifestudios-expensetracker-webapi
   api-container: $(container-registry)/$(api-container-name):$(container-tag)
   migration-container-name: chefknifestudios.expensetracker.data
   migration-container: $(container-registry)/$(migration-container-name):$(container-tag)
@@ -86,7 +87,7 @@ stages:
             inputs:
               azureSubscription: '$(azure-subscription-service-connection)'
               imageToDeploy: '$(api-container)'
-              containerAppName: '$(api-container-name)'
+              containerAppName: '$(api-container-app-name)'
               resourceGroup: 'expense-tracker'
               containerAppEnvironment: 'expense-tracker-api-env'
               environmentVariables: |
