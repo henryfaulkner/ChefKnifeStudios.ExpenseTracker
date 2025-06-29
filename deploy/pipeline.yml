@@ -75,10 +75,12 @@ stages:
 
           # DB Migration
           - script: |
-              docker run --rm -e CONNECTIONSTRINGS__EXPENSETRACKERDB $(migration-container)
+              echo "Connection String Status: $(if [ -n "$(ConnectionStrings-ExpenseTrackerDB)" ]; then echo "Found"; else echo "Not Found"; fi)"
+              docker run --rm \
+                -e "CONNECTIONSTRINGS__EXPENSETRACKERDB=$(ConnectionStrings-ExpenseTrackerDB)" \
+                -e "ConnectionStrings__ExpenseTrackerDB=$(ConnectionStrings-ExpenseTrackerDB)" \
+                $(migration-container)
             displayName: 'Run DB Migrations'
-            env:
-              CONNECTIONSTRINGS__EXPENSETRACKERDB: $(ConnectionStrings-ExpenseTrackerDB)
 
           # Deploy API Container App
           - task: AzureContainerApps@1
