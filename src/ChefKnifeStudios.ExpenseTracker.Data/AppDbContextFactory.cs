@@ -10,11 +10,11 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        // If a connection string is passed as an argument, use it
-        var connectionStringArg = args.FirstOrDefault(a => a.StartsWith("--connection="));
-        if (connectionStringArg != null)
+        // EF Core migrations bundle passes the connection string as the first argument (not --connection=)
+        var connectionString = args.FirstOrDefault();
+
+        if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Trim().EndsWith(".dll"))
         {
-            var connectionString = connectionStringArg.Split('=', 2)[1];
             optionsBuilder.UseNpgsql(connectionString);
             return new AppDbContext(optionsBuilder.Options, connectionString);
         }
