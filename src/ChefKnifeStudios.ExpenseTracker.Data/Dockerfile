@@ -20,4 +20,4 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 RUN chmod +x ./chefknifestudios.expensetracker.efbundle
-ENTRYPOINT ["./chefknifestudios.expensetracker.efbundle"]
+ENTRYPOINT ./chefknifestudios.expensetracker.efbundle --connection "$CONNECTIONSTRINGS__EXPENSETRACKERDB"

@@ -10,34 +10,16 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        // Debug: Log the args received
-        Console.WriteLine("AppDbContextFactory: args = [" + string.Join(", ", args) + "]");
-
-        // EF Core migrations bundle passes the connection string as the first argument (not --connection=)
-        var connectionString = args.FirstOrDefault();
-
-        // Debug: Log the connection string candidate
-        Console.WriteLine("AppDbContextFactory: connectionString candidate = " + (connectionString ?? "<null>"));
-
-        if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Trim().EndsWith(".dll"))
-        {
-            Console.WriteLine("AppDbContextFactory: Using connection string from args.");
-            optionsBuilder.UseNpgsql(connectionString);
-            return new AppDbContext(optionsBuilder.Options, connectionString);
-        }
-
-        Console.WriteLine("AppDbContextFactory: Falling back to appsettings.json.");
-
-        // Fallback to appsettings.json if no connection string argument is provided
+        // Locate configuration file
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .Build();
 
-        var connectionStringFromConfig = configuration.GetConnectionString("ExpenseTrackerDB");
-        Console.WriteLine("AppDbContextFactory: connectionString from config = " + (connectionStringFromConfig ?? "<null>"));
+        // Retrieve connection string from configuration
+        var connectionString = configuration.GetConnectionString("ExpenseTrackerDB");
 
-        optionsBuilder.UseNpgsql(connectionStringFromConfig);
+        optionsBuilder.UseNpgsql(connectionString);
 
         return new AppDbContext(optionsBuilder.Options, configuration);
     }
