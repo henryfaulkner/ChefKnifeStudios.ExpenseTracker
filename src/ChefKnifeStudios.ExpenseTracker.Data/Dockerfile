@@ -10,7 +10,7 @@ FROM build AS publish
 
 WORKDIR /src/ChefKnifeStudios.ExpenseTracker.Data
 
-RUN dotnet tool install dotnet-ef -g --version 9.0.1 
+RUN dotnet tool install dotnet-ef -g --version 9.0.5 
 ENV PATH="$PATH:/root/.dotnet/tools"
 RUN dotnet ef migrations bundle --self-contained -r linux-x64 --output /app/publish/chefknifestudios.expensetracker.efbundle
 
