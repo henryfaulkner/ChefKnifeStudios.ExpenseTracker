@@ -1,5 +1,5 @@
 
-name: $(SourceBranchName)-expesne-tracker-$(Date:yyyyMMdd).$(Rev:r)
+name: $(SourceBranchName)-expense-tracker-$(Date:yyyyMMdd).$(Rev:r)
 
 trigger:
   branches:
@@ -14,7 +14,7 @@ pool:
 
 variables:
   container-registry: chefknife.azurecr.io
-  container-registry-service-connection: AzureContainerRegistrySC
+  container-registry-service-connection: ChefKnifeStudiosSC
   api-container-name: expense-tracker-api
   api-container-tag: $(Build.BuildNumber)
   api-container: $(container-registry)/$(api-container-name):$(api-container-tag)
@@ -72,7 +72,7 @@ stages:
           - task: AzureCLI@2
             displayName: Push docker images to registry
             inputs:
-              azureSubscription: 'ChefKnifeStudiosSC'
+              azureSubscription: '$(container-registry-service-connection)'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -91,7 +91,7 @@ stages:
           - task: AzureContainerApps@1
             displayName: "Deploy API Container App"
             inputs:
-              azureSubscription: 'ChefKnifeStudiosSC'
+              azureSubscription: '$(container-registry-service-connection)'
               imageToDeploy: '$(api-container)'
               containerAppName: '$(api-container-name)'
               resourceGroup: 'expense-tracker'
