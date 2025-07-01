@@ -404,5 +404,7 @@ appsettings.machine-*
 **/.DS_Store
 
 assets/
-**/appsettings.json
-**/appsettings.Development.json
+src/ChefKnifeStudios.ExpenseTracker.WebAPI/appsettings.json
+src/ChefKnifeStudios.ExpenseTracker.MockData/appsettings.json
+src/ChefKnifeStudios.ExpenseTracker.WebAPI/appsettings.Development.json
+src/ChefKnifeStudios.ExpenseTracker.MockData/appsettings.Development.json

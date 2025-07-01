@@ -1,0 +1,12 @@
+services:
+  chefknifestudios.expensetracker.webapi:
+    build:
+      context: .
+      dockerfile: ./src/ChefKnifeStudios.ExpenseTracker.WebAPI/Dockerfile
+    image: ${CONTAINER_REGISTRY:-localhost:5000}/chefknifestudios.expensetracker.webapi:${CONTAINER_TAG:-latest}
+
+  chefknifestudios.expensetracker.data:
+    build:
+      context: .
+      dockerfile: ./src/ChefKnifeStudios.ExpenseTracker.Data/Dockerfile
+    image: ${CONTAINER_REGISTRY:-localhost:5000}/chefknifestudios.expensetracker.data:${CONTAINER_TAG:-latest}
