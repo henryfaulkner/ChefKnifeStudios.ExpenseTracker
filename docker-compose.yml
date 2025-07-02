@@ -10,3 +10,9 @@ services:
       context: .
       dockerfile: ./src/ChefKnifeStudios.ExpenseTracker.Data/Dockerfile
     image: ${CONTAINER_REGISTRY:-localhost:5000}/chefknifestudios.expensetracker.data:${CONTAINER_TAG:-latest}
+
+  chefknifestudios.expensetracker.recurringexpensefunctionapp:
+    build:
+      context: .
+      dockerfile: ./src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp 
+    image: ${CONTAINER_REGISTRY:-localhost:5000}/chefknifestudios.expensetracker.recurringexpensefunctionapp:${CONTAINER_TAG:-latest}

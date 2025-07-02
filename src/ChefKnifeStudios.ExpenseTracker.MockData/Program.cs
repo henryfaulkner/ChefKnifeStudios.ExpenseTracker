@@ -1,11 +1,15 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
+using ChefKnifeStudios.ExpenseTracker.MockData;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.PgVector;
+using OpenAI.VectorStores;
+using System;
 using System.Text.Json;
-using ChefKnifeStudios.ExpenseTracker.MockData;
-using Microsoft.Extensions.Configuration;
 
 class Program
 {
@@ -21,7 +25,7 @@ class Program
                 services.AddDbContext<AppDbContext>();
                 services
                     .RegisterDataServices(context.Configuration)
-                    .AddSqliteVectorStore(_ => context.Configuration.GetConnectionString("ExpenseTrackerDB")!);
+                    .AddPostgresVectorStore(_ => context.Configuration.GetConnectionString("ExpenseTrackerDB")!);
                 services
                     .AddKernel()
                     .ConfigureSemanticKernel(appSettings);
@@ -32,11 +36,11 @@ class Program
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var embeddingGenerator = scope.ServiceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
-        if (db.Budgets.Any() || db.Expenses.Any() || db.ExpenseSemantics.Any())
-        {
-            Console.WriteLine("Database already seeded.");
-            return;
-        }
+        //if (db.Budgets.Any() || db.Expenses.Any() || db.ExpenseSemantics.Any())
+        //{
+        //    Console.WriteLine("Database already seeded.");
+        //    return;
+        //}
 
         // Name/label pairs for realistic data
         var expenseData = new (string Name, string[] Labels)[]
@@ -100,6 +104,11 @@ class Program
         db.Expenses.AddRange(expenses);
         await db.SaveChangesAsync();
 
+        var vectorStore = scope.ServiceProvider.GetRequiredService<PostgresVectorStore>();
+        string collectionName = "ExpenseSemantics";
+        var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
+        await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+
         // For each expense, create a semantic record with real embedding
         foreach (var expense in expenses)
         {
@@ -113,6 +122,7 @@ class Program
                 SemanticEmbedding = System.Runtime.InteropServices.MemoryMarshal.AsBytes<float>(embedding.Vector.ToArray().AsSpan()).ToArray()
             };
             semantics.Add(semantic);
+            await expenseSemanticCollection.UpsertAsync(semantics);
         }
         db.ExpenseSemantics.AddRange(semantics);
         await db.SaveChangesAsync();

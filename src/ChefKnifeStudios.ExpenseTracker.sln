@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChefKnifeStudios.ExpenseTracker.BL", "ChefKnifeStudios.ExpenseTracker.BL\ChefKnifeStudios.ExpenseTracker.BL.csproj", "{6879A398-B394-6830-B8F0-2BB2F3F0ED73}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{5E1416B8-AE9C-4F53-AD95-4E58051FAA6C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +59,14 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6FD318E1-F6B7-46F6-A98B-EAADC07123A9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{3B7CF9BE-9D30-437D-96AB-84DEFB79E09F} = {5E1416B8-AE9C-4F53-AD95-4E58051FAA6C}
+		{5CE1420D-90BE-470A-BBFB-7F5203900E74} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8A11739D-06EB-4FFB-9C43-106A060BBEAA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{C475626A-B214-4699-9394-58D88B2206E3} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{6879A398-B394-6830-B8F0-2BB2F3F0ED73} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44F0D70E-8F61-4644-83DD-0BEEC5609875}

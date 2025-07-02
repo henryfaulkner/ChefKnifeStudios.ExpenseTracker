@@ -1,7 +1,7 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.BL.Models;
 using Microsoft.SemanticKernel;
 
-namespace ChefKnifeStudios.ExpenseTracker.WebAPI;
+namespace ChefKnifeStudios.ExpenseTracker.BL;
 
 public static class SemanticKernalExtensions
 {

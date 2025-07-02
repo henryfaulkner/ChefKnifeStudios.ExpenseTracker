@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using ChefKnifeStudios.ExpenseTracker.BL.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
@@ -6,21 +8,29 @@ namespace ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp;
 
 public class RecurringExpenseFunction
 {
-    private readonly ILogger _logger;
+    readonly ILogger _logger;
+    readonly IStorageService _storageService;
 
-    public RecurringExpenseFunction(ILoggerFactory loggerFactory)
+    public RecurringExpenseFunction(
+        ILoggerFactory loggerFactory,
+        IStorageService storageService)
     {
         _logger = loggerFactory.CreateLogger<RecurringExpenseFunction>();
+        _storageService = storageService;
     }
 
-    [Function("Function1")]
-    public void Run([TimerTrigger("0 0 0 1 * *")] TimerInfo myTimer)
+    [Function("RecurringExpenseFunction")]
+    public async Task Run([TimerTrigger("10 * * * * *")] TimerInfo myTimer)
     {
-        _logger.LogInformation("C# Timer trigger function executed at: {executionTime}", DateTime.Now);
-        
-        if (myTimer.ScheduleStatus is not null)
+        try
         {
-            _logger.LogInformation("Next timer schedule at: {nextSchedule}", myTimer.ScheduleStatus.Next);
+            _logger.LogInformation("Start RecurringExpenseFunction");
+            await _storageService.ProcessRecurringExpensesAsync();
+            _logger.LogInformation("End RecurringExpenseFunction");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred when processing recurring expenses.");
         }
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Connectors.PgVector;
 using Npgsql;
 using OpenAI;
 using Scalar.AspNetCore;
+using ChefKnifeStudios.ExpenseTracker.BL;
 
 var builder = WebApplication.CreateBuilder(args);
 
