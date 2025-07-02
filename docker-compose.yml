@@ -14,5 +14,5 @@ services:
   chefknifestudios.expensetracker.recurringexpensefunctionapp:
     build:
       context: .
-      dockerfile: ./src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp 
+      dockerfile: ./src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp/Dockerfile
     image: ${CONTAINER_REGISTRY:-localhost:5000}/chefknifestudios.expensetracker.recurringexpensefunctionapp:${CONTAINER_TAG:-latest}
