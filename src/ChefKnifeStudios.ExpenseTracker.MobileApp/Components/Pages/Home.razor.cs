@@ -16,7 +16,6 @@ public partial class Home : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        SentrySdk.CaptureException(new Exception("Hello Sentry"));
         EventNotificationService.EventReceived += HandleEventReceived;
 
         base.OnInitialized();

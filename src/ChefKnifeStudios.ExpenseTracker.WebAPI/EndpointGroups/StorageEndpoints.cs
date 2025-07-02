@@ -1,7 +1,8 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using ChefKnifeStudios.ExpenseTracker.WebAPI.Services;
+using ChefKnifeStudios.ExpenseTracker.BL;
+using ChefKnifeStudios.ExpenseTracker.BL.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;

@@ -71,7 +71,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
         <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.70" />
-        <PackageReference Include="Sentry.Maui" Version="5.8.1" />
     </ItemGroup>
 
     <ItemGroup>

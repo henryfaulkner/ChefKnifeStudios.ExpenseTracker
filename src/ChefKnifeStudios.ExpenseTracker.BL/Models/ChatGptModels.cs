@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
+namespace ChefKnifeStudios.ExpenseTracker.BL.Models;
 
 public class ChatGPTRequest
 {

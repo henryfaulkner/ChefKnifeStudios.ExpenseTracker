@@ -1,4 +1,4 @@
-﻿namespace ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
+﻿namespace ChefKnifeStudios.ExpenseTracker.BL.Models;
 
 public class AppSettings
 {

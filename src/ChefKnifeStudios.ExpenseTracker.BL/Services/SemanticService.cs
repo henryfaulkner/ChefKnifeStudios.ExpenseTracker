@@ -4,14 +4,16 @@ using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
+using ChefKnifeStudios.ExpenseTracker.BL.Models;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-namespace ChefKnifeStudios.ExpenseTracker.WebAPI.Services;
+namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 
 public interface ISemanticService
 {

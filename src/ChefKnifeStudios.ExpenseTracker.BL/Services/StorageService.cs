@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.PgVector;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
-namespace ChefKnifeStudios.ExpenseTracker.WebAPI.Services;
+namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 
 public interface IStorageService
 {

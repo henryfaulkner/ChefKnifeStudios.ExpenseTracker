@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
-namespace ChefKnifeStudios.ExpenseTracker.WebAPI;
+namespace ChefKnifeStudios.ExpenseTracker.BL;
 
 public static class MappingExtensions
 {

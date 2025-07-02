@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
-namespace ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
+namespace ChefKnifeStudios.ExpenseTracker.BL.Models;
 
 public class ExpenseVectorStore
 {

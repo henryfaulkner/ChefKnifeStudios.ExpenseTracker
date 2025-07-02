@@ -7,24 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.DocumentIntelligence" Version="1.0.0" />
-    <PackageReference Include="Azure.Core" Version="1.46.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.11.0" />
-    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.6.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.55.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.PgVector" Version="1.58.0-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Postgres" Version="1.51.0-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.55.0-preview" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.4.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChefKnifeStudios.ExpenseTracker.Data\ChefKnifeStudios.ExpenseTracker.Data.csproj" />
+    <ProjectReference Include="..\ChefKnifeStudios.ExpenseTracker.BL\ChefKnifeStudios.ExpenseTracker.BL.csproj" />
     <ProjectReference Include="..\ChefKnifeStudios.ExpenseTracker.Shared\ChefKnifeStudios.ExpenseTracker.Shared.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,5 @@
-﻿using ChefKnifeStudios.ExpenseTracker.WebAPI.Models;
-using Microsoft.Extensions.Azure;
+﻿using ChefKnifeStudios.ExpenseTracker.BL.Models;
 using Microsoft.SemanticKernel;
-using Azure;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI;
 

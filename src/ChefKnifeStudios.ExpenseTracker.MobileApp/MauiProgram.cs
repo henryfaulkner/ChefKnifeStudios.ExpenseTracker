@@ -57,10 +57,6 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
 #else
                 .UseMauiMaps()
 #endif
-                .UseSentry(options =>
-                {
-                    options.Dsn = "https://4b5fffa8fb967e46632adfed5c4e7ea0@o4509406577098752.ingest.us.sentry.io/4509406586863616";
-                })
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

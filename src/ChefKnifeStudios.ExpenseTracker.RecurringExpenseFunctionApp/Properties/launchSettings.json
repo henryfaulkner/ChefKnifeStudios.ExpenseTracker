@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7043"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "containerRunArguments": "--init",
+      "httpPort": 30002,
+      "useSSL": false
+    }
+  }
+}
