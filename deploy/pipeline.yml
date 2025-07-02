@@ -6,7 +6,7 @@ trigger:
     include:
     - main
     - release/*
-    - deploy
+    - deploy-1
 pr: none
 
 pool:
