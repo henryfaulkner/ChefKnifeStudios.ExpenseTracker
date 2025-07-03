@@ -53,8 +53,21 @@ stages:
     - script: |
         docker push $(api-container)
         docker push $(migration-container)
-        docker push $(function-container)
       displayName: Docker push images
+
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '9.x.x'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Function App'
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '**/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp.csproj'
+        arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish'
+        zipAfterPublish: true
 
 - stage: DeployProd
   displayName: Deploy Production
@@ -94,9 +107,10 @@ stages:
               containerAppEnvironment: 'expense-tracker-api-env'
 
           # Deploy ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp
-          - task: AzureFunctionAppContainer@1
-            displayName: 'Deploy Function Container'
+          - task: AzureFunctionApp@1
+            displayName: 'Deploy Function App via ZIP'
             inputs:
               azureSubscription: '$(azure-subscription-service-connection)'
+              appType: 'functionApp'
               appName: 'recurring-expense-fn'
-              imageName: '$(function-container)'
+              package: '$(Build.ArtifactStagingDirectory)/publish/**/*.zip'
