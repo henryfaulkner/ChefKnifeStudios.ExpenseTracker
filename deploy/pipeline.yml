@@ -121,10 +121,10 @@ stages:
             artifact: functionapp
 
           - script: |
-              cd $(Build.ArtifactStagingDirectory); ls;
+              cd $(Pipeline.Workspace); ls;
 
           - script: |
-              cd $(Build.ArtifactStagingDirectory)/publish; ls;
+              cd $(Pipeline.Workspace)/functionapp; ls;
 
           - task: AzureFunctionApp@1
             displayName: 'Deploy Function App via ZIP'
@@ -132,4 +132,4 @@ stages:
               azureSubscription: '$(azure-subscription-service-connection)'
               appType: 'functionApp'
               appName: 'recurring-expense-fn'
-              package: '$(Build.ArtifactStagingDirectory)/publish/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp.zip'
+              package: '$(Pipeline.Workspace)/functionapp/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp.zip'
