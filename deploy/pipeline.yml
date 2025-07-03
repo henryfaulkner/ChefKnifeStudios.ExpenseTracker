@@ -72,7 +72,10 @@ stages:
     - script: |
         cd $(System.DefaultWorkingDirectory)/src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp/bin/Release/net9.0; ls;
 
-    - publish: $(System.DefaultWorkingDirectory)/src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp/bin/Release/net9.0/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp
+    - script: |
+        cd $(Build.ArtifactStagingDirectory)/publish; ls;
+
+    - publish: $(Build.ArtifactStagingDirectory)/publish
       artifact: functionapp
 
 
