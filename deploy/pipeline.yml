@@ -6,7 +6,7 @@ trigger:
     include:
     - main
     - release/*
-    - deploy
+    - deploy-1
 pr: none
 
 pool:
@@ -20,7 +20,7 @@ variables:
   api-container-name: chefknifestudios.expensetracker.webapi
   api-container: $(container-registry)/$(api-container-name):$(container-tag)
   migration-container-name: chefknifestudios.expensetracker.data
-  migration-container: $(container-registry)/$(migr/ation-container-name):$(container-tag)
+  migration-container: $(container-registry)/$(migration-container-name):$(container-tag)
   function-container-name: chefknifestudios.expensetracker.recurringexpensefunctionapp
   function-container: $(container-registry)/$(function-container-name):$(container-tag)
 
@@ -53,8 +53,25 @@ stages:
     - script: |
         docker push $(api-container)
         docker push $(migration-container)
-        docker push $(function-container)
       displayName: Docker push images
+
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '9.0.x'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Function App'
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '**/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp.csproj'
+        arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish'
+        zipAfterPublish: true
+
+    - publish: $(Build.ArtifactStagingDirectory)/publish
+      artifact: functionapp
+
 
 - stage: DeployProd
   displayName: Deploy Production
@@ -94,9 +111,13 @@ stages:
               containerAppEnvironment: 'expense-tracker-api-env'
 
           # Deploy ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp
-          - task: AzureFunctionAppContainer@1
-            displayName: 'Deploy Function Container'
+          - download: current
+            artifact: functionapp
+
+          - task: AzureFunctionApp@1
+            displayName: 'Deploy Function App via ZIP'
             inputs:
               azureSubscription: '$(azure-subscription-service-connection)'
+              appType: 'functionApp'
               appName: 'recurring-expense-fn'
-              imageName: '$(function-container)'
+              package: '$(Pipeline.Workspace)/functionapp/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp.zip'
