@@ -58,7 +58,7 @@ stages:
     - task: UseDotNet@2
       inputs:
         packageType: 'sdk'
-        version: '9.x.x'
+        version: '9.0.x'
 
     - task: DotNetCoreCLI@2
       displayName: 'Build Function App'
