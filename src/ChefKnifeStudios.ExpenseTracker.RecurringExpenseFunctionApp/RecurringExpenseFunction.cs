@@ -25,12 +25,15 @@ public class RecurringExpenseFunction
         try
         {
             _logger.LogInformation("Start RecurringExpenseFunction");
+            _logger.LogInformation("Calling ProcessRecurringExpensesAsync");
             await _storageService.ProcessRecurringExpensesAsync();
+            _logger.LogInformation("Successfully completed ProcessRecurringExpensesAsync");
             _logger.LogInformation("End RecurringExpenseFunction");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred when processing recurring expenses.");
+            _logger.LogError(ex, $"An error occurred: {ex.Message} - Inner: {ex.InnerException?.Message}");
+            throw;
         }
     }
 }
