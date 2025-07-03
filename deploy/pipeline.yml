@@ -70,9 +70,9 @@ stages:
         zipAfterPublish: true
     
     - script: |
-        cd $(System.DefaultWorkingDirectory)/src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp/bin/Release; ls;
+        cd $(System.DefaultWorkingDirectory)/src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp/bin/Release/net9.0; ls;
 
-    - publish: $(System.DefaultWorkingDirectory)/src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp/bin/Release/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp
+    - publish: $(System.DefaultWorkingDirectory)/src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp/bin/Release/net9.0/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp
       artifact: functionapp
 
 
