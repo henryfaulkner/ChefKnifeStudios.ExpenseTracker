@@ -68,8 +68,11 @@ stages:
         projects: '**/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp.csproj'
         arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish'
         zipAfterPublish: true
-      
-    - publish: $(System.DefaultWorkingDirectory)/publish
+    
+    - script: |
+        cd $(System.DefaultWorkingDirectory)/bin; ls;
+
+    - publish: $(System.DefaultWorkingDirectory)/bin/Release/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp
       artifact: functionapp
 
 
