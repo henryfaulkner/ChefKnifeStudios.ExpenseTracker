@@ -68,12 +68,6 @@ stages:
         projects: '**/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp.csproj'
         arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish'
         zipAfterPublish: true
-    
-    - script: |
-        cd $(System.DefaultWorkingDirectory)/src/ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp/bin/Release/net9.0; ls;
-
-    - script: |
-        cd $(Build.ArtifactStagingDirectory)/publish; ls;
 
     - publish: $(Build.ArtifactStagingDirectory)/publish
       artifact: functionapp
@@ -119,12 +113,6 @@ stages:
           # Deploy ChefKnifeStudios.ExpenseTracker.RecurringExpenseFunctionApp
           - download: current
             artifact: functionapp
-
-          - script: |
-              cd $(Pipeline.Workspace); ls;
-
-          - script: |
-              cd $(Pipeline.Workspace)/functionapp; ls;
 
           - task: AzureFunctionApp@1
             displayName: 'Deploy Function App via ZIP'
