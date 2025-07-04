@@ -24,7 +24,7 @@ builder.Services
     .AddCors()
     .AddHttpClient()
     .AddTransient<IHttpService, HttpService>()
-    .RegisterDataServices(builder.Configuration)
+    .RegisterDataServices()
     .AddScoped<IStorageService, StorageService>()
     .AddScoped<ISemanticService, SemanticService>()
     .AddPostgresVectorStore(_ => builder.Configuration.GetConnectionString("ExpenseTrackerDB")!); //https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/postgres-connector?pivots=programming-language-csharp
