@@ -25,9 +25,6 @@ public class AppDbContext : DbContext
         var connectionString = _configuration.GetConnectionString("ExpenseTrackerDB") 
 			?? _configuration["ExpenseTrackerDB"];
 
-        if (string.IsNullOrWhiteSpace(connectionString))
-            throw new InvalidOperationException("ExpenseTrackerDB connection string is not configured.");
-
         optionsBuilder.UseNpgsql(connectionString);
     }
 
