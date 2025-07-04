@@ -24,7 +24,7 @@ class Program
 
                 services.AddDbContext<AppDbContext>();
                 services
-                    .RegisterDataServices(context.Configuration)
+                    .RegisterDataServices()
                     .AddPostgresVectorStore(_ => context.Configuration.GetConnectionString("ExpenseTrackerDB")!);
                 services
                     .AddKernel()
