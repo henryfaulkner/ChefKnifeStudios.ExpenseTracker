@@ -7,11 +7,6 @@
                 "excludedTypes": "Request"
             },
             "enableLiveMetricsFilters": true
-        },
-        "logLevel": {
-          "Function": "Information",
-          "Default": "Information",
-          "Host.Triggers.Timer": "Information"
         }
     }
 }

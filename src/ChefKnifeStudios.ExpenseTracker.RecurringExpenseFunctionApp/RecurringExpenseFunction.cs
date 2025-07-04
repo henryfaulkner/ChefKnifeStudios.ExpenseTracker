@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using ChefKnifeStudios.ExpenseTracker.BL.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
@@ -18,7 +20,7 @@ public class RecurringExpenseFunction
     }
 
     [Function("RecurringExpenseFunction")]
-    public async Task Run([TimerTrigger("10 * * * * *", RunOnStartup = true)] TimerInfo myTimer)
+    public async Task Run([TimerTrigger("10 * * * * *")] TimerInfo myTimer)
     {
         try
         {
