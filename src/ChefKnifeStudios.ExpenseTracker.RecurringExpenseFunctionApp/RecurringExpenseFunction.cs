@@ -20,7 +20,7 @@ public class RecurringExpenseFunction
     }
 
     [Function("RecurringExpenseFunction")]
-    public async Task Run([TimerTrigger("10 * * * * *")] TimerInfo myTimer)
+    public async Task Run([TimerTrigger("0 0 0 1 * *")] TimerInfo myTimer)
     {
         try
         {
