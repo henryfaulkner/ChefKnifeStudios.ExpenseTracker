@@ -39,6 +39,7 @@ public static class MappingExtensions
             Name = dto.Name,
             Cost = dto.Cost,
             LabelsJson = JsonSerializer.Serialize(dto.Labels),
+            IsRecurring = dto.IsRecurring,
             ExpenseSemantic = dto.ExpenseSemantic is null ? null
             : new()
             {

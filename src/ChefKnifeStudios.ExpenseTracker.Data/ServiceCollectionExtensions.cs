@@ -6,11 +6,11 @@ namespace ChefKnifeStudios.ExpenseTracker.Data;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection RegisterDataServices(this IServiceCollection services)
+    public static IServiceCollection RegisterDataServices(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<AppDbContext>(optionsBuilder =>
         {
-            optionsBuilder.UseNpgsql();
+            optionsBuilder.UseNpgsql(connectionString);
         });
 
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));

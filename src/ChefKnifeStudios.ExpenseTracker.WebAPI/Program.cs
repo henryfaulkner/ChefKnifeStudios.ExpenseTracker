@@ -18,16 +18,18 @@ var builder = WebApplication.CreateBuilder(args);
 var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 if (appSettings == null) throw new ApplicationException("AppSettings are not configured correctly.");
 
+string connectionString = builder.Configuration.GetConnectionString("ExpenseTrackerDB")!;
+
 builder.Services
     .AddEndpointsApiExplorer()
     .AddOpenApi()
     .AddCors()
     .AddHttpClient()
     .AddTransient<IHttpService, HttpService>()
-    .RegisterDataServices()
+    .RegisterDataServices(connectionString)
     .AddScoped<IStorageService, StorageService>()
     .AddScoped<ISemanticService, SemanticService>()
-    .AddPostgresVectorStore(_ => builder.Configuration.GetConnectionString("ExpenseTrackerDB")!); //https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/postgres-connector?pivots=programming-language-csharp
+    .AddPostgresVectorStore(_ => connectionString); //https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/postgres-connector?pivots=programming-language-csharp
 
 builder.Services
     .AddKernel()

@@ -26,11 +26,13 @@ builder.Services
 var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 if (appSettings == null) throw new ApplicationException("AppSettings are not configured correctly.");
 
+string connectionString = builder.Configuration["ExpenseTrackerDB"]!;
+
 builder.Services
-    .RegisterDataServices()
+    .RegisterDataServices(connectionString)
     .AddTransient<IStorageService, StorageService>()
     .AddTransient<ISemanticService, SemanticService>()
-    .AddPostgresVectorStore(_ => builder.Configuration["ExpenseTrackerDB"]!); //https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/postgres-connector?pivots=programming-language-csharp
+    .AddPostgresVectorStore(_ => connectionString); //https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/postgres-connector?pivots=programming-language-csharp
 
 builder.Services
     .AddKernel()

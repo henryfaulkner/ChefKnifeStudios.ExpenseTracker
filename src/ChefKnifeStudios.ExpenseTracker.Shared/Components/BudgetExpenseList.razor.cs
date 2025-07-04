@@ -1,4 +1,6 @@
-﻿using ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
+﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using ChefKnifeStudios.ExpenseTracker.Shared.Services;
+using ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using System;
@@ -14,6 +16,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.Components;
 public partial class BudgetExpenseList : ComponentBase, IDisposable
 {
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
+    [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
 
     PaginationState _pagination = new PaginationState { ItemsPerPage = 10 };
 
@@ -37,5 +40,10 @@ public partial class BudgetExpenseList : ComponentBase, IDisposable
     {
         if (_subscriptions.Contains(e.PropertyName) is false) return;
         Task.Run(async () => await InvokeAsync(StateHasChanged));
+    }
+
+    void HandleEditBudgetPressed(BudgetDTO budget)
+    {
+
     }
 }

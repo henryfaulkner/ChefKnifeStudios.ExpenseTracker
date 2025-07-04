@@ -6,26 +6,15 @@ using System.Reflection;
 namespace ChefKnifeStudios.ExpenseTracker.Data;
 
 public class AppDbContext : DbContext
-{
-    readonly IConfiguration _configuration;
-    
+{   
 	public DbSet<Budget> Budgets { get; set; }
 	public DbSet<Expense> Expenses { get; set; }
 	public DbSet<ExpenseSemantic> ExpenseSemantics { get; set; }
 	public DbSet<RecurringExpenseConfig> RecurringExpenseConfigs { get; set; }
 
-    public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration configuration)
+    public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
-        _configuration = configuration;
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var connectionString = _configuration.GetConnectionString("ExpenseTrackerDB") 
-			?? _configuration["ExpenseTrackerDB"];
-
-        optionsBuilder.UseNpgsql(connectionString);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

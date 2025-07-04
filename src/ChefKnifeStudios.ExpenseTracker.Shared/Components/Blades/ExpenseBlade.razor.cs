@@ -92,6 +92,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             Name = _name,
             Cost = _cost.Value,
             Labels = _labels ?? [],
+            IsRecurring = _isRecurring,
             ExpenseSemantic = new()
             {
                 Labels = embedding.Labels,
@@ -106,9 +107,6 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         }
         else
         {
-
-            await SemanticService.UpsertExpenseAsync(expense);
-
             if (_isRecurring)
             {
                 RecurringExpenseConfigDTO recurringExpense = new()

@@ -130,6 +130,7 @@ public class StorageService : IStorageService
                 Name = recurringExpense.Name,
                 Labels = labels,
                 Cost = recurringExpense.Cost,
+                IsRecurring = true,
                 ExpenseSemantic = new()
                 {
                     Labels = JsonSerializer.Serialize(labels, Shared.JsonOptions.Get()),

@@ -22,10 +22,12 @@ class Program
                 var appSettings = context.Configuration.GetSection("AppSettings").Get<AppSettings>();
                 if (appSettings == null) throw new ApplicationException("AppSettings are not configured correctly.");
 
+                string connectionString = context.Configuration.GetConnectionString("ExpenseTrackerDB")!;
+
                 services.AddDbContext<AppDbContext>();
                 services
-                    .RegisterDataServices()
-                    .AddPostgresVectorStore(_ => context.Configuration.GetConnectionString("ExpenseTrackerDB")!);
+                    .RegisterDataServices(connectionString)
+                    .AddPostgresVectorStore(_ => connectionString);
                 services
                     .AddKernel()
                     .ConfigureSemanticKernel(appSettings);

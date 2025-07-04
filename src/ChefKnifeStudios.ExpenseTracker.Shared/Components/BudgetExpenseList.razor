@@ -19,6 +19,9 @@
                                 string str = $"{(budget.ExpenseDTOs?.Sum(x => x.Cost) ?? decimal.Zero).FormatAsDollar()} / {@budget.ExpenseBudget.FormatAsDollar()}";
                             }
                             <MatBody2 style="margin: 0;">@str</MatBody2>
+                            <MatIconButton @onclick="() => HandleEditBudgetPressed(budget)">
+                                <i class="fa fa-github" aria-hidden="true"></i>
+                            </MatIconButton>
                         </MatExpansionPanelSubHeader>
                     </MatExpansionPanelSummary>
                     <MatExpansionPanelDetails>

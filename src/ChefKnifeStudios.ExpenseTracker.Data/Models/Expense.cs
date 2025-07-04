@@ -13,6 +13,7 @@ public class Expense : BaseEntity
     public required string Name { get; set; }
     public decimal Cost { get; set; }
     public required string LabelsJson { get; set; }
+    public bool IsRecurring { get; set; }
 
     [ForeignKey(nameof(BudgetId))]
     public Budget? Budget { get; set; }
