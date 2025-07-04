@@ -22,7 +22,13 @@ public class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var connectionString = _configuration.GetConnectionString("ExpenseTrackerDB");
+        var connectionString =
+        _configuration.GetConnectionString("ExpenseTrackerDB") ??
+        _configuration["ExpenseTrackerDB"];
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("ExpenseTrackerDB connection string is not configured.");
+
         optionsBuilder.UseNpgsql(connectionString);
     }
 
