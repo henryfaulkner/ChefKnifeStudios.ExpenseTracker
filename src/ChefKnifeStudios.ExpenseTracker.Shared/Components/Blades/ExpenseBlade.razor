@@ -7,73 +7,79 @@
                 Expense
             </MatH4>
 
-            <form>
-                <MatTextField 
-                    @bind-Value="@_name" 
-                    Label="Choose a Name" 
-                    Icon="create" 
-                    Required="true" 
-                    Disabled="_isLoading"
-                />
-
-                <MatTextField 
-                    @bind-Value="@_cost" 
-                    Label="Apply a Cost" 
-                    Icon="attach_money"
-                    Required="true"
-                    Disabled="_isLoading" 
-                />
-
-                <MatCheckbox
-                    @bind-Value="@_isRecurring"
-                    Label="Is this a recurring expense?"
-                />
-
-                <MatButton 
-                    OnClick="HandleSubmitPressedAsync"
-                    Unelevated="true"
-                    Label="SUBMIT"
-                    Disabled="_isLoading" />
-            </form>
-
-            <MatDivider Style="margin: 0.5rem 0;" />
-
-            <div class="btns">
-                <MatButton 
-                    OnClick="@HandlePickPictureAsync"
-                    Unelevated="true"
-                    Label="PICK PHOTO"
-                    Icon="insert_photo" 
-                    Disabled="_isLoading"
-                />
-
-                <MatButton
-                    OnClick="@HandleTakePictureAsync"
-                    Unelevated="true"
-                    Label="CAPTURE PHOTO"
-                    Icon="add_a_photo"
-                    Disabled="_isLoading" />
-
-                <MatDivider />
-
-                @if (!ExpenseViewModel.IsListening)
-                {
-                    <MatButton
-                        OnClick="@HandleStartListeningAsync"
-                        Unelevated="true"
-                        Label="TELL ME"
-                        Icon="mic"
+            <div class="blade-content">
+                <form>
+                    <MatTextField 
+                        @bind-Value="@_name" 
+                        Label="Choose a Name" 
+                        Icon="create" 
+                        Required="true" 
+                        Disabled="_isLoading"
                     />
-                }
-                else
-                {
-                    <MatButton
-                        OnClick="@HandleStopListeningAsync"
-                        Unelevated="true"
-                        Label="STOP LISTENING"
-                        Icon="mic_off"
+
+                    <MatTextField 
+                        @bind-Value="@_cost" 
+                        Label="Apply a Cost" 
+                        Icon="attach_money"
+                        Required="true"
+                        Disabled="_isLoading" 
                     />
-                }
+
+                    <MatCheckbox
+                        @bind-Value="@_isRecurring"
+                    >
+                        <span style="display: flex; align-items: center;">
+                            <MatIcon Icon="autorenew" Style="padding-right: 0.25rem; font-size: 1.25rem;" />
+                            Is this a recurring expense?
+                        </span>
+                    </MatCheckbox>
+
+                    <MatButton 
+                        OnClick="HandleSubmitPressedAsync"
+                        Unelevated="true"
+                        Label="SUBMIT"
+                        Disabled="_isLoading" />
+                </form>
+
+                <div class="btns">
+                    <MatButton 
+                        OnClick="@HandlePickPictureAsync"
+                        Outlined="true"
+                        Label="PICK PHOTO"
+                        Icon="insert_photo" 
+                        Disabled="_isLoading"
+                    />
+
+                    <MatButton
+                        OnClick="@HandleTakePictureAsync"
+                        Outlined="true"
+                        Label="CAPTURE PHOTO"
+                        Icon="add_a_photo"
+                        Disabled="_isLoading" 
+                    />
+
+                    <MatDivider />
+
+                    @if (!ExpenseViewModel.IsListening)
+                    {
+                        <MatButton
+                            OnClick="@HandleStartListeningAsync"
+                            Outlined="true"
+                            Label="TELL ME"
+                            Icon="mic"
+                            Disabled="_isLoading" 
+                        />
+                    }
+                    else
+                    {
+                        <MatButton
+                            OnClick="@HandleStopListeningAsync"
+                            Outlined="true"
+                            Label="STOP LISTENING"
+                            Icon="mic_off"
+                                   Disabled="_isLoading" />
+                    }
+                </div>
             </div>
         </ContentFragment>
     </BladeContainer>

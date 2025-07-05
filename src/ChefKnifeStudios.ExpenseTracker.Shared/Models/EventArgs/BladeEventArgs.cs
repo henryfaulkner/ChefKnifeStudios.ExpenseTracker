@@ -18,4 +18,6 @@ public class BladeEventArgs : IEventArgs
     }
 
     public required Types Type { get; init; }
+
+    public object? Data { get; init; }
 }

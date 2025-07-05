@@ -1,4 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -44,6 +45,13 @@ public partial class BudgetExpenseList : ComponentBase, IDisposable
 
     void HandleEditBudgetPressed(BudgetDTO budget)
     {
-
+        EventNotificationService.PostEvent(
+            this,
+            new BladeEventArgs()
+            {
+                Type = BladeEventArgs.Types.Budget,
+                Data = budget,
+            }
+        );
     }
 }

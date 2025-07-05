@@ -6,15 +6,25 @@ form {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    width: 100%;
 }
 
 .btns {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    width: 100%;
 }
 
 form ::deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
     background-color: var(--mdc-theme-primary, #6200ee);
     border-color: var(--mdc-theme-primary, #6200ee);
+}
+
+.blade-content {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: space-between;
+    height: 100%;
 }

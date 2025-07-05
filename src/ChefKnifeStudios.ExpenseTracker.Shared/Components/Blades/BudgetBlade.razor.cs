@@ -37,10 +37,11 @@ public partial class BudgetBlade : ComponentBase, IDisposable
     {
         switch (e)
         {
-            case BladeEventArgs { Type: BladeEventArgs.Types.Budget}:
+            case BladeEventArgs { Type: BladeEventArgs.Types.Budget } budgetBlade:
                 var res = await StorageService.GetBudgetsAsync();
                 if (!res.IsSuccess) ToastService.ShowWarning("Budgets failed to load.");
                 _budgets = res.Data ?? [];
+                if (budgetBlade.Data is BudgetDTO budget) _selectedBudget = budget;
                 _bladeContainer?.Open();
                 break;
             case BladeEventArgs { Type: not BladeEventArgs.Types.Budget }:

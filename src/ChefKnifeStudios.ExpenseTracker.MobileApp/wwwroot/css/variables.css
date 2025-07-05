@@ -29,7 +29,7 @@
 }
 
 .clr-1p {
-    color: var(--clr-1p, #6442d6)
+    color: var(--clr-1p, #6442d6);
 }
 
 .clr-1p_80 {

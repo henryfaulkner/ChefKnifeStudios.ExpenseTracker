@@ -1,7 +1,7 @@
 ﻿@using MatBlazor
 
 <div class="action-btn">
-    @switch (_actionState)
+    @* @switch (_actionState)
     {
         case ActionStates.Closed:
             <MatFAB 
@@ -25,5 +25,10 @@
                 onclick="HandleExpensePressed"
             />
             break;
-    }
+    } *@
+    <MatFAB 
+        Icon="attach_money" 
+        Class="app-fab--absolute add" 
+        onclick="HandleExpensePressed"
+    />
 </div>

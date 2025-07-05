@@ -1,3 +1,24 @@
 ﻿::deep .mat-accordion .mat-expansion-panel__sub-header {
     align-items: end;
 }
+
+.panel-subheader {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    overflow: unset;
+
+    & > * {
+        width: max-content;
+    }
+
+    & > button {
+        height: 1.25rem;
+        margin-left: 0.75rem;
+    }
+}
+
+::deep .edit-budget-icon {
+    font-size: 1.25rem;
+    color: var(--clr-1p, #6442d6);
+}

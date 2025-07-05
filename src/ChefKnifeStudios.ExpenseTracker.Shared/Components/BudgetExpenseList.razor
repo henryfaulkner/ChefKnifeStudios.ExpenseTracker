@@ -18,10 +18,15 @@
                             @{
                                 string str = $"{(budget.ExpenseDTOs?.Sum(x => x.Cost) ?? decimal.Zero).FormatAsDollar()} / {@budget.ExpenseBudget.FormatAsDollar()}";
                             }
-                            <MatBody2 style="margin: 0;">@str</MatBody2>
-                            <MatIconButton @onclick="() => HandleEditBudgetPressed(budget)">
-                                <i class="fa fa-github" aria-hidden="true"></i>
-                            </MatIconButton>
+                            <div class="panel-subheader">
+                                <MatBody2 style="margin: 0;">@str</MatBody2>
+                                <button @onclick="() => HandleEditBudgetPressed(budget)" @onclick:stopPropagation="true">
+                                    <MatIcon 
+                                        Class="edit-budget-icon"
+                                        Icon="edit" 
+                                    />
+                                </button>
+                            </div>
                         </MatExpansionPanelSubHeader>
                     </MatExpansionPanelSummary>
                     <MatExpansionPanelDetails>
@@ -33,8 +38,14 @@
                                     <th>Cost</th>
                                 </MatTableHeader>
                                 <MatTableRow>
-                                    <td>@context.Name</td>
-                                    <td>@context.Cost.FormatAsDollar()</td>
+                                    <td>
+                                        @context.Name 
+                                        @if (@context.IsRecurring) { <MatIcon Icon="autorenew" /> }
+
+                                    </td>
+                                    <td>
+                                        @context.Cost.FormatAsDollar()
+                                    </td>
                                 </MatTableRow>
                             </MatTable>
                         }
