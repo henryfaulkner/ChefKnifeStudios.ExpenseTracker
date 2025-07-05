@@ -41,7 +41,11 @@ public partial class BudgetBlade : ComponentBase, IDisposable
                 var res = await StorageService.GetBudgetsAsync();
                 if (!res.IsSuccess) ToastService.ShowWarning("Budgets failed to load.");
                 _budgets = res.Data ?? [];
-                if (budgetBlade.Data is BudgetDTO budget) _selectedBudget = budget;
+                if (budgetBlade.Data is BudgetDTO budget)
+                {
+                    _selectedBudget = budget;
+                    _budget = budget.ExpenseBudget;
+                }
                 _bladeContainer?.Open();
                 break;
             case BladeEventArgs { Type: not BladeEventArgs.Types.Budget }:
@@ -67,22 +71,36 @@ public partial class BudgetBlade : ComponentBase, IDisposable
         
         _selectedBudget.ExpenseBudget = _budget.Value;
 
-        await StorageService.UpdateBudgetAsync(_selectedBudget);
-        EventNotificationService.PostEvent(
-            this,
-            new BudgetEventArgs()
-            {
-                Type = BudgetEventArgs.Types.Added,
-            }
-        );
-        EventNotificationService.PostEvent(
-            this,
-            new BladeEventArgs()
-            {
-                Type = BladeEventArgs.Types.Close,
-            }
-        );
-        Clear();
+        var res = await StorageService.UpdateBudgetAsync(_selectedBudget);
+        if (res.IsSuccess)
+        {
+            ToastService.ShowSuccess("Your budget updated");
+            EventNotificationService.PostEvent(
+                this,
+                new BudgetEventArgs()
+                {
+                    Type = BudgetEventArgs.Types.Added,
+                }
+            );
+            EventNotificationService.PostEvent(
+                this,
+                new BladeEventArgs()
+                {
+                    Type = BladeEventArgs.Types.Close,
+                }
+            );
+            Clear();
+        }
+        else
+        {
+            ToastService.ShowError("Your budget failed to update");
+        }
+    }
+
+    void HandleValueChanged(BudgetDTO budget)
+    {
+        _selectedBudget = budget;
+        _budget = budget.ExpenseBudget;
     }
 
     void Clear()

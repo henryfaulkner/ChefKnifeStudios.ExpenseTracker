@@ -83,12 +83,16 @@ public class StorageService : IStorageService
 
     public async Task<bool> AddBudgetAsync(Budget budget)
     {
+        budget.StartDateUtc = DateTime.SpecifyKind(budget.StartDateUtc, DateTimeKind.Utc);
+        budget.EndDateUtc = DateTime.SpecifyKind(budget.EndDateUtc, DateTimeKind.Utc);
         await _budgetRepository.AddAsync(budget);
         return true;
     }
 
     public async Task<bool> UpdateBudgetAsync(Budget budget)
     {
+        budget.StartDateUtc = DateTime.SpecifyKind(budget.StartDateUtc, DateTimeKind.Utc);
+        budget.EndDateUtc = DateTime.SpecifyKind(budget.EndDateUtc, DateTimeKind.Utc);
         await _budgetRepository.UpdateAsync(budget);
         return true;
     }

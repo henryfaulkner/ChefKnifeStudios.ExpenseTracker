@@ -8,7 +8,7 @@
             </MatH4>
 
             <div class="blade-content">
-                <form>
+                <div class="form">
                     <MatTextField 
                         @bind-Value="@_name" 
                         Label="Choose a Name" 
@@ -28,8 +28,11 @@
                     <MatCheckbox
                         @bind-Value="@_isRecurring"
                     >
-                        <span style="display: flex; align-items: center;">
-                            <MatIcon Icon="autorenew" Style="padding-right: 0.25rem; font-size: 1.25rem;" />
+                        <span class="is-recurring-label">
+                            <MatIcon 
+                                Icon="autorenew"
+                                Class="is-recurring-label-icon" 
+                            />
                             Is this a recurring expense?
                         </span>
                     </MatCheckbox>
@@ -39,7 +42,7 @@
                         Unelevated="true"
                         Label="SUBMIT"
                         Disabled="_isLoading" />
-                </form>
+                </div>
 
                 <div class="btns">
                     <MatButton 

@@ -8,15 +8,15 @@
                 Budget
             </MatH4>
 
-            <form>
+            <div class="form">
                 <MatAutocompleteList 
                     Items="_budgets"
                     Icon="list"
                     TItem="BudgetDTO"
                     CustomStringSelector="@(x => x?.Name)"
-                    @bind-Value="@_selectedBudget"
-                    Label="Pick a Budget"
-                />
+                    Value="@_selectedBudget"
+                    ValueChanged="HandleValueChanged"
+                    Label="Pick a Budget" />
 
                 <MatTextField 
                     @bind-Value="@_budget" 
@@ -31,7 +31,7 @@
                 >
                     SUBMIT
                 </MatButton>
-            </form>
+            </div>
         </ContentFragment>
     </BladeContainer>
 </div>

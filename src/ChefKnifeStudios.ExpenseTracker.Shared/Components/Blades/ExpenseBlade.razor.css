@@ -2,7 +2,7 @@
     width: 100%;
 }
 
-form {
+.form {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -16,7 +16,7 @@ form {
     width: 100%;
 }
 
-form ::deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
+.form ::deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
     background-color: var(--mdc-theme-primary, #6200ee);
     border-color: var(--mdc-theme-primary, #6200ee);
 }
@@ -27,4 +27,16 @@ form ::deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__backg
     align-items: start;
     justify-content: space-between;
     height: 100%;
+}
+
+.is-recurring-label {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    cursor: pointer;
+}
+
+.is-recurring-label-icon {
+    padding-right: 0.25rem;
+    font-size: 1.25rem;
 }

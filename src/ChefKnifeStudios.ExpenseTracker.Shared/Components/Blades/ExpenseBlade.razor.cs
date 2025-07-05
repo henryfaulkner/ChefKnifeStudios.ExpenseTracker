@@ -103,7 +103,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         var res1 = await StorageService.AddExpenseAsync(expense);
         if (!res1.IsSuccess)
         {
-            ToastService.ShowError("Expense could not be created");
+            ToastService.ShowError("Your expense could not be created");
         }
         else
         {
@@ -115,12 +115,20 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
                     Cost = expense.Cost,
                     Labels = expense.Labels ?? [],
                 };
-                await StorageService.AddRecurringExpenseAsync(recurringExpense);
+                var res2 = await StorageService.AddRecurringExpenseAsync(recurringExpense);
                 if (!res1.IsSuccess)
                 {
-                    ToastService.ShowError("Recurring expense could not be created");
+                    ToastService.ShowError("Your recurring expense could not be created");
                     return;
                 }
+                else
+                {
+                    ToastService.ShowSuccess("Your recurring expense was created");
+                }
+            } 
+            else
+            {
+                ToastService.ShowSuccess("Your expense was created");
             }
         }
 

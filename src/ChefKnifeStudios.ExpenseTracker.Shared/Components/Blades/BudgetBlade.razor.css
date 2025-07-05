@@ -2,7 +2,7 @@
     width: 100%;
 }
 
-form {
+.form {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;

@@ -8,15 +8,18 @@ using System.Net;
 using System.Text.Json;
 using ChefKnifeStudios.ExpenseTracker.Shared;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.Logging;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
 public class StorageService : IStorageService
 {
+    readonly ILogger<StorageService> _logger;
     readonly string _baseUrl = string.Empty;
 
-    public StorageService(IConfiguration configuration)
+    public StorageService(ILogger<StorageService> logger, IConfiguration configuration)
     {
+        _logger = logger;
         _baseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? string.Empty;
         _baseUrl += "/storage";
     }
@@ -31,7 +34,7 @@ public class StorageService : IStorageService
             var response = await httpClient.PostAsync($"{_baseUrl}/expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("expense endpoint failed.");
+                _logger.LogError("expense endpoint failed.");
             }
 
             return new ApiResponse<bool>(true, response.StatusCode);
@@ -56,7 +59,7 @@ public class StorageService : IStorageService
             var response = await httpClient.PostAsync($"{_baseUrl}/budget", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("budget endpoint failed.");
+                _logger.LogError("budget endpoint failed.");
             }
 
             return new ApiResponse<bool>(true, response.StatusCode);
@@ -81,7 +84,7 @@ public class StorageService : IStorageService
             var response = await httpClient.PutAsync($"{_baseUrl}/budget", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("update budget endpoint failed.");
+                _logger.LogError("update budget endpoint failed.");
             }
 
             return new ApiResponse<bool>(true, response.StatusCode);
@@ -105,7 +108,7 @@ public class StorageService : IStorageService
             var response = await httpClient.GetAsync($"{_baseUrl}/budgets");
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("budgets endpoint failed.");
+                _logger.LogError("budgets endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -136,7 +139,7 @@ public class StorageService : IStorageService
                 .GetAsync($"{_baseUrl}/budgets/search?searchText={searchText}&pageSize={pageSize}&pageNumber={pageNumber}");
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException(" endpoint failed.");
+                _logger.LogError(" endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -164,7 +167,7 @@ public class StorageService : IStorageService
             var response = await httpClient.PostAsync($"{_baseUrl}/recurring-expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("Recurring expense endpoint failed.");
+                _logger.LogError("Recurring expense endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();

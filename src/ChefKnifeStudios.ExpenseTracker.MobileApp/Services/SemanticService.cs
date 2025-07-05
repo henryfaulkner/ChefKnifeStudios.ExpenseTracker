@@ -13,15 +13,18 @@ using System.Net;
 using System.Net.Http.Json;
 using ChefKnifeStudios.ExpenseTracker.Shared.Models;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.Logging;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
 public class SemanticService : ISemanticService
 {
+    readonly ILogger<SemanticService> _logger;
     readonly string _baseUrl = string.Empty;
 
-    public SemanticService(IConfiguration configuration)
+    public SemanticService(ILogger<SemanticService> logger, IConfiguration configuration)
     {
+        _logger = logger;
         _baseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? string.Empty;
         _baseUrl += "/semantic";
     }
@@ -41,7 +44,7 @@ public class SemanticService : ISemanticService
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("scan-receipt endpoint failed.");
+                _logger.LogError("scan-receipt endpoint failed.");
             }
 
             var content = await response.Content.ReadAsStringAsync();
@@ -69,7 +72,7 @@ public class SemanticService : ISemanticService
             var response = await httpClient.PostAsync($"{_baseUrl}/text-to-expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("text-to-expense endpoint failed.");
+                _logger.LogError("text-to-expense endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -97,7 +100,7 @@ public class SemanticService : ISemanticService
             var response = await httpClient.PostAsync($"{_baseUrl}/label-receipt-details", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("label-receipt-details endpoint failed.");
+                _logger.LogError("label-receipt-details endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -125,7 +128,7 @@ public class SemanticService : ISemanticService
             var response = await httpClient.PostAsync($"{_baseUrl}/semantic-embedding", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("semantic-embedding endpoint failed.");
+                _logger.LogError("semantic-embedding endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -153,7 +156,7 @@ public class SemanticService : ISemanticService
             var response = await httpClient.PostAsync($"{_baseUrl}/upsert-expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("upsert-expense endpoint failed.");
+                _logger.LogError("upsert-expense endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -181,7 +184,7 @@ public class SemanticService : ISemanticService
             var response = await httpClient.PostAsync($"{_baseUrl}/expense/search", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException("expense/search endpoint failed.");
+                _logger.LogError("expense/search endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();

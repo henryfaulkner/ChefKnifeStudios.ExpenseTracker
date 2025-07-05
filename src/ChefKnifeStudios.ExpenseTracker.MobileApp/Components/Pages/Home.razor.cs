@@ -12,8 +12,6 @@ public partial class Home : ComponentBase, IDisposable
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
 
-    bool _isGridVisible = true;
-
     protected override void OnInitialized()
     {
         EventNotificationService.EventReceived += HandleEventReceived;
