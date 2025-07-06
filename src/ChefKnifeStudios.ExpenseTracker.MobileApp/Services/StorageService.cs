@@ -1,24 +1,30 @@
-﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+﻿using ChefKnifeStudios.ExpenseTracker.Shared;
+using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Models;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Net;
 using System.Text.Json;
-using ChefKnifeStudios.ExpenseTracker.Shared;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.Extensions.Logging;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
 public class StorageService : IStorageService
 {
+    readonly HttpClient _httpClient;
     readonly ILogger<StorageService> _logger;
     readonly string _baseUrl = string.Empty;
 
-    public StorageService(ILogger<StorageService> logger, IConfiguration configuration)
+    public StorageService(
+        IHttpClientFactory httpClientFactory,
+        ILogger<StorageService> logger, 
+        IConfiguration configuration)
     {
+        _httpClient = httpClientFactory.CreateClient("ExpenseTrackerAPI");
         _logger = logger;
         _baseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? string.Empty;
         _baseUrl += "/storage";
@@ -28,10 +34,9 @@ public class StorageService : IStorageService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(expenseDTO, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/expense", bodyContent);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("expense endpoint failed.");
@@ -53,10 +58,9 @@ public class StorageService : IStorageService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(budgetDTO, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/budget", bodyContent);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/budget", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("budget endpoint failed.");
@@ -78,10 +82,9 @@ public class StorageService : IStorageService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(budgetDTO, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PutAsync($"{_baseUrl}/budget", bodyContent);
+            var response = await _httpClient.PutAsync($"{_baseUrl}/budget", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("update budget endpoint failed.");
@@ -103,9 +106,7 @@ public class StorageService : IStorageService
     {
         try
         {
-            using var httpClient = new HttpClient();
-            
-            var response = await httpClient.GetAsync($"{_baseUrl}/budgets");
+            var response = await _httpClient.GetAsync($"{_baseUrl}/budgets");
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("budgets endpoint failed.");
@@ -133,9 +134,7 @@ public class StorageService : IStorageService
     {
         try
         {
-            using var httpClient = new HttpClient();
-            
-            var response = await httpClient
+            var response = await _httpClient
                 .GetAsync($"{_baseUrl}/budgets/search?searchText={searchText}&pageSize={pageSize}&pageNumber={pageNumber}");
             if (!response.IsSuccessStatusCode)
             {
@@ -161,10 +160,9 @@ public class StorageService : IStorageService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(recurringExpense, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/recurring-expense", bodyContent);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/recurring-expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("Recurring expense endpoint failed.");

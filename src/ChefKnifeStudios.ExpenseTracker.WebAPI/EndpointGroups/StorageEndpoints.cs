@@ -4,6 +4,7 @@ using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.BL;
 using ChefKnifeStudios.ExpenseTracker.BL.Services;
 using Microsoft.AspNetCore.Mvc;
+using ChefKnifeStudios.ExpenseTracker.Shared;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 
@@ -18,9 +19,17 @@ public static class StorageEndpoints
         group.MapPost("/expense", async (
             [FromBody] ExpenseDTO expenseDTO,
             [FromServices] IStorageService storageService,
-            [FromServices] IRepository<Budget> budgetRepository) =>
+            [FromServices] IRepository<Budget> budgetRepository,
+            HttpContext context) =>
         {
-            var result = await storageService.AddExpenseAsync(expenseDTO);
+            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(appId))
+            {
+                return Results.BadRequest("App ID header is required");
+            }
+
+            var result = await storageService.AddExpenseAsync(expenseDTO, appId);
             return result ? Results.Ok() : Results.Problem("Failed to add expense");
         })
         .WithName("AddExpense")
@@ -32,10 +41,18 @@ public static class StorageEndpoints
         // Add Budget
         group.MapPost("/budget", async (
             [FromBody] BudgetDTO budgetDTO,
-            [FromServices] IStorageService storageService) =>
+            [FromServices] IStorageService storageService,
+            HttpContext context) =>
         {
+            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(appId))
+            {
+                return Results.BadRequest("App ID header is required");
+            }
+
             var budget = budgetDTO.MapToModel();
-            var result = await storageService.AddBudgetAsync(budget);
+            var result = await storageService.AddBudgetAsync(budget, appId);
             return result ? Results.Ok() : Results.Problem("Failed to add budget");
         })
         .WithName("AddBudget")
@@ -100,10 +117,18 @@ public static class StorageEndpoints
 
         group.MapPost("/recurring-expense", async (
             [FromBody] RecurringExpenseConfigDTO recurringExpenseDTO,
-            [FromServices] IStorageService storageService) =>
+            [FromServices] IStorageService storageService,
+            HttpContext context) =>
         {
+            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(appId))
+            {
+                return Results.BadRequest("App ID header is required");
+            }
+
             var recurringExpense = recurringExpenseDTO.MapToModel();
-            var result = await storageService.AddRecurringExpenseAsync(recurringExpense);
+            var result = await storageService.AddRecurringExpenseAsync(recurringExpense, appId);
             return result ? Results.Ok() : Results.Problem("Failed to add recurring expense");
         })
         .WithName("AddRecurringExpense")

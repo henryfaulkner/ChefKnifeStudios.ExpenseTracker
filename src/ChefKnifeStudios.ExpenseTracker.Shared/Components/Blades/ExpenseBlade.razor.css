@@ -36,7 +36,7 @@
     cursor: pointer;
 }
 
-.is-recurring-label-icon {
+::deep .is-recurring-label-icon {
     padding-right: 0.25rem;
     font-size: 1.25rem;
 }

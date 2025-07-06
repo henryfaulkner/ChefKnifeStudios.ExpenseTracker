@@ -8,6 +8,7 @@ public class Budget : BaseEntity
     public decimal ExpenseBudget { get; set; }
     public DateTime StartDateUtc { get; set; }
     public DateTime EndDateUtc { get; set; }
+    public Guid AppId { get; set; }
 
     public IEnumerable<Expense>? Expenses { get; set; }
 }

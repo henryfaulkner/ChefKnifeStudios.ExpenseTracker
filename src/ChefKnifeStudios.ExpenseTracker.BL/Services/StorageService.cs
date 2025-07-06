@@ -11,12 +11,12 @@ namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 
 public interface IStorageService
 {
-    Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO);
-    Task<bool> AddBudgetAsync(Budget budget);
+    Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, string appId);
+    Task<bool> AddBudgetAsync(Budget budget, string appId);
     Task<bool> UpdateBudgetAsync(Budget budget);
     Task<IEnumerable<BudgetDTO>> GetBudgetsAsync();
     Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber);
-    Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense);
+    Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, string appId);
     Task ProcessRecurringExpensesAsync();
 }
 
@@ -45,7 +45,7 @@ public class StorageService : IStorageService
         _vectorStore = vectorStore;
     }
 
-    public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO)
+    public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, string appId)
     {
         // Determine the month/year for the budget
         var now = DateTime.UtcNow;
@@ -73,6 +73,7 @@ public class StorageService : IStorageService
         // Assign the budget ID to the expense
         var expense = expenseDTO.MapToModel();
         expense.BudgetId = budget.Id;
+        expense.AppId = Guid.Parse(appId);
 
         await _expenseRepository.AddAsync(expense);
 
@@ -81,8 +82,9 @@ public class StorageService : IStorageService
         return await UpsertExpense(expense);
     }
 
-    public async Task<bool> AddBudgetAsync(Budget budget)
+    public async Task<bool> AddBudgetAsync(Budget budget, string appId)
     {
+        budget.AppId = Guid.Parse(appId);
         budget.StartDateUtc = DateTime.SpecifyKind(budget.StartDateUtc, DateTimeKind.Utc);
         budget.EndDateUtc = DateTime.SpecifyKind(budget.EndDateUtc, DateTimeKind.Utc);
         await _budgetRepository.AddAsync(budget);
@@ -108,8 +110,9 @@ public class StorageService : IStorageService
         return await _budgetSearchRepository.GetFilteredResultAsync(searchText, pageSize, pageNumber);
     }
 
-    public async Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense)
+    public async Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, string appId)
     {
+        recurringExpense.AppId = Guid.Parse(appId);
         await _recurringExpenseRepository.AddAsync(recurringExpense);
         return true;
     }
@@ -141,7 +144,7 @@ public class StorageService : IStorageService
                     SemanticEmbedding = embedding.Embedding,
                 },
             };
-            await AddExpenseAsync(expense);
+            await AddExpenseAsync(expense, recurringExpense.AppId.ToString());
         }
     }
 

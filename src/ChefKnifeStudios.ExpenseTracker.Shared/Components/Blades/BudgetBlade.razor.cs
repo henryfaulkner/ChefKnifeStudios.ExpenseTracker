@@ -100,7 +100,7 @@ public partial class BudgetBlade : ComponentBase, IDisposable
     void HandleValueChanged(BudgetDTO budget)
     {
         _selectedBudget = budget;
-        _budget = budget.ExpenseBudget;
+        _budget = budget?.ExpenseBudget;
     }
 
     void Clear()

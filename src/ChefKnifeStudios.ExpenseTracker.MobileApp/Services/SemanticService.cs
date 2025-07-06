@@ -19,11 +19,16 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
 public class SemanticService : ISemanticService
 {
+    readonly HttpClient _httpClient;
     readonly ILogger<SemanticService> _logger;
     readonly string _baseUrl = string.Empty;
 
-    public SemanticService(ILogger<SemanticService> logger, IConfiguration configuration)
+    public SemanticService(
+        IHttpClientFactory httpClientFactory,
+        ILogger<SemanticService> logger, 
+        IConfiguration configuration)
     {
+        _httpClient = httpClientFactory.CreateClient("ExpenseTrackerAPI");
         _logger = logger;
         _baseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? string.Empty;
         _baseUrl += "/semantic";
@@ -33,14 +38,13 @@ public class SemanticService : ISemanticService
     {
         try
         { 
-            using var httpClient = new HttpClient();
             using var form = new MultipartFormDataContent();
             using var fileContent = new StreamContent(fileStream);
 
             fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             form.Add(fileContent, "file", "receipt.jpg");
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/scan-receipt", form);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/scan-receipt", form);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -66,10 +70,9 @@ public class SemanticService : ISemanticService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(request, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/text-to-expense", bodyContent);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/text-to-expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("text-to-expense endpoint failed.");
@@ -94,10 +97,9 @@ public class SemanticService : ISemanticService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(receipt, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/label-receipt-details", bodyContent);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/label-receipt-details", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("label-receipt-details endpoint failed.");
@@ -122,10 +124,9 @@ public class SemanticService : ISemanticService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(receiptLabels, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/semantic-embedding", bodyContent);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/semantic-embedding", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("semantic-embedding endpoint failed.");
@@ -150,10 +151,9 @@ public class SemanticService : ISemanticService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(expense, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/upsert-expense", bodyContent);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/upsert-expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("upsert-expense endpoint failed.");
@@ -178,10 +178,9 @@ public class SemanticService : ISemanticService
     {
         try
         {
-            using var httpClient = new HttpClient();
             var bodyContent = JsonContent.Create(searchBody, new MediaTypeHeaderValue("application/json"));
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/expense/search", bodyContent);
+            var response = await _httpClient.PostAsync($"{_baseUrl}/expense/search", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("expense/search endpoint failed.");

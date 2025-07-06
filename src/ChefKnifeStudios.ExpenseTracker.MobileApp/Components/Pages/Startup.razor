@@ -1,0 +1,77 @@
+﻿@using ChefKnifeStudios.ExpenseTracker.Shared.Services
+@using Microsoft.Extensions.Logging
+
+@page "/"
+@inject IAppSessionService SessionService
+@inject NavigationManager Navigation
+@inject ILogger<Startup> Logger
+
+<div class="startup-container">
+    @if (isInitializing)
+    {
+        <div class="text-center">
+            <h3>Initializing App...</h3>
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (hasError)
+    {
+        <div class="text-center">
+            <h3 class="text-danger">Initialization Failed</h3>
+            <p>@errorMessage</p>
+            <button class="btn btn-primary" @onclick="InitializeAsync">Try Again</button>
+        </div>
+    }
+</div>
+
+@code {
+    private bool isInitializing = true;
+    private bool hasError = false;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            isInitializing = true;
+            hasError = false;
+            StateHasChanged();
+
+            // Initialize the session
+            await SessionService.InitAsync();
+
+            Logger.LogInformation("Session initialized successfully");
+
+            // Navigate to the main page after successful initialization
+            Navigation.NavigateTo("/home", replace: true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to initialize session");
+            hasError = true;
+            errorMessage = "Failed to initialize the application. Please try again.";
+        }
+        finally
+        {
+            isInitializing = false;
+            StateHasChanged();
+        }
+    }
+}
+
+<style>
+    .startup-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f8f9fa;
+    }
+</style>
