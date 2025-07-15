@@ -1,0 +1,48 @@
+name: $(SourceBranchName)-expense-tracker-maui-$(Date:yyyyMMdd).$(Rev:r)
+
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+    - maui-deploy
+pr: none
+
+variables:
+  - group: 'Prod-ExpenseTracker'
+
+stages:
+  - stage: ios_stage
+    displayName: iOS Stage
+    pool:
+      name: Azure Pipelines
+      vmImage: macOS-13
+    jobs:
+      - job: ios_job
+        displayName: iOS job
+        steps:
+          - template: maui-setup-template.yml
+          
+          - task: InstallAppleProvisioningProfile@1
+            inputs:
+              provisioningProfileLocation: 'secureFiles'
+              provProfileSecureFile: appalchemy.mobileprovision
+          
+          - task: InstallAppleCertificate@2
+            inputs:
+              certSecureFile: distribution.p12
+              keychain: 'temp' 
+              certPwd: $(ios_distribution_password)
+
+          - task: Bash@3
+            displayName: Build iOD MAUI app
+            inputs:
+              targetType: 'inline'
+              script: |
+                dotnet publish src/ChefKnifeStudios.ExpenseTracker.MobileApp/ChefKnifeStudios.ExpenseTracker.MobileApp.csproj -f net9.0-ios -c Release --output '$(Build.ArtifactStagingDirectory)/iOS' -p:ArchiveOnBuild=true -p:RuntimeIdentifier=ios-arm64 -p:CodesignKey="$(codesign_key)" -p:CodesignProvision="$(codesign_provision)"
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish iOS app to artifacts'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/iOS'
+              ArtifactName: 'iOS'
