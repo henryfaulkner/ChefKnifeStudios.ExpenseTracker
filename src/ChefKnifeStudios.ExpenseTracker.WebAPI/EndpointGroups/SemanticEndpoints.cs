@@ -2,6 +2,7 @@
 using ChefKnifeStudios.ExpenseTracker.BL.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using ChefKnifeStudios.ExpenseTracker.Shared;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
 
@@ -15,8 +16,17 @@ public static class SemanticEndpoints
         group.MapPost("/scan-receipt", async (
             HttpRequest request,
             ILogger<Program> logger,
-            [FromServices] ISemanticService semanticService) =>
+            [FromServices] ISemanticService semanticService,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
         {
+            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(appId))
+            {
+                return Results.BadRequest("App ID header is required");
+            }
+
             try
             {
                 // Read the uploaded file
@@ -31,7 +41,7 @@ public static class SemanticEndpoints
                 }
 
                 using var stream = formFile.OpenReadStream();
-                var resultData = await semanticService.ScanReceiptAsync(stream);
+                var resultData = await semanticService.ScanReceiptAsync(stream, Guid.Parse(appId), cancellationToken);
                 return Results.Ok(resultData);
             }
             catch (ApplicationException ex)
@@ -54,8 +64,17 @@ public static class SemanticEndpoints
         group.MapPost("/text-to-expense", async (
             HttpRequest request,
             ILogger<Program> logger,
-            [FromServices] ISemanticService semanticService) =>
+            [FromServices] ISemanticService semanticService,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
         {
+            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(appId))
+            {
+                return Results.BadRequest("App ID header is required");
+            }
+
             try
             {
                 string prompt;
@@ -64,7 +83,7 @@ public static class SemanticEndpoints
                     prompt = await reader.ReadToEndAsync();
                 }
 
-                var result = await semanticService.TextToExpenseAsync(prompt);
+                var result = await semanticService.TextToExpenseAsync(prompt, Guid.Parse(appId), cancellationToken);
                 return Results.Ok(result);
             }
             catch (ApplicationException ex)
@@ -87,8 +106,17 @@ public static class SemanticEndpoints
         group.MapPost("/label-receipt-details", async (
             HttpRequest request,
             ILogger<Program> logger,
-            [FromServices] ISemanticService semanticService) =>
+            [FromServices] ISemanticService semanticService,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
         {
+            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(appId))
+            {
+                return Results.BadRequest("App ID header is required");
+            }
+
             try
             {
                 // Read the receipt JSON input from the request body
@@ -98,7 +126,7 @@ public static class SemanticEndpoints
                     prompt = await reader.ReadToEndAsync();
                 }
 
-                var result = await semanticService.LabelReceiptDetailsAsync(prompt);
+                var result = await semanticService.LabelReceiptDetailsAsync(prompt, Guid.Parse(appId), cancellationToken);
                 return Results.Ok(result);
             }
             catch (ApplicationException ex)
@@ -121,8 +149,17 @@ public static class SemanticEndpoints
         group.MapPost("semantic-embedding", async (
             HttpRequest request,
             ILogger<Program> logger,
-            [FromServices] ISemanticService semanticService) =>
+            [FromServices] ISemanticService semanticService,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
         {
+            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(appId))
+            {
+                return Results.BadRequest("App ID header is required");
+            }
+
             try
             {
                 string reqBody;
@@ -133,7 +170,7 @@ public static class SemanticEndpoints
                 var reqDTO = JsonSerializer.Deserialize<ReceiptLabelsDTO>(reqBody, Shared.JsonOptions.Get());
                 if (reqDTO == null) throw new ApplicationException("Invalid request body");
 
-                var result = await semanticService.CreateSemanticEmbeddingAsync(reqDTO);
+                var result = await semanticService.CreateSemanticEmbeddingAsync(reqDTO, Guid.Parse(appId), cancellationToken);
                 return Results.Ok(result);
             }
             catch (ApplicationException ex)
@@ -156,8 +193,17 @@ public static class SemanticEndpoints
         group.MapPost("expense/search", async (
             HttpRequest request,
             ILogger<Program> logger,
-            [FromServices] ISemanticService semanticService) =>
+            [FromServices] ISemanticService semanticService,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
         {
+            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(appId))
+            {
+                return Results.BadRequest("App ID header is required");
+            }
+
             try
             {
                 string reqBody;
@@ -168,7 +214,7 @@ public static class SemanticEndpoints
                 var reqDTO = JsonSerializer.Deserialize<ExpenseSearchDTO>(reqBody, Shared.JsonOptions.Get());
                 if (reqDTO is null) throw new ApplicationException("Invalid request body");
 
-                var result = await semanticService.SearchExpensesAsync(reqDTO);
+                var result = await semanticService.SearchExpensesAsync(reqDTO, Guid.Parse(appId), cancellationToken);
                 return Results.Ok(result);
             }
             catch (ApplicationException ex)

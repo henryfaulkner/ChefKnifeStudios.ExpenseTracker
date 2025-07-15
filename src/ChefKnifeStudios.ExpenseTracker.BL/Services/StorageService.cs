@@ -11,13 +11,13 @@ namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 
 public interface IStorageService
 {
-    Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, string appId);
-    Task<bool> AddBudgetAsync(Budget budget, string appId);
-    Task<bool> UpdateBudgetAsync(Budget budget);
-    Task<IEnumerable<BudgetDTO>> GetBudgetsAsync();
-    Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber);
-    Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, string appId);
-    Task ProcessRecurringExpensesAsync();
+    Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> AddBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> UpdateBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<BudgetDTO>> GetBudgetsAsync(Guid appId, CancellationToken cancellationToken = default);
+    Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, Guid appId, CancellationToken cancellationToken = default);
+    Task ProcessRecurringExpensesAsync(CancellationToken cancellationToken = default);
 }
 
 public class StorageService : IStorageService
@@ -45,7 +45,7 @@ public class StorageService : IStorageService
         _vectorStore = vectorStore;
     }
 
-    public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, string appId)
+    public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, Guid appId, CancellationToken cancellationToken = default)
     {
         // Determine the month/year for the budget
         var now = DateTime.UtcNow;
@@ -54,7 +54,7 @@ public class StorageService : IStorageService
         var endDate = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month)), DateTimeKind.Utc);
 
         // Try to find an existing budget for this month/year
-        var budgets = await _budgetRepository.ListAsync(new GetBudgetsSpec());
+        var budgets = await _budgetRepository.ListAsync(new GetBudgetsSpec(appId));
         var budget = budgets.FirstOrDefault(b => b.Name == budgetName);
 
         // If not found, create a new budget for this month
@@ -65,61 +65,62 @@ public class StorageService : IStorageService
                 Name = budgetName,
                 StartDateUtc = startDate,
                 EndDateUtc = endDate,
-                ExpenseBudget = 0 // or a default value
+                ExpenseBudget = 0, // or a default value
+                AppId = appId,
             };
-            await _budgetRepository.AddAsync(budget);
+            await _budgetRepository.AddAsync(budget, cancellationToken);
         }
 
         // Assign the budget ID to the expense
         var expense = expenseDTO.MapToModel();
         expense.BudgetId = budget.Id;
-        expense.AppId = Guid.Parse(appId);
+        expense.AppId = appId;
 
-        await _expenseRepository.AddAsync(expense);
+        await _expenseRepository.AddAsync(expense, cancellationToken);
 
         if (expense.ExpenseSemantic is not null)
             expense.ExpenseSemantic.ExpenseId = expense.Id;
-        return await UpsertExpense(expense);
+        return await UpsertExpense(expense, cancellationToken);
     }
 
-    public async Task<bool> AddBudgetAsync(Budget budget, string appId)
+    public async Task<bool> AddBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default)
     {
-        budget.AppId = Guid.Parse(appId);
+        budget.AppId = appId;
         budget.StartDateUtc = DateTime.SpecifyKind(budget.StartDateUtc, DateTimeKind.Utc);
         budget.EndDateUtc = DateTime.SpecifyKind(budget.EndDateUtc, DateTimeKind.Utc);
-        await _budgetRepository.AddAsync(budget);
+        await _budgetRepository.AddAsync(budget, cancellationToken);
         return true;
     }
 
-    public async Task<bool> UpdateBudgetAsync(Budget budget)
+    public async Task<bool> UpdateBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default)
     {
         budget.StartDateUtc = DateTime.SpecifyKind(budget.StartDateUtc, DateTimeKind.Utc);
         budget.EndDateUtc = DateTime.SpecifyKind(budget.EndDateUtc, DateTimeKind.Utc);
-        await _budgetRepository.UpdateAsync(budget);
+        await _budgetRepository.UpdateAsync(budget, cancellationToken);
         return true;
     }
 
-    public async Task<IEnumerable<BudgetDTO>> GetBudgetsAsync()
+    public async Task<IEnumerable<BudgetDTO>> GetBudgetsAsync(Guid appId, CancellationToken cancellationToken = default)
     {
-        var budgets = await _budgetRepository.ListAsync(new GetBudgetsSpec());
+        var budgets = await _budgetRepository.ListAsync(new GetBudgetsSpec(appId), cancellationToken);
         return budgets.Select(x => x.MapToDTO());
     }
 
-    public async Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber)
+    public async Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber, Guid appId, CancellationToken cancellationToken = default)
     {
-        return await _budgetSearchRepository.GetFilteredResultAsync(searchText, pageSize, pageNumber);
+        return await _budgetSearchRepository.GetFilteredResultAsync(searchText, pageSize, pageNumber, appId, cancellationToken: cancellationToken);
     }
 
-    public async Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, string appId)
+    public async Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, Guid appId, CancellationToken cancellationToken = default)
     {
-        recurringExpense.AppId = Guid.Parse(appId);
-        await _recurringExpenseRepository.AddAsync(recurringExpense);
+        recurringExpense.AppId = appId;
+        await _recurringExpenseRepository.AddAsync(recurringExpense, cancellationToken);
         return true;
     }
 
-    public async Task ProcessRecurringExpensesAsync()
+    public async Task ProcessRecurringExpensesAsync(CancellationToken cancellationToken = default)
     {
-        var recurringExpenses = await _recurringExpenseRepository.ListAsync();
+        var recurringExpenses = await _recurringExpenseRepository.ListAsync(cancellationToken);
 
         List<Expense> newExpenses = [];
         List<Budget> newBudgets = [];
@@ -130,7 +131,9 @@ public class StorageService : IStorageService
                 new ReceiptLabelsDTO() { 
                     Name = recurringExpense.Name, 
                     Labels = labels,
-                }
+                },
+                recurringExpense.AppId,
+                cancellationToken
             );
             var expense = new ExpenseDTO()
             {
@@ -144,20 +147,21 @@ public class StorageService : IStorageService
                     SemanticEmbedding = embedding.Embedding,
                 },
             };
-            await AddExpenseAsync(expense, recurringExpense.AppId.ToString());
+            await AddExpenseAsync(expense, recurringExpense.AppId, cancellationToken);
         }
     }
 
-    private async Task<bool> UpsertExpense(Expense expense)
+    private async Task<bool> UpsertExpense(Expense expense, CancellationToken cancellationToken = default)
     {
         try
         {
+            if (expense.ExpenseSemantic == null) throw new ArgumentNullException(nameof(expense.ExpenseSemantic));
+
             // Get and create collection if it doesn't exist.
             var collectionName = "ExpenseSemantics";
             var expenseSemanticCollection = _vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
             await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
-
-            await expenseSemanticCollection.UpsertAsync(expense.ExpenseSemantic);
+            await expenseSemanticCollection.UpsertAsync(expense.ExpenseSemantic, cancellationToken);
         }
         catch (Exception)
         {

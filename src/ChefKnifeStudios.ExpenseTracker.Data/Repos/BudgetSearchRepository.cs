@@ -8,14 +8,13 @@ namespace ChefKnifeStudios.ExpenseTracker.Data.Repos;
 
 public class BudgetSearchSpec : Specification<Budget>
 {
-    public BudgetSearchSpec(string? searchText, int pageNumber, int pageSize)
+    public BudgetSearchSpec(string? searchText, int pageNumber, int pageSize, Guid appId)
     {
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            Query.Where(b => 
-                EF.Functions.Like(b.Name, $"%{searchText}%") ||
-                (b.Name != null && EF.Functions.Like(b.Name, $"%{searchText}%"))
-            );
+            Query.Where(b => EF.Functions.Like(b.Name, $"%{searchText}%") 
+                || (b.Name != null && EF.Functions.Like(b.Name, $"%{searchText}%"))
+            ).Where(x => x.AppId == appId);
         }
 
         Query.OrderByDescending(b => b.CreatedOnUtc)
@@ -26,14 +25,14 @@ public class BudgetSearchSpec : Specification<Budget>
 
 public class BudgetFilterCountSpec : Specification<Budget>
 {
-    public BudgetFilterCountSpec(string? searchText)
+    public BudgetFilterCountSpec(string? searchText, Guid appId)
     {
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            Query.Where(b => 
-                EF.Functions.Like(b.Name, $"%{searchText}%") ||
-                (b.Name != null && EF.Functions.Like(b.Name, $"%{searchText}%"))
-            );
+            Query
+                .Where(b => EF.Functions.Like(b.Name, $"%{searchText}%") 
+                    || (b.Name != null && EF.Functions.Like(b.Name, $"%{searchText}%"))
+                ).Where(x => x.AppId == appId);
         }
     }
 }
@@ -44,6 +43,7 @@ public interface IBudgetSearchRepository : IRepository<Budget>
         string? searchText,
         int pageSize,
         int pageNumber,
+        Guid appId,
         CancellationToken cancellationToken = default
     );
 }
@@ -58,6 +58,7 @@ public class BudgetSearchRepository : EfRepository<Budget>, IBudgetSearchReposit
         string? searchText,
         int pageSize,
         int pageNumber,
+        Guid appId,
         CancellationToken cancellationToken = default)
     {
         // Validate parameters
@@ -65,11 +66,11 @@ public class BudgetSearchRepository : EfRepository<Budget>, IBudgetSearchReposit
         if (pageNumber <= 0) pageNumber = 1;
 
         // Get total count first (without pagination)
-        var countSpec = new BudgetFilterCountSpec(searchText);
+        var countSpec = new BudgetFilterCountSpec(searchText, appId);
         var totalCount = await CountAsync(countSpec, cancellationToken);
 
         // Get paginated results
-        var searchSpec = new BudgetSearchSpec(searchText, pageNumber, pageSize);
+        var searchSpec = new BudgetSearchSpec(searchText, pageNumber, pageSize, appId);
         var results = await ListAsync(searchSpec, cancellationToken);
 
         // Calculate pagination info

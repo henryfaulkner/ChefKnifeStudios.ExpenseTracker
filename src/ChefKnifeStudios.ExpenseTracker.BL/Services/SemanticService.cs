@@ -17,11 +17,11 @@ namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 
 public interface ISemanticService
 {
-    Task<List<ReceiptDTO>> ScanReceiptAsync(Stream fileStream);
-    Task<TextToExpenseResponseDTO> TextToExpenseAsync(string prompt);
-    Task<ReceiptLabelsDTO> LabelReceiptDetailsAsync(string receiptJson);
-    Task<SemanticEmbeddingDTO> CreateSemanticEmbeddingAsync(ReceiptLabelsDTO receiptLabels);
-    Task<List<ExpenseSearchResponseDTO>> SearchExpensesAsync(ExpenseSearchDTO searchRequest);
+    Task<List<ReceiptDTO>> ScanReceiptAsync(Stream fileStream, Guid appId, CancellationToken cancellationToken = default);
+    Task<TextToExpenseResponseDTO> TextToExpenseAsync(string prompt, Guid appId, CancellationToken cancellationToken = default);
+    Task<ReceiptLabelsDTO> LabelReceiptDetailsAsync(string receiptJson, Guid appId, CancellationToken cancellationToken = default);
+    Task<SemanticEmbeddingDTO> CreateSemanticEmbeddingAsync(ReceiptLabelsDTO receiptLabels, Guid appId, CancellationToken cancellationToken = default);
+    Task<List<ExpenseSearchResponseDTO>> SearchExpensesAsync(ExpenseSearchDTO searchRequest, Guid appId, CancellationToken cancellationToken = default);
 }
 
 public class SemanticService : ISemanticService
@@ -49,7 +49,7 @@ public class SemanticService : ISemanticService
         _vectorStore = vectorStore;
     }
 
-    public async Task<List<ReceiptDTO>> ScanReceiptAsync(Stream fileStream)
+    public async Task<List<ReceiptDTO>> ScanReceiptAsync(Stream fileStream, Guid appId, CancellationToken cancellationToken = default)
     {
         var appSettings = _config.GetSection("AppSettings").Get<AppSettings>();
         if (appSettings == null) throw new ApplicationException("AppSettings are not configured correctly.");
@@ -66,7 +66,7 @@ public class SemanticService : ISemanticService
 
         // Analyze the receipt
         AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(fileStream));
-        var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions);
+        var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions, cancellationToken);
 
         var receipts = operation.Value;
         var resultData = new List<ReceiptDTO>();
@@ -133,7 +133,7 @@ public class SemanticService : ISemanticService
         return resultData;
     }
 
-    public async Task<TextToExpenseResponseDTO> TextToExpenseAsync(string prompt)
+    public async Task<TextToExpenseResponseDTO> TextToExpenseAsync(string prompt, Guid appId, CancellationToken cancellationToken = default)
     {
         ChatHistory chatHistory = new();
         chatHistory.AddSystemMessage(
@@ -162,7 +162,7 @@ public class SemanticService : ISemanticService
         chatHistory.AddUserMessage($"Analyze the following text and generate an output according to the provided guideline document:\n{prompt}");
 
         // Call chat service
-        var message = await _chatCompletionService.GetChatMessageContentAsync(chatHistory);
+        var message = await _chatCompletionService.GetChatMessageContentAsync(chatHistory, cancellationToken: cancellationToken);
 
         var responseContent = message.Content ?? "The model failed to generate response text";
 
@@ -178,7 +178,7 @@ public class SemanticService : ISemanticService
         return result;
     }
 
-    public async Task<ReceiptLabelsDTO> LabelReceiptDetailsAsync(string receiptJson)
+    public async Task<ReceiptLabelsDTO> LabelReceiptDetailsAsync(string receiptJson, Guid appId, CancellationToken cancellationToken = default)
     {
         // Define the messages for the chat completion
         ChatHistory chatHistory = new();
@@ -208,7 +208,7 @@ public class SemanticService : ISemanticService
         chatHistory.AddUserMessage($"Analyze the following receipt data and generate labels:\n{receiptJson}");
 
         // Call chat service
-        var message = await _chatCompletionService.GetChatMessageContentAsync(chatHistory);
+        var message = await _chatCompletionService.GetChatMessageContentAsync(chatHistory, cancellationToken: cancellationToken);
 
         var responseContent = message.Content ?? "The model failed to generate response text";
 
@@ -224,13 +224,13 @@ public class SemanticService : ISemanticService
         return result;
     }
 
-    public async Task<SemanticEmbeddingDTO> CreateSemanticEmbeddingAsync(ReceiptLabelsDTO receiptLabels)
+    public async Task<SemanticEmbeddingDTO> CreateSemanticEmbeddingAsync(ReceiptLabelsDTO receiptLabels, Guid appId, CancellationToken cancellationToken = default)
     {
         List<string> list = receiptLabels?.Labels?.ToList() ?? new List<string>();
         if (!string.IsNullOrWhiteSpace(receiptLabels?.Name)) list.Add(receiptLabels.Name);
 
         var text = string.Join(" ", list);
-        var embedding = await _embeddingGenerator.GenerateAsync(text);
+        var embedding = await _embeddingGenerator.GenerateAsync(text, cancellationToken: cancellationToken);
 
         SemanticEmbeddingDTO result = new()
         {
@@ -241,11 +241,11 @@ public class SemanticService : ISemanticService
         return result;
     }
 
-    public async Task<List<ExpenseSearchResponseDTO>> SearchExpensesAsync(ExpenseSearchDTO searchRequest)
+    public async Task<List<ExpenseSearchResponseDTO>> SearchExpensesAsync(ExpenseSearchDTO searchRequest, Guid appId, CancellationToken cancellationToken = default)
     {
         if (searchRequest is null) throw new ArgumentNullException(nameof(searchRequest));
 
-        Embedding<float> queryEmbedding = await _embeddingGenerator.GenerateAsync(searchRequest.SearchText);
+        Embedding<float> queryEmbedding = await _embeddingGenerator.GenerateAsync(searchRequest.SearchText, cancellationToken: cancellationToken);
 
         // Get and create collection if it doesn't exist.
         var collectionName = "ExpenseSemantics";
@@ -256,7 +256,7 @@ public class SemanticService : ISemanticService
         // uses distance
         // Lower score = more similar
         // Higher score = less similar
-        var searchResult = expenseSemanticCollection.SearchAsync(queryEmbedding, top: searchRequest.TopN);
+        var searchResult = expenseSemanticCollection.SearchAsync(queryEmbedding, top: searchRequest.TopN, cancellationToken: cancellationToken);
         await foreach (var expenseVectorResult in searchResult)
         {
             if (!expenseVectorResult.Score.HasValue) continue;
@@ -270,7 +270,8 @@ public class SemanticService : ISemanticService
             .Select(x => x.ExpenseId)
             .ToList();
         var expenses = await _expenseRepository.ListAsync(
-            new GetExpensesByIdsSpec(expenseIds)
+            new GetExpensesByIdsSpec(expenseIds, appId),
+            cancellationToken
         );
         // Must return in the same order as expenseIds
         // Could be optimize to sort out of memory
@@ -282,6 +283,7 @@ public class SemanticService : ISemanticService
         List<ExpenseSearchResponseDTO> result = [];
         foreach (var expense in orderedExpenses)
         {
+            if (expense == null) continue;
             result.Add(
                 new()
                 {

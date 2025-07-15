@@ -34,16 +34,15 @@
                         {
                             <MatTable Items="budget.ExpenseDTOs.OrderByDescending(x => x.Id)">
                                 <MatTableHeader>
-                                    <th>Name</th>
-                                    <th>Cost</th>
+                                    <th style="width: 250px;">Name</th>
+                                    <th style="text-align: right;">Cost</th>
                                 </MatTableHeader>
                                 <MatTableRow>
                                     <td>
                                         @context.Name 
                                         @if (@context.IsRecurring) { <MatIcon Icon="autorenew" /> }
-
                                     </td>
-                                    <td>
+                                    <td style="text-align: right;">
                                         @context.Cost.FormatAsDollar()
                                     </td>
                                 </MatTableRow>

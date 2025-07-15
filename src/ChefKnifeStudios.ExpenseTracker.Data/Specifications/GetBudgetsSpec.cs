@@ -11,10 +11,11 @@ namespace ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 
 public sealed class GetBudgetsSpec : Specification<Budget>
 {
-    public GetBudgetsSpec()
+    public GetBudgetsSpec(Guid appId)
     {
         Query
             .Include(x => x.Expenses)
+            .Where(x => x.AppId == appId)
             .OrderByDescending(x => x.CreatedOnUtc);
     }
 }

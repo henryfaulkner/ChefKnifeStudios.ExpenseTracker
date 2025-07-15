@@ -24,6 +24,9 @@ public class ExpenseSemantic : IAggregateRoot
     [VectorStoreData]
     public byte[]? SemanticEmbedding { get; set; }
 
+    [VectorStoreData]
+    public Guid AppId { get; set; }
+
     [NotMapped]
     [VectorStoreVector(1536)]
     public ReadOnlyMemory<float> SemanticEmbeddingVectors
