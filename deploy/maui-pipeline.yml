@@ -18,7 +18,7 @@ stages:
     displayName: iOS Stage
     pool:
       name: Azure Pipelines
-      vmImage: macOS-13
+      vmImage: macOS-14
     jobs:
       - job: ios_job
         displayName: iOS job
