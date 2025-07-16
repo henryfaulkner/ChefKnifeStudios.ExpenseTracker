@@ -3,7 +3,7 @@ steps:
   displayName: Set .NET version
   inputs:
     packageType: 'sdk'
-    version: 9.0.1xx
+    version: 9.0.x
 
 - task: Bash@3
   displayName: Install MAUI workloads
