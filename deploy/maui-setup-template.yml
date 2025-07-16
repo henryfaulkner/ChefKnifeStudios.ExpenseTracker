@@ -6,6 +6,14 @@ steps:
     version: 9.0.x
 
 - task: Bash@3
+  displayName: Set Xcode 16.4 explicitly
+  inputs:
+    targetType: 'inline'
+    script: |
+      sudo xcode-select -s /Applications/Xcode_16.4.app
+      xcodebuild -version
+
+- task: Bash@3
   displayName: Install MAUI workloads
   inputs:
     targetType: 'inline'
