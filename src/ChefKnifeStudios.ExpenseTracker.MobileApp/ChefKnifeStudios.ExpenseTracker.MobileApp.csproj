@@ -24,7 +24,7 @@
         <ApplicationTitle>ChefKnifeStudios.ExpenseTracker.MobileApp</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.chefknifestudios.expensetracker.mobileapp</ApplicationId>
+        <ApplicationId>com.chefknifestudios.expensetracker</ApplicationId>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>

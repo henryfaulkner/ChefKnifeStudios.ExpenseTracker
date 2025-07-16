@@ -26,16 +26,16 @@ stages:
           - task: InstallAppleProvisioningProfile@1
             inputs:
               provisioningProfileLocation: 'secureFiles'
-              provProfileSecureFile: appalchemy.mobileprovision
+              provProfileSecureFile: Expense_Tracker_Profile.mobileprovision
           
           - task: InstallAppleCertificate@2
             inputs:
-              certSecureFile: distribution.p12
+              certSecureFile: Distribution.p12
               keychain: 'temp' 
               certPwd: $(ios_distribution_password)
 
           - task: Bash@3
-            displayName: Build iOD MAUI app
+            displayName: Build iOS MAUI app
             inputs:
               targetType: 'inline'
               script: |
