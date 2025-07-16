@@ -24,7 +24,7 @@
         <ApplicationTitle>ChefKnifeStudios.ExpenseTracker.MobileApp</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.chefknifestudios.expensetracker.mobileapp</ApplicationId>
+        <ApplicationId>com.chefknifestudios.expensetracker</ApplicationId>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -63,6 +63,10 @@
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-ios'">
+		<EmbeddedResource Include="appsettings.json" />
+	</ItemGroup>
+	
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Maui" Version="12.0.0" />
         <PackageReference Include="CommunityToolkit.Maui.Camera" Version="2.0.3" />

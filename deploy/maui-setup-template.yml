@@ -1,0 +1,37 @@
+steps:
+- task: UseDotNet@2
+  displayName: Set .NET version
+  inputs:
+    packageType: 'sdk'
+    version: 9.0.x
+
+- task: Bash@3
+  displayName: List available Xcode versions
+  inputs:
+    targetType: 'inline'
+    script: |
+      ls -l /Applications | grep Xcode
+      xcode-select -p
+      xcodebuild -version
+
+- task: Bash@3
+  displayName: Set Xcode 16.4 explicitly
+  inputs:
+    targetType: 'inline'
+    script: |
+      sudo xcode-select -s /Applications/Xcode_16.4.app
+      xcodebuild -version
+
+- task: Bash@3
+  displayName: Install MAUI workloads
+  inputs:
+    targetType: 'inline'
+    script: |
+      dotnet nuget locals all --clear
+      dotnet workload install android ios maui --version 9.0.302.0 --source https://aka.ms/dotnet8/nuget/index.json --source https://api.nuget.org/v3/index.json
+
+- task: Bash@3
+  displayName: Show current working directory
+  inputs:
+    targetType: 'inline'
+    script: 'ls'

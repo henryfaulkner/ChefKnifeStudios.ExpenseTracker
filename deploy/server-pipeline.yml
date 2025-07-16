@@ -1,5 +1,4 @@
-
-name: $(SourceBranchName)-expense-tracker-$(Date:yyyyMMdd).$(Rev:r)
+name: $(SourceBranchName)-expense-tracker-server-$(Date:yyyyMMdd).$(Rev:r)
 
 trigger:
   branches:
