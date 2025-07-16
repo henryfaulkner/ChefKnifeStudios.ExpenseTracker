@@ -6,6 +6,15 @@ steps:
     version: 9.0.x
 
 - task: Bash@3
+  displayName: List available Xcode versions
+  inputs:
+    targetType: 'inline'
+    script: |
+      ls -l /Applications | grep Xcode
+      xcode-select -p
+      xcodebuild -version
+
+- task: Bash@3
   displayName: Set Xcode 16.4 explicitly
   inputs:
     targetType: 'inline'
