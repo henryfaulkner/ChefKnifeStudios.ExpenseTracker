@@ -1,3 +1,5 @@
+# youtube series: https://www.youtube.com/watch?v=eLY9EDzyvoQ&list=PL0jJqThQHximeZ2a0HKaRx44s8UDIRkuY&index=3
+
 name: $(SourceBranchName)-expense-tracker-maui-$(Date:yyyyMMdd).$(Rev:r)
 
 trigger:
