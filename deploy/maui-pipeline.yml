@@ -1,6 +1,6 @@
 # youtube series: https://www.youtube.com/watch?v=eLY9EDzyvoQ&list=PL0jJqThQHximeZ2a0HKaRx44s8UDIRkuY&index=3
 
-name: $(SourceBranchName)-expense-tracker-maui-$(Date:yyyyMMdd).$(Rev:r)
+name: $(SourceBranchName)-expense-tracker-maui-$(Date:yyyyMMdd).$(Rev:r)-$(app_version_major).$(app_version_minor).$(app_version_patch)+$(app_version_code)
 
 trigger:
   branches:
@@ -12,6 +12,9 @@ pr: none
 
 variables:
   - group: 'Prod-ExpenseTracker'
+  - group: 'Versions'
+  - name: 'AppBuildVersion'
+    value: $(app_version_major).$(app_version_minor).$(app_version_patch)
 
 stages:
   - stage: ios_stage
@@ -41,7 +44,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                dotnet publish src/ChefKnifeStudios.ExpenseTracker.MobileApp/ChefKnifeStudios.ExpenseTracker.MobileApp.csproj -f net9.0-ios -c Release --output '$(Build.ArtifactStagingDirectory)/iOS' -p:ArchiveOnBuild=true -p:RuntimeIdentifier=ios-arm64 -p:CodesignKey="$(codesign_key)" -p:CodesignProvision="$(codesign_provision)"
+                dotnet publish src/ChefKnifeStudios.ExpenseTracker.MobileApp/ChefKnifeStudios.ExpenseTracker.MobileApp.csproj -f net9.0-ios -c Release --output '$(Build.ArtifactStagingDirectory)/iOS' -p:ArchiveOnBuild=true -p:RuntimeIdentifier=ios-arm64 -p:CodesignKey="$(codesign_key)" -p:CodesignProvision="$(codesign_provision)" -p:ApplicationDisplayVersion=$(app_build_version) -p:ApplicationVersion=$(app_version_code)
 
           - task: PublishBuildArtifacts@1
             displayName: 'Publish iOS app to artifacts'
