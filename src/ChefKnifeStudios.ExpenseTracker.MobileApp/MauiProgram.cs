@@ -3,6 +3,8 @@ using ChefKnifeStudios.ExpenseTracker.Shared;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Media;
+using Microsoft.Extensions.Configuration;
+using System.Reflection;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp
 {
@@ -10,6 +12,14 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
     {
         public static MauiApp CreateMauiApp()
         {
+            var a = Assembly.GetExecutingAssembly();
+            var resourceNames = a.GetManifestResourceNames();
+            var appSettings = resourceNames.FirstOrDefault(x => x.Contains("appsettings.json"));
+            using var stream = a.GetManifestResourceStream(appSettings);
+            var config = new ConfigurationBuilder()
+                .AddJsonStream(stream)
+                .Build();
+
             var builder = MauiApp.CreateBuilder();
 
             builder.RegisterCommunityToolkit();

@@ -77,77 +77,88 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             return;
 
         _isLoading = true;
-        ReceiptLabelsDTO receiptLabels = new()
+        try
         {
-            Name = _name,
-            Labels = _labels,
-        };
-
-        var embeddingRes = await SemanticService.CreateSemanticEmbeddingAsync(receiptLabels);
-        var embedding = embeddingRes.Data;
-        if (embedding is not SemanticEmbeddingDTO) throw new ApplicationException("Embedding data is null.");
-
-        ExpenseDTO expense = new()
-        {
-            Name = _name,
-            Cost = _cost.Value,
-            Labels = _labels ?? [],
-            IsRecurring = _isRecurring,
-            ExpenseSemantic = new()
+            ReceiptLabelsDTO receiptLabels = new()
             {
-                Labels = embedding.Labels,
-                SemanticEmbedding = embedding.Embedding,
+                Name = _name,
+                Labels = _labels,
+            };
+
+            var embeddingRes = await SemanticService.CreateSemanticEmbeddingAsync(receiptLabels);
+            var embedding = embeddingRes.Data;
+            if (embedding is not SemanticEmbeddingDTO) throw new ApplicationException("Embedding data is null.");
+
+            ExpenseDTO expense = new()
+            {
+                Name = _name,
+                Cost = _cost.Value,
+                Labels = _labels ?? [],
+                IsRecurring = _isRecurring,
+                ExpenseSemantic = new()
+                {
+                    Labels = embedding.Labels,
+                    SemanticEmbedding = embedding.Embedding,
+                }
+            };
+
+            var res1 = await StorageService.AddExpenseAsync(expense);
+            if (!res1.IsSuccess)
+            {
+                ToastService.ShowError("Your expense could not be created");
             }
-        };
-
-        var res1 = await StorageService.AddExpenseAsync(expense);
-        if (!res1.IsSuccess)
-        {
-            ToastService.ShowError("Your expense could not be created");
-        }
-        else
-        {
-            if (_isRecurring)
+            else
             {
-                RecurringExpenseConfigDTO recurringExpense = new()
+                if (_isRecurring)
                 {
-                    Name = expense.Name,
-                    Cost = expense.Cost,
-                    Labels = expense.Labels ?? [],
-                };
-                var res2 = await StorageService.AddRecurringExpenseAsync(recurringExpense);
-                if (!res1.IsSuccess)
-                {
-                    ToastService.ShowError("Your recurring expense could not be created");
-                    return;
+                    RecurringExpenseConfigDTO recurringExpense = new()
+                    {
+                        Name = expense.Name,
+                        Cost = expense.Cost,
+                        Labels = expense.Labels ?? [],
+                    };
+                    var res2 = await StorageService.AddRecurringExpenseAsync(recurringExpense);
+                    if (!res1.IsSuccess)
+                    {
+                        ToastService.ShowError("Your recurring expense could not be created");
+                        _isLoading = false;
+                        return;
+                    }
+                    else
+                    {
+                        ToastService.ShowSuccess("Your recurring expense was created");
+                    }
                 }
                 else
                 {
-                    ToastService.ShowSuccess("Your recurring expense was created");
+                    ToastService.ShowSuccess("Your expense was created");
                 }
-            } 
-            else
-            {
-                ToastService.ShowSuccess("Your expense was created");
             }
-        }
 
-        _isLoading = false;
-        EventNotificationService.PostEvent(
-            this,
-            new ExpenseEventArgs()
-            {
-                Type = ExpenseEventArgs.Types.Added,
-            }
-        );
-        EventNotificationService.PostEvent(
-            this,
-            new BladeEventArgs()
-            {
-                Type = BladeEventArgs.Types.Close,
-            }
-        );
-        Clear();
+            EventNotificationService.PostEvent(
+                this,
+                new ExpenseEventArgs()
+                {
+                    Type = ExpenseEventArgs.Types.Added,
+                }
+            );
+            EventNotificationService.PostEvent(
+                this,
+                new BladeEventArgs()
+                {
+                    Type = BladeEventArgs.Types.Close,
+                }
+            );
+            Clear();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while creating expense.");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     void Clear()
@@ -159,56 +170,96 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     async Task HandlePickPictureAsync()
     {
         _isLoading = true;
-        var receipt = await ExpenseViewModel.PickPhotoForReceiptAsync();
-        if (receipt == null)
-        {
-            ToastService.ShowWarning("The receipt could not be processed");
-            return;
-        }
-        if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
+        try
+        { 
+            var receipt = await ExpenseViewModel.PickPhotoForReceiptAsync();
+            if (receipt == null)
+            {
+                ToastService.ShowWarning("The receipt could not be processed");
+                _isLoading = false;
+                return;
+            }
+            if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
 
-        _name = receipt.Name;
-        _cost = receipt.Total;
-        _labels = receipt.Labels;
-        _isLoading = false;
+            _name = receipt.Name;
+            _cost = receipt.Total;
+            _labels = receipt.Labels;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while picking a photo.");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     async Task HandleTakePictureAsync()
     {
-        _isLoading = true;
-        var receipt = await ExpenseViewModel.CapturePhotoForReceiptAsync();
-        if (receipt == null)
-        {
-            ToastService.ShowWarning("The receipt could not be processed");
-            return;
-        }
-        if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
+        try
+        { 
+            _isLoading = true;
+            var receipt = await ExpenseViewModel.CapturePhotoForReceiptAsync();
+            if (receipt == null)
+            {
+                ToastService.ShowWarning("The receipt could not be processed");
+                _isLoading = false;
+                return;
+            }
+            if (!string.IsNullOrWhiteSpace(receipt.MerchantName)) receipt.Labels.Add(receipt.MerchantName);
 
-        _name = receipt.Name;
-        _cost = receipt.Total;
-        _labels = receipt.Labels;
-        _isLoading = false;
+            _name = receipt.Name;
+            _cost = receipt.Total;
+            _labels = receipt.Labels;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while taking a picture.");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     async Task HandleStartListeningAsync()
     {
         _isLoading = true;
-        await ExpenseViewModel.StartListeningForExpenseAsync();
+        try
+        {
+            await ExpenseViewModel.StartListeningForExpenseAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while starting to listen.");
+            _isLoading = false;
+        }
     }
 
     async Task HandleStopListeningAsync()
     {
-        var data = await ExpenseViewModel.StopListeningForExpenseAsync();
-        if (data is null)
+        try
         {
-            ToastService.ShowWarning("Expense could not be created from description.");
-            return;
+            var data = await ExpenseViewModel.StopListeningForExpenseAsync();
+            if (data is null)
+            {
+                ToastService.ShowWarning("Expense could not be created from description.");
+                _isLoading = false;
+                return;
+            }
+
+            _name = data.Name;
+            _cost = data.Price;
+            _labels = data.Labels?.ToList();
         }
-
-        _name = data.Name;
-        _cost = data.Price;
-        _labels = data.Labels?.ToList();
-
-        _isLoading = false;
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while processing speech-to-text.");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 }
