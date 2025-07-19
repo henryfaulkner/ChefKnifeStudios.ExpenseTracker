@@ -29,11 +29,13 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
-	<key>NSSpeechRecognitionUsageDescription</key>  
-	<string>SpeechToText requires speech recognition usage</string>  
-	<key>NSMicrophoneUsageDescription</key>  
-	<string>SpeechToText requires microphone usage</string> 
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SpeechToText requires speech recognition usage</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SpeechToText requires microphone usage</string>
 	<key>NSCameraUsageDescription</key>
-    <string>This app needs access to the camera to scan receipts.</string>
+	<string>This app needs access to the camera to scan receipts.</string>
+	<key>CFBundleDisplayName</key>
+	<string>Expense Tracker</string>
 </dict>
 </plist>
