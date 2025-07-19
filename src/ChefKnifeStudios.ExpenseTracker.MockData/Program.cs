@@ -119,16 +119,15 @@ class Program
             var embedding = await embeddingGenerator.GenerateAsync(labelText);
             var semantic = new ExpenseSemantic
             {
-                Id = expense.Id,
                 ExpenseId = expense.Id,
                 Labels = labelText,
                 SemanticEmbedding = System.Runtime.InteropServices.MemoryMarshal.AsBytes<float>(embedding.Vector.ToArray().AsSpan()).ToArray()
             };
             semantics.Add(semantic);
         }
-        await expenseSemanticCollection.UpsertAsync(semantics);
         db.ExpenseSemantics.AddRange(semantics);
         await db.SaveChangesAsync();
+        await expenseSemanticCollection.UpsertAsync(semantics);
 
         Console.WriteLine($"Database seeded with {budgets.Count} budgets, {expenses.Count} expenses, and {semantics.Count} semantic records.");
     }

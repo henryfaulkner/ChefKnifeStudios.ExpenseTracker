@@ -5,6 +5,7 @@ using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Shared;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Threading;
 
 namespace ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
@@ -16,23 +17,33 @@ public static class StorageEndpoints
         var group = app.MapGroup("/storage")
             .WithName("Storage");
 
-        // Add Expense
         group.MapPost("/expense", async (
             [FromBody] ExpenseDTO expenseDTO,
             [FromServices] IStorageService storageService,
             [FromServices] IRepository<Budget> budgetRepository,
+            [FromServices] ILoggerFactory loggerFactory,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
             {
-                return Results.BadRequest("App ID header is required");
-            }
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
 
-            var result = await storageService.AddExpenseAsync(expenseDTO, Guid.Parse(appId), cancellationToken);
-            return result ? Results.Ok() : Results.Problem("Failed to add expense");
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var result = await storageService.AddExpenseAsync(expenseDTO, Guid.Parse(appId), cancellationToken);
+                return result ? Results.Ok() : Results.Problem("Failed to add expense");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in AddExpense endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
         })
         .WithName("AddExpense")
         .Accepts<ExpenseDTO>("application/json")
@@ -40,23 +51,33 @@ public static class StorageEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
-        // Add Budget
         group.MapPost("/budget", async (
             [FromBody] BudgetDTO budgetDTO,
             [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
             {
-                return Results.BadRequest("App ID header is required");
-            }
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
 
-            var budget = budgetDTO.MapToModel();
-            var result = await storageService.AddBudgetAsync(budget, Guid.Parse(appId), cancellationToken);
-            return result ? Results.Ok() : Results.Problem("Failed to add budget");
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var budget = budgetDTO.MapToModel();
+                var result = await storageService.AddBudgetAsync(budget, Guid.Parse(appId), cancellationToken);
+                return result ? Results.Ok() : Results.Problem("Failed to add budget");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in AddBudget endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
         })
         .WithName("AddBudget")
         .Accepts<BudgetDTO>("application/json")
@@ -64,34 +85,42 @@ public static class StorageEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
-        // Update Budget
         group.MapPut("/budget", async (
             [FromBody] BudgetDTO budgetDTO,
             [FromServices] IStorageService storageService,
             [FromServices] IRepository<Budget> budgetRepository,
+            [FromServices] ILoggerFactory loggerFactory,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
             {
-                return Results.BadRequest("App ID header is required");
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var existing = await budgetRepository.GetByIdAsync(budgetDTO.Id);
+                if (existing == null)
+                    return Results.NotFound();
+
+                existing.Name = budgetDTO.Name;
+                existing.ExpenseBudget = budgetDTO.ExpenseBudget;
+                existing.StartDateUtc = budgetDTO.StartDate;
+                existing.EndDateUtc = budgetDTO.EndDate;
+
+                var result = await storageService.UpdateBudgetAsync(existing, Guid.Parse(appId), cancellationToken);
+                return result ? Results.Ok() : Results.Problem("Failed to update budget");
             }
-
-            // Find the existing budget by Id
-            var existing = await budgetRepository.GetByIdAsync(budgetDTO.Id);
-            if (existing == null)
-                return Results.NotFound();
-
-            // Update properties
-            existing.Name = budgetDTO.Name;
-            existing.ExpenseBudget = budgetDTO.ExpenseBudget;
-            existing.StartDateUtc = budgetDTO.StartDate;
-            existing.EndDateUtc = budgetDTO.EndDate;
-
-            var result = await storageService.UpdateBudgetAsync(existing, Guid.Parse(appId), cancellationToken);
-            return result ? Results.Ok() : Results.Problem("Failed to update budget");
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in UpdateBudget endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
         })
         .WithName("UpdateBudget")
         .Accepts<BudgetDTO>("application/json")
@@ -100,45 +129,65 @@ public static class StorageEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
-        // Get Budgets
         group.MapGet("/budgets", async (
             [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
             {
-                return Results.BadRequest("App ID header is required");
-            }
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
 
-            var result = await storageService.GetBudgetsAsync(Guid.Parse(appId));
-            return Results.Ok(result);
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var result = await storageService.GetBudgetsAsync(Guid.Parse(appId));
+                return Results.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in GetBudgets endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
         })
         .WithName("GetBudgets")
         .Produces<IEnumerable<BudgetDTO>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status500InternalServerError);
 
-        // Search Budgets
         group.MapGet("/budgets/search", async (
             [FromQuery] string? searchText,
             [FromQuery] int pageSize,
             [FromQuery] int pageNumber,
             [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
             {
-                return Results.BadRequest("App ID header is required");
-            }
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
 
-            var pagedResult = await storageService.SearchBudgetsAsync(searchText, pageSize, pageNumber, Guid.Parse(appId), cancellationToken);
-            var dto = pagedResult.MapToDTO();
-            return Results.Ok(dto);
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var pagedResult = await storageService.SearchBudgetsAsync(searchText, pageSize, pageNumber, Guid.Parse(appId), cancellationToken);
+                var dto = pagedResult.MapToDTO();
+                return Results.Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in SearchBudgets endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
         })
         .WithName("SearchBudgets")
         .Produces<PagedResultDTO<BudgetDTO>>(StatusCodes.Status200OK)
@@ -148,19 +197,30 @@ public static class StorageEndpoints
         group.MapPost("/recurring-expense", async (
             [FromBody] RecurringExpenseConfigDTO recurringExpenseDTO,
             [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
             {
-                return Results.BadRequest("App ID header is required");
-            }
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
 
-            var recurringExpense = recurringExpenseDTO.MapToModel();
-            var result = await storageService.AddRecurringExpenseAsync(recurringExpense, Guid.Parse(appId), cancellationToken);
-            return result ? Results.Ok() : Results.Problem("Failed to add recurring expense");
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var recurringExpense = recurringExpenseDTO.MapToModel();
+                var result = await storageService.AddRecurringExpenseAsync(recurringExpense, Guid.Parse(appId), cancellationToken);
+                return result ? Results.Ok() : Results.Problem("Failed to add recurring expense");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in AddRecurringExpense endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
         })
         .WithName("AddRecurringExpense")
         .Accepts<RecurringExpenseConfigDTO>("application/json")
@@ -170,18 +230,29 @@ public static class StorageEndpoints
 
         group.MapGet("/process-recurring-expenses", async (
             [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
             {
-                return Results.BadRequest("App ID header is required");
-            }
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
 
-            await storageService.ProcessRecurringExpensesAsync(cancellationToken);
-            return Results.Ok();
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                await storageService.ProcessRecurringExpensesAsync(cancellationToken);
+                return Results.Ok();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in ProcessRecurringExpenses endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
         })
         .WithName("ProcessRecurringExpenses")
         .Produces(StatusCodes.Status200OK)

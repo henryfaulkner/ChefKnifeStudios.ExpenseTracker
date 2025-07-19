@@ -12,6 +12,9 @@ public class RecurringExpenseConfigConfiguration : IEntityTypeConfiguration<Recu
         builder.ToTable("RecurringExpenseConfigs", DbSchemas.ExpenseTracker);
 
         builder.HasKey(x => x.Id);
+        builder.Property(e => e.Id)
+          .ValueGeneratedOnAdd() 
+          .UseIdentityColumn();
 
         builder.Property(x => x.Name)
             .IsRequired()

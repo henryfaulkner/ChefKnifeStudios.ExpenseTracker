@@ -15,20 +15,22 @@ public static class SemanticEndpoints
 
         group.MapPost("/scan-receipt", async (
             HttpRequest request,
-            ILogger<Program> logger,
+            [FromServices] ILoggerFactory loggerFactory,
             [FromServices] ISemanticService semanticService,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
-            {
-                return Results.BadRequest("App ID header is required");
-            }
-
+            var logger = loggerFactory.CreateLogger(nameof(SemanticEndpoints));
+            string? appId = null;
             try
             {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
                 // Read the uploaded file
                 if (!request.Form.Files.Any())
                 {
@@ -46,12 +48,12 @@ public static class SemanticEndpoints
             }
             catch (ApplicationException ex)
             {
-                logger.LogError(ex, "Application error: {Message}", ex.Message);
+                logger.LogError(ex, "Application error: {Message}. AppId: {AppId}", ex.Message, appId);
                 return Results.Problem(ex.Message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred.");
+                logger.LogError(ex, "An error occurred. AppId: {AppId}", appId);
                 return Results.StatusCode(StatusCodes.Status500InternalServerError);
             }
         })
@@ -63,20 +65,22 @@ public static class SemanticEndpoints
 
         group.MapPost("/text-to-expense", async (
             HttpRequest request,
-            ILogger<Program> logger,
+            [FromServices] ILoggerFactory loggerFactory,
             [FromServices] ISemanticService semanticService,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
-            {
-                return Results.BadRequest("App ID header is required");
-            }
-
+            var logger = loggerFactory.CreateLogger(nameof(SemanticEndpoints));
+            string? appId = null;
             try
             {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
                 string prompt;
                 using (var reader = new StreamReader(request.Body))
                 {
@@ -88,12 +92,12 @@ public static class SemanticEndpoints
             }
             catch (ApplicationException ex)
             {
-                logger.LogError(ex, "Application error: {Message}", ex.Message);
+                logger.LogError(ex, "Application error: {Message}. AppId: {AppId}", ex.Message, appId);
                 return Results.Problem(ex.Message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred.");
+                logger.LogError(ex, "An error occurred. AppId: {AppId}", appId);
                 return Results.StatusCode(StatusCodes.Status500InternalServerError);
             }
         })
@@ -105,20 +109,22 @@ public static class SemanticEndpoints
 
         group.MapPost("/label-receipt-details", async (
             HttpRequest request,
-            ILogger<Program> logger,
+            [FromServices] ILoggerFactory loggerFactory,
             [FromServices] ISemanticService semanticService,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
-            {
-                return Results.BadRequest("App ID header is required");
-            }
-
+            var logger = loggerFactory.CreateLogger(nameof(SemanticEndpoints));
+            string? appId = null;
             try
             {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
                 // Read the receipt JSON input from the request body
                 string prompt;
                 using (var reader = new StreamReader(request.Body))
@@ -131,12 +137,12 @@ public static class SemanticEndpoints
             }
             catch (ApplicationException ex)
             {
-                logger.LogError(ex, "Application error: {Message}", ex.Message);
+                logger.LogError(ex, "Application error: {Message}. AppId: {AppId}", ex.Message, appId);
                 return Results.Problem(ex.Message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred.");
+                logger.LogError(ex, "An error occurred. AppId: {AppId}", appId);
                 return Results.StatusCode(StatusCodes.Status500InternalServerError);
             }
         })
@@ -148,20 +154,22 @@ public static class SemanticEndpoints
 
         group.MapPost("semantic-embedding", async (
             HttpRequest request,
-            ILogger<Program> logger,
+            [FromServices] ILoggerFactory loggerFactory,
             [FromServices] ISemanticService semanticService,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
-            {
-                return Results.BadRequest("App ID header is required");
-            }
-
+            var logger = loggerFactory.CreateLogger(nameof(SemanticEndpoints));
+            string? appId = null;
             try
             {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
                 string reqBody;
                 using (var reader = new StreamReader(request.Body))
                 {
@@ -175,12 +183,12 @@ public static class SemanticEndpoints
             }
             catch (ApplicationException ex)
             {
-                logger.LogError(ex, "Application error: {Message}", ex.Message);
+                logger.LogError(ex, "Application error: {Message}. AppId: {AppId}", ex.Message, appId);
                 return Results.Problem(ex.Message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred.");
+                logger.LogError(ex, "An error occurred. AppId: {AppId}", appId);
                 return Results.StatusCode(StatusCodes.Status500InternalServerError);
             }
         })
@@ -192,20 +200,22 @@ public static class SemanticEndpoints
 
         group.MapPost("expense/search", async (
             HttpRequest request,
-            ILogger<Program> logger,
+            [FromServices] ILoggerFactory loggerFactory,
             [FromServices] ISemanticService semanticService,
             HttpContext context,
             CancellationToken cancellationToken = default) =>
         {
-            var appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(appId))
-            {
-                return Results.BadRequest("App ID header is required");
-            }
-
+            var logger = loggerFactory.CreateLogger(nameof(SemanticEndpoints));
+            string? appId = null;
             try
             {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
                 string reqBody;
                 using (var reader = new StreamReader(request.Body))
                 {
@@ -219,12 +229,12 @@ public static class SemanticEndpoints
             }
             catch (ApplicationException ex)
             {
-                logger.LogError(ex, "Application error: {Message}", ex.Message);
+                logger.LogError(ex, "Application error: {Message}. AppId: {AppId}", ex.Message, appId);
                 return Results.Problem(ex.Message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred.");
+                logger.LogError(ex, "An error occurred. AppId: {AppId}", appId);
                 return Results.StatusCode(StatusCodes.Status500InternalServerError);
             }
         })

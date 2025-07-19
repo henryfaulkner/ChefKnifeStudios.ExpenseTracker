@@ -12,6 +12,9 @@ public class ExpenseSemanticConfiguration : IEntityTypeConfiguration<ExpenseSema
         builder.ToTable("ExpenseSemantics", DbSchemas.ExpenseTracker);
 
         builder.HasKey(x => x.Id);
+        builder.Property(e => e.Id)
+          .ValueGeneratedOnAdd()
+          .UseIdentityColumn();
 
         builder.HasOne(x => x.Expense)
             .WithOne(x => x.ExpenseSemantic)
