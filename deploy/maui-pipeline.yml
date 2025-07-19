@@ -13,7 +13,7 @@ pr: none
 variables:
   - group: 'Prod-ExpenseTracker'
   - group: 'AppBuildVersion'
-  - name: 'AppBuildVersion'
+  - name: 'app_build_version'
     value: $(app_version_major).$(app_version_minor).$(app_version_patch)
 
 stages:
