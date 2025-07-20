@@ -7,7 +7,7 @@ public interface ISearchViewModel : IViewModel
 {
     bool IsLoading { get; }
     IEnumerable<BudgetDTO> Budgets { get; }
-    IEnumerable<ExpenseSearchResponseDTO> SearchedExpenses { get; }
+    ExpenseSearchResponseDTO SearchResult { get; }
 
     Task LoadPagedBudgetsAsync();
     Task ChangeSearchTextAsync(string searchText, int topN);
@@ -39,11 +39,11 @@ public class SearchViewModel
         private set => SetValue(ref _budgets, value);
     }
 
-    IEnumerable<ExpenseSearchResponseDTO> _searchedExpenses = [];
-    public IEnumerable<ExpenseSearchResponseDTO> SearchedExpenses
+    ExpenseSearchResponseDTO _searchResult = new() { RagMessage = string.Empty, Expenses = [], };
+    public ExpenseSearchResponseDTO SearchResult
     {
-        get => _searchedExpenses;
-        private set => SetValue(ref _searchedExpenses, value);
+        get => _searchResult;
+        private set => SetValue(ref _searchResult, value);
     }
 
     string _searchText = string.Empty;
@@ -69,7 +69,7 @@ public class SearchViewModel
         _searchText = searchText;
         ExpenseSearchDTO reqBody = new () { SearchText = searchText, TopN = topN, };
         var res = await _semanticService.SearchExpensesAsync(reqBody);
-        if (res.IsSuccess) SearchedExpenses = res.Data;
+        if (res.IsSuccess) SearchResult = res.Data ?? new() { RagMessage = string.Empty, Expenses = [], };
         else _toastService.ShowError("Search results failed to load");
     }
 

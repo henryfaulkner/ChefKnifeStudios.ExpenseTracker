@@ -18,7 +18,7 @@ public partial class SearchBlade : ComponentBase, IDisposable
 
     readonly string[] _subscriptions =
     [
-        nameof(ISearchViewModel.SearchedExpenses),
+        nameof(ISearchViewModel.SearchResult),
     ];
 
     protected override void OnInitialized()

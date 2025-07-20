@@ -33,7 +33,7 @@ public partial class SearchBar : ComponentBase
         if (string.IsNullOrWhiteSpace(_searchText)) _searchText = string.Empty;
         _searchText = _searchText.Trim();
         await SearchViewModel.ChangeSearchTextAsync(_searchText, _topN);
-        if (SearchViewModel.SearchedExpenses.Any())
+        if (SearchViewModel.SearchResult.Expenses.Any())
         {
             EventNotificationService.PostEvent(
                 this,
@@ -42,6 +42,10 @@ public partial class SearchBar : ComponentBase
                     Type = BladeEventArgs.Types.Search,
                 }
             );
+        }
+        else
+        {
+            ToastService.ShowWarning("Your search had zero results.");
         }
     }
 }

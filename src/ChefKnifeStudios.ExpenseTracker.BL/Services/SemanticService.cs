@@ -1,17 +1,17 @@
 ﻿using Azure;
 using Azure.AI.DocumentIntelligence;
+using ChefKnifeStudios.ExpenseTracker.BL.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using ChefKnifeStudios.ExpenseTracker.BL.Models;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 
@@ -21,7 +21,7 @@ public interface ISemanticService
     Task<TextToExpenseResponseDTO> TextToExpenseAsync(string prompt, Guid appId, CancellationToken cancellationToken = default);
     Task<ReceiptLabelsDTO> LabelReceiptDetailsAsync(string receiptJson, Guid appId, CancellationToken cancellationToken = default);
     Task<SemanticEmbeddingDTO> CreateSemanticEmbeddingAsync(ReceiptLabelsDTO receiptLabels, Guid appId, CancellationToken cancellationToken = default);
-    Task<List<ExpenseSearchResponseDTO>> SearchExpensesAsync(ExpenseSearchDTO searchRequest, Guid appId, CancellationToken cancellationToken = default);
+    Task<ExpenseSearchResponseDTO> SearchExpensesAsync(ExpenseSearchDTO searchRequest, Guid appId, CancellationToken cancellationToken = default);
 }
 
 public class SemanticService : ISemanticService
@@ -275,7 +275,7 @@ public class SemanticService : ISemanticService
         }
     }
 
-    public async Task<List<ExpenseSearchResponseDTO>> SearchExpensesAsync(ExpenseSearchDTO searchRequest, Guid appId, CancellationToken cancellationToken = default)
+    public async Task<ExpenseSearchResponseDTO> SearchExpensesAsync(ExpenseSearchDTO searchRequest, Guid appId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("SearchExpensesAsync started. AppId: {AppId}, SearchText: {SearchText}", appId, searchRequest?.SearchText);
         try
@@ -311,27 +311,77 @@ public class SemanticService : ISemanticService
                 .Where(e => e != null)
                 .ToList();
 
-            List<ExpenseSearchResponseDTO> result = [];
+            List<ExpenseDTO> expenseList = [];
             foreach (var expense in orderedExpenses)
             {
                 if (expense == null) continue;
-                result.Add(
-                    new()
-                    {
-                        ExpenseId = expense.Id,
-                        ExpenseName = expense.Name,
-                        Cost = expense.Cost,
-                        BudgetName = expense.Budget?.Name ?? string.Empty,
-                    }
-                );
+                expenseList.Add(expense.MapToDTO());
             }
+            var ragMessage = (await CreateRagMessageAsync(expenseList, cancellationToken)) ?? string.Empty;
 
-            _logger.LogInformation("SearchExpensesAsync completed. AppId: {AppId}, Results: {Count}", appId, result.Count);
+            var result = new ExpenseSearchResponseDTO() { RagMessage = ragMessage, Expenses =  expenseList, };
+
+            _logger.LogInformation("SearchExpensesAsync completed. AppId: {AppId}, Results: {Count}", appId, expenseList.Count);
             return result;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "SearchExpensesAsync failed. AppId: {AppId}, SearchText: {SearchText}", appId, searchRequest?.SearchText);
+            throw;
+        }
+    }
+
+    private async Task<string?> CreateRagMessageAsync(IEnumerable<ExpenseDTO> expenses, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("CreateRagMessageAsync started.");
+        try
+        {
+            // Serialize only relevant fields for summarization
+            var simplifiedExpenses = expenses.Select(e => new
+            {
+                e.Name,
+                e.Cost,
+                e.Labels,
+                e.IsRecurring,
+                BudgetName = e.Budget?.Name
+            });
+
+            var expensesJson = JsonSerializer.Serialize(simplifiedExpenses, new JsonSerializerOptions
+            {
+                WriteIndented = false
+            });
+
+            // System message: instruct the AI model
+            var systemMessage = @"
+                You are an advanced AI assistant. Your task is to analyze a list of expense records provided in JSON format.
+                Summarize the data in natural language, highlighting patterns, categories, frequent labels, total and average costs, and any notable recurring expenses.
+                If possible, mention the most common budgets and any interesting insights.
+                Do not repeat the raw data; instead, provide a concise, human-readable summary.";
+
+            // User message: provide the serialized data
+            var userMessage = $"Here is the expense data:\n{expensesJson}";
+
+            ChatHistory chatHistory = new();
+            chatHistory.AddSystemMessage(systemMessage);
+            chatHistory.AddUserMessage(userMessage);
+
+            var message = await _chatCompletionService.GetChatMessageContentAsync(chatHistory, cancellationToken: cancellationToken);
+
+            var responseContent = message.Content ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(responseContent))
+            {
+                throw new ApplicationException("AI model returned empty response");
+            }
+
+            var result = responseContent;
+
+            _logger.LogInformation("CreateRagMessageAsync completed. Result: {0}", result);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CreateRagMessageAsync failed.");
             throw;
         }
     }

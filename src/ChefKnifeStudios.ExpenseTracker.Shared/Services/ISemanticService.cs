@@ -9,5 +9,5 @@ public interface ISemanticService
     Task<ApiResponse<ReceiptLabelsDTO?>> LabelReceiptDetailsAsync(ReceiptDTO receipt);
     Task<ApiResponse<SemanticEmbeddingDTO?>> CreateSemanticEmbeddingAsync(ReceiptLabelsDTO receiptLabels);
     Task<ApiResponse<bool>> UpsertExpenseAsync(ExpenseDTO expense);
-    Task<ApiResponse<IEnumerable<ExpenseSearchResponseDTO>>> SearchExpensesAsync(ExpenseSearchDTO searchBody);
+    Task<ApiResponse<ExpenseSearchResponseDTO>> SearchExpensesAsync(ExpenseSearchDTO searchBody);
 }

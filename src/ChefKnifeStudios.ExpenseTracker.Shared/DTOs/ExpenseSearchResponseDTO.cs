@@ -2,8 +2,6 @@
 
 public class ExpenseSearchResponseDTO
 {
-    public int ExpenseId { get; set; }
-    public required string ExpenseName { get; set; }
-    public decimal Cost { get; set; }
-    public required string BudgetName { get; set; }
+    public required string RagMessage { get; set; } 
+    public required IEnumerable<ExpenseDTO> Expenses { get; set; }
 }

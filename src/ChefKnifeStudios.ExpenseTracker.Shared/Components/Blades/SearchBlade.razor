@@ -5,19 +5,21 @@
                 Search Results
             </MatH4>
 
+            <MatBody2>@SearchViewModel.SearchResult.RagMessage</MatBody2>
+
             <MatList Id="result-list" Class="result-list">
                 @{
                     int i = 0;
                 }
-                @foreach (var expense in SearchViewModel.SearchedExpenses)
+                @foreach (var expense in SearchViewModel.SearchResult.Expenses)
                 {
                     i += 1;
                     int ii = i;
                     <MatListItem Class="list-item">
-                        <span>@expense.ExpenseName</span>
-                        <span>@expense.BudgetName</span>
+                        <span>@expense.Name</span>
+                        <span>@(expense.Budget?.Name ?? "N/A")</span>
                     </MatListItem>
-                    @if (ii != SearchViewModel.SearchedExpenses.Count())
+                    @if (ii != SearchViewModel.SearchResult.Expenses.Count())
                     {
                         <MatListDivider></MatListDivider>
                     }

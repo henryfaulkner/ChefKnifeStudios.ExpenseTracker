@@ -240,7 +240,7 @@ public static class SemanticEndpoints
         })
         .WithName("SearchExpenses")
         .Accepts<ExpenseSearchDTO>("application/json")
-        .Produces<IEnumerable<ExpenseSearchResponseDTO>>(StatusCodes.Status200OK)
+        .Produces<ExpenseSearchResponseDTO>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 

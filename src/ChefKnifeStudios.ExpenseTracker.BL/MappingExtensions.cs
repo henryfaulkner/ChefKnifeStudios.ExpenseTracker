@@ -18,6 +18,14 @@ public static class MappingExtensions
             Name = model.Name,
             Cost = model.Cost,
             Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
+            Budget = model.Budget is null ? null
+                : new()
+                {
+                    Name = model.Budget.Name,
+                    ExpenseBudget = model.Budget.ExpenseBudget,
+                    StartDate = DateTime.SpecifyKind(model.Budget.StartDateUtc, DateTimeKind.Utc).ToLocalTime(),
+                    EndDate = DateTime.SpecifyKind(model.Budget.EndDateUtc, DateTimeKind.Utc).ToLocalTime(),
+                },
             ExpenseSemantic = model.ExpenseSemantic is null ? null
                 : new()
                 {
@@ -40,6 +48,14 @@ public static class MappingExtensions
             Cost = dto.Cost,
             LabelsJson = JsonSerializer.Serialize(dto.Labels),
             IsRecurring = dto.IsRecurring,
+            Budget = dto.Budget is null ? null
+                : new()
+                {
+                    Name = dto.Budget.Name,
+                    ExpenseBudget = dto.Budget.ExpenseBudget,
+                    StartDateUtc = dto.Budget.StartDate.Kind == DateTimeKind.Utc ? dto.Budget.StartDate : dto.Budget.StartDate.ToUniversalTime(),
+                    EndDateUtc = dto.Budget.EndDate.Kind == DateTimeKind.Utc ? dto.Budget.EndDate : dto.Budget.EndDate.ToUniversalTime(),
+                },
             ExpenseSemantic = dto.ExpenseSemantic is null ? null
             : new()
             {

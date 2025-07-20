@@ -8,5 +8,6 @@ public class ExpenseDTO
     public required string Name { get; set; }
     public required IEnumerable<string> Labels { get; set; }
     public bool IsRecurring { get; set; }
+    public BudgetDTO? Budget { get; set; }
     public ExpenseSemanticDTO? ExpenseSemantic { get; set; }
 }
