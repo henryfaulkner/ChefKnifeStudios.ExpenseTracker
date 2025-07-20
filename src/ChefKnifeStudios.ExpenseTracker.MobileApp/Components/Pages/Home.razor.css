@@ -1,16 +1,18 @@
-﻿.home {
-    height: 100%;
+﻿.main-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-/*.main-container ::deep .search-bar {
-    height: 11.5vh;
+.main-container ::deep .search-bar {
+    width: 100vw;
+    flex-shrink: 0;
 }
-
-.main-container ::deep .budget-expense-list {
-    overflow-y: scroll;
-    height: 88.5vh;
-}*/
 
 .main-container ::deep .content {
-    overflow-y: scroll;
+    width: 100vw;
+    flex: 1 1 auto;
+    overflow-y: auto;
 }

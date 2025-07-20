@@ -1,7 +1,9 @@
 ﻿<div id="@_elementId" class="blade-container @( _isOpen ? "open" : "" )">
-    <button class="cross">
-        <a @onclick="HandleClosePressed">🗙</a>
-    </button>
+    <MatIconButton 
+        Icon="close"
+        @onclick="HandleClosePressed" 
+        Class="cross"
+    />
 
     <div class="content-container">
         @ContentFragment

@@ -1,5 +1,5 @@
 ﻿.blade-container {
-    position: fixed;
+    position: absolute;
     top: 0;
     right: 0;
     width: 80vw;
@@ -31,7 +31,7 @@
     box-sizing: border-box; /* Ensures padding is included in width */
 }
 
-.blade-container .cross {
+.blade-container ::deep .cross {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -39,9 +39,4 @@
     color: var(--clr-1p, #6442d6);
     font-size: 20px;
     border: none;
-}
-
-.blade-container .cross a {
-    text-decoration: none;
-    font-weight: bold;
 }

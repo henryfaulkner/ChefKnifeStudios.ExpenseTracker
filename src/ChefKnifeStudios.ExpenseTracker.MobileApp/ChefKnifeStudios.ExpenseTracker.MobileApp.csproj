@@ -42,7 +42,13 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
       <CodesignKey>Apple Development: Created via API (PV9Q7J4GFX)</CodesignKey>
-      <CodesignProvision>VS: com.companyname.chefknifestudios.expensetracker.mobileapp Development</CodesignProvision>
+      <CodesignProvision>VS: com.chefknifestudios.expensetracker Development</CodesignProvision>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
+      <BuildIpa>False</BuildIpa>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
+      <BuildIpa>False</BuildIpa>
     </PropertyGroup>
 
     <ItemGroup>
