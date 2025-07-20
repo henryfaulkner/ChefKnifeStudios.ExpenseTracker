@@ -15,4 +15,5 @@
     width: 100dvw;
     flex: 1 1 auto;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }

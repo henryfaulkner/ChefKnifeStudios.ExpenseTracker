@@ -3,6 +3,13 @@
 <div class="expense-blade">
     <BladeContainer @ref="_bladeContainer">
         <ContentFragment>
+            @if (_isLoading)
+            {
+                <div class="expense-blade__overlay">
+                    <MatProgressCircle Indeterminate="true" Size="MatProgressCircleSize.Large" />
+                </div>
+            }
+
             <MatH4 class="clr-on-1t-container">
                 Expense
             </MatH4>
@@ -41,7 +48,8 @@
                         OnClick="HandleSubmitPressedAsync"
                         Unelevated="true"
                         Label="SUBMIT"
-                        Disabled="_isLoading" />
+                        Disabled="@(_isLoading || ExpenseViewModel.IsListening)" 
+                    />
                 </div>
 
                 <div class="btns">
@@ -50,7 +58,7 @@
                         Outlined="true"
                         Label="PICK PHOTO"
                         Icon="insert_photo" 
-                        Disabled="_isLoading"
+                        Disabled="@(_isLoading || ExpenseViewModel.IsListening)"
                     />
 
                     <MatButton
@@ -58,7 +66,7 @@
                         Outlined="true"
                         Label="CAPTURE PHOTO"
                         Icon="add_a_photo"
-                        Disabled="_isLoading" 
+                        Disabled="@(_isLoading || ExpenseViewModel.IsListening)" 
                     />
 
                     <MatDivider />
@@ -80,6 +88,7 @@
                             Outlined="true"
                             Label="STOP LISTENING"
                             Icon="mic_off"
+                            Disabled="_isLoading" 
                         />
                     }
                 </div>

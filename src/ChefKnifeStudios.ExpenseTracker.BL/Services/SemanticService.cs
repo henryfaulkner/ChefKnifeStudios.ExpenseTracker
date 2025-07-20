@@ -63,14 +63,35 @@ public class SemanticService : ISemanticService
                 throw new ApplicationException("Azure Form Recognizer endpoint and key are not configured.");
             }
 
-            var credential = new AzureKeyCredential(appSettings.AzureDocumentIntelligence.ApiKey);
-            var client = new DocumentIntelligenceClient(
-                new Uri(appSettings.AzureDocumentIntelligence.Endpoint), credential);
+            //var credential = new AzureKeyCredential(appSettings.AzureDocumentIntelligence.ApiKey);
+            //var clientOptions = new DocumentIntelligenceClientOptions(version: DocumentIntelligenceClientOptions.ServiceVersion.V2024_11_30);
+            //var client = new DocumentIntelligenceClient(new Uri(appSettings.AzureDocumentIntelligence.Endpoint), credential, clientOptions);
+            //AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(fileStream));
+            //var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions, cancellationToken);
+            //var receipts = operation.Value;
 
-            AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(fileStream));
-            var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions, cancellationToken);
+            // Set your desired API version here
+            var apiVersion = "2023-07-31";
+            var url = $"{appSettings.AzureDocumentIntelligence.Endpoint}documentintelligence/documentModels/prebuilt-receipt:analyze?_overload=analyzeDocument&api-version={apiVersion}";
 
-            var receipts = operation.Value;
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", appSettings.AzureDocumentIntelligence.ApiKey);
+
+            using var content = new StreamContent(fileStream);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+
+            var response = await httpClient.PostAsync(url, content, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError("ScanReceiptAsync failed. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
+                throw new ApplicationException($"Form Recognizer API call failed: {response.StatusCode}");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            // Deserialize the response to your DTOs as needed
+            var receipts = JsonSerializer.Deserialize<AnalyzeResult>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            
             var resultData = new List<ReceiptDTO>();
 
             foreach (var receipt in receipts.Documents)

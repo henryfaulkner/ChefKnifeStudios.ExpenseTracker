@@ -19,7 +19,6 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     [Inject] ISemanticService SemanticService { get; set; } = null!;
     [Inject] IToastService ToastService { get; set; } = null!;
     [Inject] IExpenseViewModel ExpenseViewModel { get; set; } = null!;
-    [Inject] IMicrophoneService MicrophoneService { get; set; } = null!;
 
     BladeContainer? _bladeContainer;
 
@@ -225,7 +224,6 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
 
     async Task HandleStartListeningAsync()
     {
-        _isLoading = true;
         try
         {
             await ExpenseViewModel.StartListeningForExpenseAsync();
@@ -233,12 +231,12 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         catch (Exception ex)
         {
             Logger.LogError(ex, "An error occurred while starting to listen.");
-            _isLoading = false;
         }
     }
 
     async Task HandleStopListeningAsync()
     {
+        _isLoading = true;
         try
         {
             var data = await ExpenseViewModel.StopListeningForExpenseAsync();
