@@ -6,6 +6,7 @@ using MatBlazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
+using System;
 using System.ComponentModel;
 using System.Text.Json;
 
@@ -19,6 +20,10 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     [Inject] ISemanticService SemanticService { get; set; } = null!;
     [Inject] IToastService ToastService { get; set; } = null!;
     [Inject] IExpenseViewModel ExpenseViewModel { get; set; } = null!;
+    [Inject] ICommonJsInteropService CommonJsInteropService { get; set; } = null!;
+
+    readonly string _recurringHelpUid = Guid.NewGuid().ToString();
+    readonly Guid _recurringHelpRegistrationUid = Guid.NewGuid();
 
     BladeContainer? _bladeContainer;
 
@@ -27,6 +32,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     bool _isRecurring = false;
     List<string>? _labels;
     bool _isLoading = false;
+    bool _isRecurringTooltipOpen = false;
 
     readonly string[] _subscriptions =
     [
@@ -41,10 +47,19 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         base.OnInitialized();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender) return;
+        await CommonJsInteropService.RegisterClickOutside(_recurringHelpUid);
+        CommonJsInteropService.AddClickOutsideCallback(HandleRecurringHelpClickedOutside, _recurringHelpRegistrationUid);
+    }
+
     public void Dispose()
     {
         EventNotificationService.EventReceived -= HandleEventReceived;
         ExpenseViewModel.PropertyChanged -= ViewModel_OnPropertyChanged;
+        CommonJsInteropService.RemoveClickOutsideCallback(_recurringHelpRegistrationUid);
     }
 
     void ViewModel_OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -258,6 +273,20 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         finally
         {
             _isLoading = false;
+        }
+    }
+
+    void HandleRecurringHelpPressed()
+    {
+        _isRecurringTooltipOpen = !_isRecurringTooltipOpen;
+    }
+
+    void HandleRecurringHelpClickedOutside()
+    {
+        if (_isRecurringTooltipOpen)
+        {
+            _isRecurringTooltipOpen = false;
+            InvokeAsync(StateHasChanged);
         }
     }
 }

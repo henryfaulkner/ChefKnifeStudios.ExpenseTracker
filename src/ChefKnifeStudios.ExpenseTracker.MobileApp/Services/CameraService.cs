@@ -38,7 +38,9 @@ public class CameraService : ICameraService
     {
         if (MediaPicker.Default.IsCaptureSupported)
         {
+            ((MainPage)Application.Current.MainPage).SetCameraActive(true);
             FileResult? file = await MediaPicker.Default.CapturePhotoAsync();
+            ((MainPage)Application.Current.MainPage).SetCameraActive(false);
             if (file == null)
             {
                 _logger.LogInformation("Photo not able to be captured");

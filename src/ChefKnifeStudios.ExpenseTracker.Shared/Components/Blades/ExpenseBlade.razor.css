@@ -69,3 +69,52 @@
     padding-right: 0.25rem;
     font-size: 1.25rem;
 }
+
+::deep .is-recurring-help-icon {
+    padding-left: 0.25rem;
+    font-size: 1.25rem;
+}
+
+::deep .mdc-form-field > label {
+    margin-right: 0;
+}
+
+
+
+
+.tooltip-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+}
+
+.custom-tooltip {
+    position: absolute;
+    left: 50%;
+    top: 100%; /* Position below the target */
+    transform: translateX(-50%) translateY(8px);
+    background: #dcdaf5;
+    color: #241b2e;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    font-size: 0.95rem;
+    white-space: normal;
+    z-index: 10;
+    transition: opacity 0.15s;
+    width: 100%;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    top: -8px; /* Position above the tooltip */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #dcdaf5;
+    filter: drop-shadow(0 -1px 1px rgba(0,0,0,0.08));
+}

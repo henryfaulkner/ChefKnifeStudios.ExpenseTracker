@@ -16,6 +16,10 @@
     </BlazorWebView>
 
     <ContentPage.Behaviors>
-        <toolkit:StatusBarBehavior StatusBarColor="#e6e1e3" StatusBarStyle="LightContent"/>
+        <toolkit:StatusBarBehavior 
+            x:Name="StatusBarBehavior"
+            StatusBarColor="#e6e1e3"
+            StatusBarStyle="LightContent"
+        />
     </ContentPage.Behaviors>
 </ContentPage>

@@ -32,17 +32,37 @@
                         Disabled="_isLoading" 
                     />
 
-                    <MatCheckbox
-                        @bind-Value="@_isRecurring"
-                    >
-                        <span class="is-recurring-label">
-                            <MatIcon 
-                                Icon="autorenew"
-                                Class="is-recurring-label-icon" 
-                            />
-                            Is this a recurring expense?
-                        </span>
-                    </MatCheckbox>
+                    <span class="tooltip-container">
+                        <div class="target" style="display: flex; align-items: center; justify-content: start;">
+                            <MatCheckbox
+                                @bind-Value="@_isRecurring"
+                            >
+                                <span class="is-recurring-label">
+                                    @* <MatIcon 
+                                        Icon="autorenew"
+                                        Class="clr-1p is-recurring-label-icon" 
+                                    /> *@
+                                    Recurring expense? 
+                                </span>
+                            </MatCheckbox>
+                            <button 
+                                style="height: 20px;"
+                                @onclick="HandleRecurringHelpPressed"
+                                id="@_recurringHelpUid"
+                            >
+                                <MatIcon 
+                                    Icon="help_outline"
+                                    Class="clr-1s is-recurring-help-icon"
+                                />
+                            </button>
+                        </div>
+                        @if (_isRecurringTooltipOpen)
+                        {
+                            <span class="custom-tooltip">
+                                This expense will be automatically generated once per month going forward.<span class="tooltip-arrow"></span>
+                            </span>
+                        }
+                    </span>
 
                     <MatButton 
                         OnClick="HandleSubmitPressedAsync"
@@ -50,6 +70,8 @@
                         Label="SUBMIT"
                         Disabled="@(_isLoading || ExpenseViewModel.IsListening)" 
                     />
+
+                    
                 </div>
 
                 <div class="btns">

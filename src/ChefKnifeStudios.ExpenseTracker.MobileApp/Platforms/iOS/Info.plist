@@ -36,6 +36,6 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs access to the camera to scan receipts.</string>
 	<key>CFBundleDisplayName</key>
-	<string>Expense Tracker</string>
+	<string>Expenses</string>
 </dict>
 </plist>
