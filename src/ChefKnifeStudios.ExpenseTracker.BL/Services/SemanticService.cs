@@ -5,6 +5,7 @@ using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -63,16 +64,29 @@ public class SemanticService : ISemanticService
                 throw new ApplicationException("Azure Form Recognizer endpoint and key are not configured.");
             }
 
+            // uncomment this when V2024_11_30 v4.0 GA become responsive again
             //var credential = new AzureKeyCredential(appSettings.AzureDocumentIntelligence.ApiKey);
             //var clientOptions = new DocumentIntelligenceClientOptions(version: DocumentIntelligenceClientOptions.ServiceVersion.V2024_11_30);
             //var client = new DocumentIntelligenceClient(new Uri(appSettings.AzureDocumentIntelligence.Endpoint), credential, clientOptions);
             //AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(fileStream));
             //var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions, cancellationToken);
             //var receipts = operation.Value;
+            //if (!response.IsSuccessStatusCode)
+            //{
+            //    var error = await response.Content.ReadAsStringAsync();
+            //    _logger.LogError("ScanReceiptAsync failed. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
+            //    throw new ApplicationException($"Form Recognizer API call failed: {response.StatusCode}");
+            //}
 
-            // Set your desired API version here
-            var apiVersion = "2023-07-31";
-            var url = $"{appSettings.AzureDocumentIntelligence.Endpoint}documentintelligence/documentModels/prebuilt-receipt:analyze?_overload=analyzeDocument&api-version={apiVersion}";
+            //var responseContent = await response.Content.ReadAsStringAsync();
+            //var receipts = JsonSerializer.Deserialize<AnalyzeResult>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            //var resultData = MapAnalyzeResultToReceiptDTOs(receipts);
+
+            //_logger.LogInformation("ScanReceiptAsync completed. AppId: {AppId}, Receipts: {Count}", appId, resultData.Count);
+            //return resultData;
+
+            var url = $"{appSettings.AzureDocumentIntelligence.Endpoint}formrecognizer/documentModels/prebuilt-receipt:analyze?api-version=2023-07-31";
 
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", appSettings.AzureDocumentIntelligence.ApiKey);
@@ -81,80 +95,51 @@ public class SemanticService : ISemanticService
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
             var response = await httpClient.PostAsync(url, content, cancellationToken);
-            if (!response.IsSuccessStatusCode)
+            string resultJson = null;
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+            {
+                // Poll the operation-location for result
+                if (!response.Headers.TryGetValues("operation-location", out var values))
+                    throw new ApplicationException("Missing operation-location header in response.");
+
+                var operationLocation = values.First();
+
+                for (int i = 0; i < 20; i++) // up to 20 attempts
+                {
+                    await Task.Delay(1500, cancellationToken); // wait 1.5 seconds between polls
+
+                    var resultResponse = await httpClient.GetAsync(operationLocation, cancellationToken);
+                    resultJson = await resultResponse.Content.ReadAsStringAsync();
+
+                    if (resultResponse.StatusCode == System.Net.HttpStatusCode.OK &&
+                        !string.IsNullOrWhiteSpace(resultJson) &&
+                        resultJson.Contains("\"status\":\"succeeded\""))
+                    {
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(resultJson))
+                    throw new ApplicationException("Form Recognizer result not available after polling.");
+            }
+            else if (response.IsSuccessStatusCode)
+            {
+                resultJson = await response.Content.ReadAsStringAsync();
+            }
+            else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogError("ScanReceiptAsync failed. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
                 throw new ApplicationException($"Form Recognizer API call failed: {response.StatusCode}");
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            // Deserialize the response to your DTOs as needed
-            var receipts = JsonSerializer.Deserialize<AnalyzeResult>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            
-            var resultData = new List<ReceiptDTO>();
-
-            foreach (var receipt in receipts.Documents)
-            {
-                var receiptResponse = new ReceiptDTO();
-
-                if (receipt.Fields.TryGetValue("MerchantName", out var merchantNameField) &&
-                    merchantNameField.FieldType == DocumentFieldType.String)
-                {
-                    receiptResponse.MerchantName = merchantNameField.ValueString;
-                }
-
-                if (receipt.Fields.TryGetValue("TransactionDate", out var transactionDateField) &&
-                    transactionDateField.FieldType == DocumentFieldType.Date)
-                {
-                    string? transactionDateString = transactionDateField.ValueDate?.ToString("yyyy-MM-dd");
-
-                    if (!string.IsNullOrEmpty(transactionDateString))
-                    {
-                        receiptResponse.TransactionDate = DateTime.ParseExact(transactionDateString,
-                            "yyyy-MM-dd", CultureInfo.InvariantCulture);
-                    }
-                }
-
-                if (receipt.Fields.TryGetValue("Items", out var itemsField) &&
-                    itemsField.FieldType == DocumentFieldType.List)
-                {
-                    foreach (var itemField in itemsField.ValueList)
-                    {
-                        if (itemField.FieldType == DocumentFieldType.Dictionary)
-                        {
-                            var item = new Item();
-                            var itemFields = itemField.ValueDictionary;
-
-                            if (itemFields.TryGetValue("Description", out var descriptionField) &&
-                                descriptionField.FieldType == DocumentFieldType.String)
-                            {
-                                item.Description = descriptionField.ValueString;
-                            }
-
-                            if (itemFields.TryGetValue("TotalPrice", out var totalPriceField) &&
-                                totalPriceField.FieldType == DocumentFieldType.Currency)
-                            {
-                                item.TotalPrice = (decimal)totalPriceField.ValueCurrency.Amount;
-                            }
-
-                            if (receiptResponse.Items == null) receiptResponse.Items = new List<Item>();
-                            receiptResponse.Items.Add(item);
-                        }
-                    }
-                }
-
-                if (receipt.Fields.TryGetValue("Total", out var totalField) &&
-                    totalField.FieldType == DocumentFieldType.Currency)
-                {
-                    receiptResponse.Total = (decimal)totalField.ValueCurrency.Amount;
-                }
-
-                resultData.Add(receiptResponse);
-            }
+            var receipts = JsonSerializer.Deserialize<ReceiptAnalyzeResult>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var resultData = MapAnalyzeResultToReceiptDTOs(receipts);
 
             _logger.LogInformation("ScanReceiptAsync completed. AppId: {AppId}, Receipts: {Count}", appId, resultData.Count);
             return resultData;
+
         }
         catch (Exception ex)
         {
@@ -352,6 +337,74 @@ public class SemanticService : ISemanticService
         }
     }
 
+    private List<ReceiptDTO> MapAnalyzeResultToReceiptDTOs(Azure.AI.DocumentIntelligence.AnalyzeResult receipts)
+    {
+        var resultData = new List<ReceiptDTO>();
+
+        if (receipts?.Documents == null)
+            return resultData;
+
+        foreach (var receipt in receipts.Documents)
+        {
+            var receiptResponse = new ReceiptDTO();
+
+            if (receipt.Fields.TryGetValue("MerchantName", out var merchantNameField) &&
+                merchantNameField.FieldType == DocumentFieldType.String)
+            {
+                receiptResponse.MerchantName = merchantNameField.ValueString;
+            }
+
+            if (receipt.Fields.TryGetValue("TransactionDate", out var transactionDateField) &&
+                transactionDateField.FieldType == DocumentFieldType.Date)
+            {
+                string? transactionDateString = transactionDateField.ValueDate?.ToString("yyyy-MM-dd");
+                if (!string.IsNullOrEmpty(transactionDateString))
+                {
+                    receiptResponse.TransactionDate = DateTime.ParseExact(transactionDateString,
+                        "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                }
+            }
+
+            if (receipt.Fields.TryGetValue("Items", out var itemsField) &&
+                itemsField.FieldType == DocumentFieldType.List)
+            {
+                foreach (var itemField in itemsField.ValueList)
+                {
+                    if (itemField.FieldType == DocumentFieldType.Dictionary)
+                    {
+                        var item = new Item();
+                        var itemFields = itemField.ValueDictionary;
+
+                        if (itemFields.TryGetValue("Description", out var descriptionField) &&
+                            descriptionField.FieldType == DocumentFieldType.String)
+                        {
+                            item.Description = descriptionField.ValueString;
+                        }
+
+                        if (itemFields.TryGetValue("TotalPrice", out var totalPriceField) &&
+                            totalPriceField.FieldType == DocumentFieldType.Currency)
+                        {
+                            item.TotalPrice = (decimal)totalPriceField.ValueCurrency.Amount;
+                        }
+
+                        if (receiptResponse.Items == null) receiptResponse.Items = new List<Item>();
+                        receiptResponse.Items.Add(item);
+                    }
+                }
+            }
+
+            if (receipt.Fields.TryGetValue("Total", out var totalField) &&
+                totalField.FieldType == DocumentFieldType.Currency)
+            {
+                receiptResponse.Total = (decimal)totalField.ValueCurrency.Amount;
+            }
+
+            resultData.Add(receiptResponse);
+        }
+
+        return resultData;
+    }
+
     private async Task<string?> CreateRagMessageAsync(IEnumerable<ExpenseDTO> expenses, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("CreateRagMessageAsync started.");
@@ -405,5 +458,116 @@ public class SemanticService : ISemanticService
             _logger.LogError(ex, "CreateRagMessageAsync failed.");
             throw;
         }
+    }
+
+
+    // TODO: Remove all below when v4.0 GA comes back online
+    private List<ReceiptDTO> MapAnalyzeResultToReceiptDTOs(ReceiptAnalyzeResult result)
+    {
+        var receiptDTOs = new List<ReceiptDTO>();
+        var documents = result?.AnalyzeResult?.Documents;
+        if (documents == null) return receiptDTOs;
+
+        foreach (var doc in documents)
+        {
+            var fields = doc.Fields;
+            if (fields == null) continue;
+
+            var receipt = new ReceiptDTO();
+
+            if (fields.TryGetValue("MerchantName", out var merchantNameField))
+                receipt.MerchantName = merchantNameField.ValueString;
+
+            if (fields.TryGetValue("TransactionDate", out var transactionDateField))
+                receipt.TransactionDate = transactionDateField.ValueDate;
+
+            if (fields.TryGetValue("Total", out var totalField))
+                receipt.Total = totalField.ValueNumber.HasValue ? (decimal)totalField.ValueNumber.Value : (totalField.ValueCurrency?.Amount != null ? (decimal)totalField.ValueCurrency.Amount.Value : (decimal?)null);
+
+            if (fields.TryGetValue("Items", out var itemsField) && itemsField.ValueArray != null)
+            {
+                receipt.Items = new List<Item>();
+                foreach (var itemField in itemsField.ValueArray)
+                {
+                    if (itemField.ValueObject != null)
+                    {
+                        var item = new Item();
+                        if (itemField.ValueObject.TryGetValue("Description", out var descField))
+                            item.Description = descField.ValueString;
+                        if (itemField.ValueObject.TryGetValue("TotalPrice", out var priceField))
+                            item.TotalPrice = priceField.ValueNumber.HasValue ? (decimal)priceField.ValueNumber.Value : (priceField.ValueCurrency?.Amount != null ? (decimal)priceField.ValueCurrency.Amount.Value : 0);
+                        receipt.Items.Add(item);
+                    }
+                }
+            }
+
+            receiptDTOs.Add(receipt);
+        }
+
+        return receiptDTOs;
+    }
+
+    public class ReceiptAnalyzeResult
+    {
+        public string? Status { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? LastUpdatedDateTime { get; set; }
+        public AnalyzeResult? AnalyzeResult { get; set; }
+    }
+
+    public class AnalyzeResult
+    {
+        public string? ApiVersion { get; set; }
+        public string? ModelId { get; set; }
+        public string? StringIndexType { get; set; }
+        public string? Content { get; set; }
+        public List<Page>? Pages { get; set; }
+        public List<Document>? Documents { get; set; }
+    }
+
+    public class Page
+    {
+        public int PageNumber { get; set; }
+        public double Angle { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public string? Unit { get; set; }
+        // Add other properties as needed
+    }
+
+    public class Document
+    {
+        public string? DocType { get; set; }
+        public List<BoundingRegion>? BoundingRegions { get; set; }
+        public Dictionary<string, Field>? Fields { get; set; }
+        public double Confidence { get; set; }
+        // Add other properties as needed
+    }
+
+    public class BoundingRegion
+    {
+        public int PageNumber { get; set; }
+        public List<int>? Polygon { get; set; }
+    }
+
+    public class Field
+    {
+        public string? Type { get; set; }
+        public string? ValueString { get; set; }
+        public double? ValueNumber { get; set; }
+        public DateTime? ValueDate { get; set; }
+        public string? ValueTime { get; set; }
+        public ValueCurrency? ValueCurrency { get; set; }
+        public List<Field>? ValueArray { get; set; }
+        public Dictionary<string, Field>? ValueObject { get; set; }
+        public string? Content { get; set; }
+        public double? Confidence { get; set; }
+        // Add other properties as needed
+    }
+
+    public class ValueCurrency
+    {
+        public double? Amount { get; set; }
+        public string? CurrencyCode { get; set; }
     }
 }
