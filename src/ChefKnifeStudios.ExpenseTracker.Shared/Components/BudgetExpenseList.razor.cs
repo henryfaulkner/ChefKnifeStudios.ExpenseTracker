@@ -19,8 +19,6 @@ public partial class BudgetExpenseList : ComponentBase, IDisposable
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
 
-    PaginationState _pagination = new PaginationState { ItemsPerPage = 10 };
-
     readonly string[] _subscriptions =
     [
         nameof(SearchViewModel.Budgets),

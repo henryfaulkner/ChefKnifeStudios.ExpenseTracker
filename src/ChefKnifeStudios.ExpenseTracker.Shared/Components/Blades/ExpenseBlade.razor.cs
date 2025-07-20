@@ -96,6 +96,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
             ReceiptLabelsDTO receiptLabels = new()
             {
                 Name = _name,
+                CreatedOn = DateTime.Now,
                 Labels = _labels,
             };
 

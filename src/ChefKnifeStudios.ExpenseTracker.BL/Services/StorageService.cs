@@ -83,6 +83,13 @@ public class StorageService : IStorageService
                 _logger.LogInformation("Created new budget for AppId: {AppId}, Budget Name: {BudgetName}", appId, budgetName);
             }
 
+            if (!expenseDTO.Labels.Any())
+            {
+                string textPrompt = $"Name: {expenseDTO.Name} - Cost: {expenseDTO.Cost}";
+                TextToExpenseResponseDTO tteRes = await _semanticService.TextToExpenseAsync(textPrompt, appId, cancellationToken);
+                expenseDTO.Labels = tteRes.Labels ?? [];
+            }
+
             var expense = expenseDTO.MapToModel();
             expense.BudgetId = budget.Id;
             expense.AppId = appId;
@@ -212,6 +219,7 @@ public class StorageService : IStorageService
                     new ReceiptLabelsDTO()
                     {
                         Name = recurringExpense.Name,
+                        CreatedOn = recurringExpense.CreatedOnUtc,
                         Labels = labels,
                     },
                     recurringExpense.AppId,

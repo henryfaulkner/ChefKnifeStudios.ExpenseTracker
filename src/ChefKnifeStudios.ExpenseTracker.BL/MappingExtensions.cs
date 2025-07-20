@@ -18,6 +18,7 @@ public static class MappingExtensions
             Name = model.Name,
             Cost = model.Cost,
             Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
+            IsRecurring = model.IsRecurring,
             Budget = model.Budget is null ? null
                 : new()
                 {

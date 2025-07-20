@@ -23,3 +23,14 @@
     color: var(--clr-1p, #6442d6);
     text-shadow: 2px 2px 4px var(--clr-1p_80, #cbbeff);
 }
+
+::deep .is-recurring-label-icon {
+    padding-right: 0.25rem;
+    font-size: 1.25rem;
+}
+
+::deep .name-column-row {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}

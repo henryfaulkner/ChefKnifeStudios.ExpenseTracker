@@ -1,11 +1,9 @@
-﻿using Azure;
-using Azure.AI.DocumentIntelligence;
+﻿using Azure.AI.DocumentIntelligence;
 using ChefKnifeStudios.ExpenseTracker.BL.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using ChefKnifeStudios.ExpenseTracker.Shared.Models;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -242,7 +240,8 @@ public class SemanticService : ISemanticService
             }
 
             var result = JsonSerializer.Deserialize<ReceiptLabelsDTO>(responseContent, Shared.JsonOptions.Get())
-                ?? new ReceiptLabelsDTO { Labels = Array.Empty<string>() };
+                ?? new ReceiptLabelsDTO { Name = string.Empty, CreatedOn = DateTime.UtcNow, Labels = Array.Empty<string>() };
+            result.CreatedOn = DateTime.UtcNow;
 
             _logger.LogInformation("LabelReceiptDetailsAsync completed. AppId: {AppId}, Name: {Name}", appId, result.Name);
             return result;
@@ -259,8 +258,9 @@ public class SemanticService : ISemanticService
         _logger.LogInformation("CreateSemanticEmbeddingAsync started. AppId: {AppId}, Labels: {Labels}, Name: {Name}", appId, receiptLabels?.Labels, receiptLabels?.Name);
         try
         {
-            List<string> list = receiptLabels?.Labels?.ToList() ?? new List<string>();
-            if (!string.IsNullOrWhiteSpace(receiptLabels?.Name)) list.Add(receiptLabels.Name);
+            List<string> list = receiptLabels.Labels?.ToList() ?? new List<string>();
+            if (!string.IsNullOrWhiteSpace(receiptLabels.Name)) list.Add(receiptLabels.Name);
+            if (receiptLabels.CreatedOn.HasValue) list.Add(receiptLabels.CreatedOn.Value.ToString());
 
             var text = string.Join(" ", list);
             var embedding = await _embeddingGenerator.GenerateAsync(text, cancellationToken: cancellationToken);
@@ -430,7 +430,7 @@ public class SemanticService : ISemanticService
                 You are an advanced AI assistant. Your task is to analyze a list of expense records provided in JSON format.
                 Summarize the data in natural language, highlighting patterns, categories, frequent labels, total and average costs, and any notable recurring expenses.
                 If possible, mention the most common budgets and any interesting insights.
-                Do not repeat the raw data; instead, provide a concise, human-readable summary.";
+                Do not repeat the raw data; instead, provide a concise, human-readable summary. Make sure it is a terse summary. Do not list each item one-by one.";
 
             // User message: provide the serialized data
             var userMessage = $"Here is the expense data:\n{expensesJson}";

@@ -39,8 +39,16 @@
                                 </MatTableHeader>
                                 <MatTableRow>
                                     <td>
-                                        @context.Name 
-                                        @if (@context.IsRecurring) { <MatIcon Icon="autorenew" /> }
+                                        <div class="name-column-row">
+                                            @context.Name 
+                                            @if (@context.IsRecurring)
+                                            {
+                                                <MatIcon 
+                                                    Icon="autorenew"
+                                                    Class="clr-1s is-recurring-label-icon" 
+                                                />    
+                                            }
+                                        </div>
                                     </td>
                                     <td style="text-align: right;">
                                         @context.Cost.FormatAsDollar()

@@ -16,8 +16,11 @@
                     i += 1;
                     int ii = i;
                     <MatListItem Class="list-item">
-                        <span>@expense.Name</span>
-                        <span>@(expense.Budget?.Name ?? "N/A")</span>
+                        <div>
+                            <MatBody1 Style="margin: 0; white-space: nowrap;">@expense.Name</MatBody1>
+                            <MatBody2 Class="clr-1s" Style="margin: 0; white-space: nowrap;">@expense.Cost.ToString("C2")</MatBody2>
+                        </div>
+                        <MatBody1 Style="margin: 0; white-space: nowrap;">@(expense.Budget?.Name ?? "N/A")</MatBody1>
                     </MatListItem>
                     @if (ii != SearchViewModel.SearchResult.Expenses.Count())
                     {
