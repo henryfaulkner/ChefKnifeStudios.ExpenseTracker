@@ -50,7 +50,10 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
             PhotoResult? photo = await _cameraService.PickPhotoAsync();
             if (photo?.FileStream is null) return null;
 
-            var response = await _semanticService.ScanReceiptAsync(photo.FileStream);
+            using var memoryStream = new MemoryStream();
+            await photo.FileStream.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+            var response = await _semanticService.ScanReceiptAsync(memoryStream);
             if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data?.FirstOrDefault() is null)
             {
                 _logger.LogError("Scanning API failed");
@@ -82,7 +85,10 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
             PhotoResult? photo = await _cameraService.CapturePhotoAsync();
             if (photo?.FileStream is null) return null;
 
-            var response = await _semanticService.ScanReceiptAsync(photo.FileStream);
+            using var memoryStream = new MemoryStream();
+            await photo.FileStream.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+            var response = await _semanticService.ScanReceiptAsync(memoryStream);
             if (response.HttpStatusCode != HttpStatusCode.OK || response?.Data?.FirstOrDefault() is null)
             {
                 _logger.LogError("Scanning API failed");

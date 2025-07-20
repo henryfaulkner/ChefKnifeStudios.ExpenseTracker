@@ -35,6 +35,11 @@ builder.Services
     .AddKernel()
     .ConfigureSemanticKernel(appSettings);
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 104857600; // 100 MB
+});
+
 // Register OpenAIClient with the API key and endpoint
 builder.Services.AddSingleton<OpenAIClient>(sp =>
 {

@@ -1,8 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:local="clr-namespace:ChefKnifeStudios.ExpenseTracker.MobileApp"
-             x:Class="ChefKnifeStudios.ExpenseTracker.MobileApp.MainPage">
+             x:Class="ChefKnifeStudios.ExpenseTracker.MobileApp.MainPage"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             ios:Page.UseSafeArea="True"
+             BackgroundColor="#f8f1f6"
+             >
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>
@@ -10,4 +15,7 @@
         </BlazorWebView.RootComponents>
     </BlazorWebView>
 
+    <ContentPage.Behaviors>
+        <toolkit:StatusBarBehavior StatusBarColor="#e6e1e3" StatusBarStyle="LightContent"/>
+    </ContentPage.Behaviors>
 </ContentPage>
