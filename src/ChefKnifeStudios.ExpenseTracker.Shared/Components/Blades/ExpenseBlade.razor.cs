@@ -180,6 +180,8 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     {
         _name = null;
         _cost = null;
+        _isRecurring = false;
+        _labels = null;
     }
 
     async Task HandlePickPictureAsync()
