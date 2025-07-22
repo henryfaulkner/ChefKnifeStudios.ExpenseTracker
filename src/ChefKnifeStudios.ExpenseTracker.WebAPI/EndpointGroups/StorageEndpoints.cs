@@ -51,6 +51,72 @@ public static class StorageEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
+        group.MapPatch("/expense/{id}/price", async (
+            int id,
+            [FromBody] decimal cost,
+            [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
+        {
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
+            {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var result = await storageService.UpdateExpenseCostAsync(id, cost, Guid.Parse(appId), cancellationToken);
+                return result ? Results.Ok() : Results.Problem("Failed to update expense's cost");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in UpdateExpenseCost endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
+        })
+        .WithName("UpdateExpenseCost")
+        .Accepts<bool>("application/json")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
+
+        group.MapPatch("/expense/{id}/delete", async (
+            int id,
+            [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
+                {
+                    var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+                    string? appId = null;
+                    try
+                    {
+                        appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                        if (string.IsNullOrEmpty(appId))
+                        {
+                            return Results.BadRequest("App ID header is required");
+                        }
+
+                        var result = await storageService.DeleteExpenseCostAsync(id, Guid.Parse(appId), cancellationToken);
+                        return result ? Results.Ok() : Results.Problem("Failed to mark expense as deleted");
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Exception in DeleteExpenseCost endpoint. AppId: {AppId}", appId);
+                        return Results.Problem("An unexpected error occurred.", statusCode: 500);
+                    }
+                })
+        .WithName("DeleteExpenseCost")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
+
         group.MapPost("/budget", async (
             [FromBody] BudgetDTO budgetDTO,
             [FromServices] IStorageService storageService,
@@ -224,6 +290,39 @@ public static class StorageEndpoints
         })
         .WithName("AddRecurringExpense")
         .Accepts<RecurringExpenseConfigDTO>("application/json")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
+
+        group.MapPatch("/recurring-expense/{id}/delete", async (
+            int id,
+            [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
+        {
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
+            {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var result = await storageService.DeleteRecurringExpenseAsync(id, Guid.Parse(appId), cancellationToken);
+                return result ? Results.Ok() : Results.Problem("Failed to delete recurring expense");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in UpdateExpenseCost endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
+        })
+        .WithName("DeleteExpenseCost")
+        .Accepts<bool>("application/json")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);

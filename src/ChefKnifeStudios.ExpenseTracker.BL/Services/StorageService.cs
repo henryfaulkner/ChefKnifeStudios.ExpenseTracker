@@ -16,11 +16,14 @@ namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 public interface IStorageService
 {
     Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> UpdateExpenseCostAsync(int expenseId, decimal newCost, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteExpenseCostAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> AddBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> UpdateBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
     Task<IEnumerable<BudgetDTO>> GetBudgetsAsync(Guid appId, CancellationToken cancellationToken = default);
     Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteRecurringExpenseAsync(int recurringExpenseConfigId, Guid appId, CancellationToken cancellationToken = default);
     Task ProcessRecurringExpensesAsync(CancellationToken cancellationToken = default);
 }
 
@@ -118,6 +121,84 @@ public class StorageService : IStorageService
         }
     }
 
+    public async Task<bool> UpdateExpenseCostAsync(int expenseId, decimal newCost, Guid appId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Starting UpdateExpenseCostAsync for AppId: {AppId}, Expense Id: {expenseId}, New Cost: {newCost}", appId, expenseId, newCost);
+        using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var expense = await _expenseRepository.GetByIdAsync(expenseId, cancellationToken);
+            if (expense is null)
+            {
+                _logger.LogWarning("Expense {expenseId} could not be found. AppId: {AppId}, New Cost: {newCost}", expenseId, appId, newCost);
+                return false;
+            }
+
+            expense.Cost = newCost;
+            expense.ModifiedOnUtc = DateTime.UtcNow;
+            int updatedRecords = await _expenseRepository.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Updated expense for AppId: {AppId}, Expense Id: {expenseId}, New Cost: {newCost}", appId, expenseId, newCost);
+
+            if (expense.ExpenseSemantic is not null) expense.ExpenseSemantic.ExpenseId = expense.Id;
+
+            var upsertResult = await UpsertExpense(expense, cancellationToken);
+            if (!upsertResult)
+            {
+                _logger.LogWarning("UpsertExpense failed for ExpenseId: AppId: {AppId}, Expense Id: {expenseId}, New Cost: {newCost}", appId, expenseId, newCost);
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+            _logger.LogInformation("Transaction committed for AddExpenseAsync: {AppId}, Expense Id: {expenseId}, New Cost: {newCost}", appId, expenseId, newCost);
+            return upsertResult;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            _logger.LogError(ex, "Exception in AddExpenseAsync for AppId: {AppId}, Expense Id: {expenseId}, New Cost: {newCost}", appId, expenseId, newCost);
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteExpenseCostAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Starting DeleteExpenseCostAsync for AppId: {AppId}, Expense Id: {expenseId}", appId, expenseId);
+        using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var expense = await _expenseRepository.GetByIdAsync(expenseId, cancellationToken);
+            if (expense is null)
+            {
+                _logger.LogWarning("Expense {expenseId} could not be found. AppId: {AppId}", expenseId, appId);
+                return false;
+            }
+
+            expense.IsDeleted = true;
+            expense.ModifiedOnUtc = DateTime.UtcNow;
+            await _expenseRepository.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Marked expense as deleted for AppId: {AppId}, Expense Id: {expenseId}", appId, expenseId);
+
+            if (expense.ExpenseSemantic is not null) expense.ExpenseSemantic.ExpenseId = expense.Id;
+
+            var upsertResult = await DeleteExpense(expense, cancellationToken); // Hard delete expense semantic from vector store
+            if (!upsertResult)
+            {
+                _logger.LogWarning("UpsertExpense failed for ExpenseId: AppId: {AppId}, Expense Id: {expenseId}", appId, expenseId);
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+            _logger.LogInformation("Transaction committed for DeleteExpenseCostAsync: {AppId}, Expense Id: {expenseId}", appId, expenseId);
+            return upsertResult;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            _logger.LogError(ex, "Exception in DeleteExpenseCostAsync for AppId: {AppId}, Expense Id: {expenseId}", appId, expenseId);
+            return false;
+        }
+    }
+
     public async Task<bool> AddBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Starting AddBudgetAsync for AppId: {AppId}, Budget Name: {BudgetName}", appId, budget.Name);
@@ -204,6 +285,32 @@ public class StorageService : IStorageService
         }
     }
 
+    public async Task<bool> DeleteRecurringExpenseAsync(int recurringExpenseConfigId, Guid appId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Starting DeleteRecurringExpenseAsync for AppId: {AppId}, Recurring Expense Id: {recurringExpenseConfigId}", appId, recurringExpenseConfigId);
+        try
+        {
+            var recurringExpenseConfig = await _recurringExpenseRepository.GetByIdAsync(recurringExpenseConfigId, cancellationToken);
+            if (recurringExpenseConfig is null)
+            {
+                _logger.LogWarning("Recurring Expense Config {recurringExpenseConfigId} could not be found. AppId: {AppId}", recurringExpenseConfigId, appId);
+                return false;
+            }
+
+            recurringExpenseConfig.IsDeleted = true;
+            recurringExpenseConfig.ModifiedOnUtc = DateTime.UtcNow;
+            await _recurringExpenseRepository.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Added recurring expense for AppId: {AppId}, Recurring Expense Id: {recurringExpenseConfigId}", appId, recurringExpenseConfigId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in DeleteRecurringExpenseAsync for AppId: {AppId}, Recurring Expense Id: {recurringExpenseConfigId}", appId, recurringExpenseConfigId);
+            return false;
+        }
+    }
+
     public async Task ProcessRecurringExpensesAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Starting ProcessRecurringExpensesAsync");
@@ -269,6 +376,26 @@ public class StorageService : IStorageService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in UpsertExpense for ExpenseId: {ExpenseId}", expense.Id);
+            return false;
+        }
+        return true;
+    }
+
+    private async Task<bool> DeleteExpense(Expense expense, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (expense.ExpenseSemantic == null) throw new ArgumentNullException(nameof(expense.ExpenseSemantic));
+
+            var collectionName = "ExpenseSemantics";
+            var expenseSemanticCollection = _vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
+            await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+            await expenseSemanticCollection.DeleteAsync(expense.Id, cancellationToken);
+            _logger.LogInformation("Deleted expense semantic for ExpenseId: {ExpenseId}", expense.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in DeleteExpense for ExpenseId: {ExpenseId}", expense.Id);
             return false;
         }
         return true;
