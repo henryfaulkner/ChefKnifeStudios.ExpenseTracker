@@ -10,7 +10,7 @@ public interface ISearchViewModel : IViewModel
     ExpenseSearchResponseDTO SearchResult { get; }
 
     Task LoadPagedBudgetsAsync();
-    Task ChangeSearchTextAsync(string searchText, int topN);
+    Task<bool> ChangeSearchTextAsync(string searchText, int topN);
     Task ChangePageNumberAsync(int pageNumber);
 }
 
@@ -64,13 +64,20 @@ public class SearchViewModel
         }
     }
 
-    public async Task ChangeSearchTextAsync(string searchText, int topN)
+    public async Task<bool> ChangeSearchTextAsync(string searchText, int topN)
     {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            _toastService.ShowWarning("Search text is required");
+            return false;
+        }
+
         _searchText = searchText;
         ExpenseSearchDTO reqBody = new () { SearchText = searchText, TopN = topN, };
         var res = await _semanticService.SearchExpensesAsync(reqBody);
         if (res.IsSuccess) SearchResult = res.Data ?? new() { RagMessage = string.Empty, Expenses = [], };
         else _toastService.ShowError("Search results failed to load");
+        return res.IsSuccess;
     }
 
     public async Task ChangePageNumberAsync(int pageNumber)
