@@ -3,13 +3,12 @@ using ChefKnifeStudios.ExpenseTracker.Data.Models;
 
 namespace ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 
-public sealed class GetBudgetsSpec : Specification<Budget>
+public sealed class GetRecurringExpensesSpec : Specification<RecurringExpenseConfig>
 {
-    public GetBudgetsSpec(Guid appId)
+    public GetRecurringExpensesSpec(Guid appId)
     {
         Query
-            .Include(x => x.Expenses)
-            .Where(x => x.AppId == appId)
+            .Where(c => c.AppId == appId)
             .OrderByDescending(x => x.CreatedOnUtc);
     }
 }

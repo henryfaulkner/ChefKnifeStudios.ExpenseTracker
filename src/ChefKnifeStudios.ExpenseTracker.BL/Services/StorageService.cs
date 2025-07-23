@@ -22,6 +22,7 @@ public interface IStorageService
     Task<bool> UpdateBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
     Task<IEnumerable<BudgetDTO>> GetBudgetsAsync(Guid appId, CancellationToken cancellationToken = default);
     Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber, Guid appId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<RecurringExpenseConfigDTO>> GetRecurringExpensesAsync(Guid appId, CancellationToken cancellationToken = default);
     Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> DeleteRecurringExpenseAsync(int recurringExpenseConfigId, Guid appId, CancellationToken cancellationToken = default);
     Task ProcessRecurringExpensesAsync(CancellationToken cancellationToken = default);
@@ -69,7 +70,7 @@ public class StorageService : IStorageService
             var startDate = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
             var endDate = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month)), DateTimeKind.Utc);
 
-            var budgets = await _budgetRepository.ListAsync(new GetBudgetsSpec(appId));
+            var budgets = await _budgetRepository.ListAsync(new GetBudgetsSpec(appId), cancellationToken);
             var budget = budgets.FirstOrDefault(b => b.Name == budgetName);
 
             if (budget == null)
@@ -265,6 +266,22 @@ public class StorageService : IStorageService
         {
             _logger.LogError(ex, "Exception in SearchBudgetsAsync for AppId: {AppId}, SearchText: {SearchText}", appId, searchText);
             return new PagedResult<Budget>();
+        }
+    }
+
+    public async Task<IEnumerable<RecurringExpenseConfigDTO>> GetRecurringExpensesAsync(Guid appId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Starting GetRecurringExpensesAsync for AppId: {AppId}", appId);
+        try
+        {
+            var recurringExpenses = await _recurringExpenseRepository.ListAsync(new GetRecurringExpensesSpec(appId), cancellationToken);
+            _logger.LogInformation("Getting recurring expenses for AppId: {AppId}", appId);
+            return recurringExpenses?.Select(x => x.MapToDTO()) ?? Enumerable.Empty<RecurringExpenseConfigDTO>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in GetRecurringExpensesAsync for AppId: {AppId}", appId);
+            return Enumerable.Empty<RecurringExpenseConfigDTO>();
         }
     }
 

@@ -26,5 +26,7 @@ public class RecurringExpenseConfigConfiguration : IEntityTypeConfiguration<Recu
 
         builder.Property(x => x.Cost)
             .IsRequired();
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

@@ -15,6 +15,7 @@ public class BladeEventArgs : IEventArgs
         Expense,
         Budget,
         Search,
+        ActiveRecurringExpenses,
     }
 
     public required Types Type { get; init; }

@@ -13,5 +13,7 @@ public interface IStorageService
         int pageSize,
         int pageNumber
     );
+    Task<ApiResponse<IEnumerable<RecurringExpenseConfigDTO>>> GetRecurringExpensesAsync();
     Task<ApiResponse<bool>> AddRecurringExpenseAsync(RecurringExpenseConfigDTO recurringExpense);
+    Task<ApiResponse<bool>> DeleteRecurringExpenseAsync(int recurringExpenseId);
 }

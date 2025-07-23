@@ -18,5 +18,7 @@ public class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
 
         builder.HasOne(x => x.Budget)
             .WithMany(x => x.Expenses);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

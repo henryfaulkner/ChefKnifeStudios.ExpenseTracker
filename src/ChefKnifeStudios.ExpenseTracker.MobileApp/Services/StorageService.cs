@@ -156,6 +156,31 @@ public class StorageService : IStorageService
         }
     }
 
+    public async Task<ApiResponse<IEnumerable<RecurringExpenseConfigDTO>>> GetRecurringExpensesAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}/recurring-expense");
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("Get recurring expenses endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<IEnumerable<RecurringExpenseConfigDTO>>(responseContent, JsonOptions.Get());
+
+            return new ApiResponse<IEnumerable<RecurringExpenseConfigDTO>>(obj ?? [], response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<IEnumerable<RecurringExpenseConfigDTO>>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = [],
+            };
+        }
+    }
+
     public async Task<ApiResponse<bool>> AddRecurringExpenseAsync(RecurringExpenseConfigDTO recurringExpense)
     {
         try
@@ -165,7 +190,34 @@ public class StorageService : IStorageService
             var response = await _httpClient.PostAsync($"{_baseUrl}/recurring-expense", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("Recurring expense endpoint failed.");
+                _logger.LogError("Add recurring expense endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<bool>(responseContent, JsonOptions.Get());
+
+            return new ApiResponse<bool>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = false,
+            };
+        }
+    }
+
+    public async Task<ApiResponse<bool>> DeleteRecurringExpenseAsync(int recurringExpenseId)
+    {
+        try
+        {
+            var bodyContent = JsonContent.Create(new object { }, new MediaTypeHeaderValue("application/json"));
+
+            var response = await _httpClient.PatchAsync($"{_baseUrl}/recurring-expense/{recurringExpenseId}/delete", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("Delete recurring expense endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();

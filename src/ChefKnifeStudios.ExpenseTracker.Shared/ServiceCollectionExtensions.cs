@@ -10,5 +10,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<ISearchViewModel, SearchViewModel>();
         services.AddScoped<IExpenseViewModel, ExpenseViewModel>();
+        services.AddScoped<IRecurringExpenseViewModel, RecurringExpenseViewModel>();
     }
 }

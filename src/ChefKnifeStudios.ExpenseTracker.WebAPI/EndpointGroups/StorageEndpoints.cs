@@ -260,6 +260,38 @@ public static class StorageEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
+        group.MapGet("/recurring-expense", async (
+            [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
+        {
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
+            {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var result = await storageService.GetRecurringExpensesAsync(Guid.Parse(appId), cancellationToken);
+                return Results.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in GetRecurringExpenses endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
+        })
+        .WithName("GetRecurringExpenses")
+        .Accepts<IEnumerable<RecurringExpenseConfigDTO>>("application/json")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
+
         group.MapPost("/recurring-expense", async (
             [FromBody] RecurringExpenseConfigDTO recurringExpenseDTO,
             [FromServices] IStorageService storageService,
