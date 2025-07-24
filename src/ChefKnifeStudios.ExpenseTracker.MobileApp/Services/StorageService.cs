@@ -54,6 +54,60 @@ public class StorageService : IStorageService
         }
     }
 
+    public async Task<ApiResponse<bool>> UpdateExpenseCostAsync(int expenseId, decimal newCost)
+    {
+        try
+        { 
+            var bodyContent = JsonContent.Create(newCost, new MediaTypeHeaderValue("application/json"));
+
+            var response = await _httpClient.PatchAsync($"{_baseUrl}/expense/{expenseId}/price", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("update expense cost endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<bool>(responseContent, JsonOptions.Get());
+
+            return new ApiResponse<bool>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = false,
+            };
+        }
+    }
+
+    public async Task<ApiResponse<bool>> DeleteExpenseCostAsync(int expenseId)
+    {
+        try
+        {
+            var bodyContent = JsonContent.Create(new object { }, new MediaTypeHeaderValue("application/json"));
+
+            var response = await _httpClient.PatchAsync($"{_baseUrl}/expense/{expenseId}/delete", bodyContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("delete expense endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<bool>(responseContent, JsonOptions.Get());
+
+            return new ApiResponse<bool>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = false,
+            };
+        }
+    }
+
     public async Task<ApiResponse<bool>> AddBudgetAsync(BudgetDTO budgetDTO)
     {
         try

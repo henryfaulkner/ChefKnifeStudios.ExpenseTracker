@@ -7,6 +7,8 @@ public interface IStorageService
     Task<ApiResponse<bool>> AddBudgetAsync(BudgetDTO budgetDTO);
     Task<ApiResponse<bool>> UpdateBudgetAsync(BudgetDTO budgetDTO);
     Task<ApiResponse<bool>> AddExpenseAsync(ExpenseDTO expenseDTO);
+    Task<ApiResponse<bool>> UpdateExpenseCostAsync(int expenseId, decimal newCost);
+    Task<ApiResponse<bool>> DeleteExpenseCostAsync(int expenseId);
     Task<ApiResponse<IEnumerable<BudgetDTO>?>> GetBudgetsAsync();
     Task<ApiResponse<PagedResultDTO<BudgetDTO>?>> SearchBudgetsAsync(
         string? searchText,
