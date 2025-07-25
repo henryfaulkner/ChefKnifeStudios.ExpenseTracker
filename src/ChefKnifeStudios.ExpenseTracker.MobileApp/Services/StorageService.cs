@@ -81,7 +81,7 @@ public class StorageService : IStorageService
         }
     }
 
-    public async Task<ApiResponse<bool>> DeleteExpenseCostAsync(int expenseId)
+    public async Task<ApiResponse<bool>> DeleteExpenseAsync(int expenseId)
     {
         try
         {
@@ -90,7 +90,7 @@ public class StorageService : IStorageService
             var response = await _httpClient.PatchAsync($"{_baseUrl}/expense/{expenseId}/delete", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("delete expense endpoint failed.");
+                _logger.LogError("Delete expense endpoint failed.");
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -117,7 +117,7 @@ public class StorageService : IStorageService
             var response = await _httpClient.PostAsync($"{_baseUrl}/budget", bodyContent);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("budget endpoint failed.");
+                _logger.LogError("Budget endpoint failed.");
             }
 
             return new ApiResponse<bool>(true, response.StatusCode);

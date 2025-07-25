@@ -112,7 +112,7 @@ public static class StorageEndpoints
                         return Results.Problem("An unexpected error occurred.", statusCode: 500);
                     }
                 })
-        .WithName("DeleteExpenseCost")
+        .WithName("DeleteExpense")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
@@ -353,7 +353,7 @@ public static class StorageEndpoints
                 return Results.Problem("An unexpected error occurred.", statusCode: 500);
             }
         })
-        .WithName("DeleteExpenseCost")
+        .WithName("DeleteRecurringExpense")
         .Accepts<bool>("application/json")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)

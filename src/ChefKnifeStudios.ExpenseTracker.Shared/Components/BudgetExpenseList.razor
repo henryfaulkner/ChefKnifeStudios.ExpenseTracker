@@ -34,8 +34,9 @@
                         {
                             <MatTable Items="budget.ExpenseDTOs.OrderByDescending(x => x.Id)">
                                 <MatTableHeader>
-                                    <th style="min-width: 250px;">Name</th>
-                                    <th style="text-align: right;">Cost</th>
+                                    <th style="min-width: 225px; width: 100%;">Name</th>
+                                    <th style="min-width: 150px; width: 100%; text-align: right;">Cost</th>
+                                    <th style="max-width: 10px;"></th>
                                 </MatTableHeader>
                                 <MatTableRow>
                                     <td>
@@ -52,6 +53,9 @@
                                     </td>
                                     <td style="text-align: right;">
                                         @context.Cost.FormatAsDollar()
+                                    </td>
+                                    <td style="padding: 0rem;">
+                                        <MatIconButton Class="delete-expense-btn" Icon="delete" OnClick="() => HandleDeleteExpensePressed(context)" />
                                     </td>
                                 </MatTableRow>
                             </MatTable>

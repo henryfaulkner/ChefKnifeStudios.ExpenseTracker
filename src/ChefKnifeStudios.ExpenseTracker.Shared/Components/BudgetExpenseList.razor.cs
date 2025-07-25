@@ -17,6 +17,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.Components;
 public partial class BudgetExpenseList : ComponentBase, IDisposable
 {
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
+    [Inject] IStorageService StorageService { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
 
     readonly string[] _subscriptions =
@@ -51,5 +52,14 @@ public partial class BudgetExpenseList : ComponentBase, IDisposable
                 Data = budget,
             }
         );
+    }
+
+    void HandleDeleteExpensePressed(ExpenseDTO expense)
+    {
+        Task.Run(async () =>
+        {
+            await StorageService.DeleteExpenseAsync(expense.Id);
+            await SearchViewModel.LoadPagedBudgetsAsync();
+        });
     }
 }

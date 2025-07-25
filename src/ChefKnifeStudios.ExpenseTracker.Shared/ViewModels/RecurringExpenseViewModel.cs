@@ -23,6 +23,7 @@ public class RecurringExpenseViewModel : BaseViewModel, IRecurringExpenseViewMod
         IStorageService storageService)
     {
         _logger = logger;
+        _toastService = toastService;
         _storageService = storageService;
     }
 
