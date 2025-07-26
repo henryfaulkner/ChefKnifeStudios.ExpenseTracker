@@ -2,12 +2,53 @@
     <BladeContainer @ref="_bladeContainer">
         <ContentFragment>
             <MatH4 class="clr-on-1t-container">
-                Active Recurring Expenses
+                Recurring Expenses
             </MatH4>
 
             <MatList Id="result-list" Class="result-list">
-                
+                @{
+                    int i = 0;
+                }
+
+                @if (!RecurringExpenseViewModel.RecurringExpenses.Any())
+                {
+                    <MatBody1>You have no active recurring expenses.</MatBody1>
+                }
+
+                @foreach (var recurringExpense in RecurringExpenseViewModel.RecurringExpenses)
+                {
+                    i += 1;
+                    int ii = i;
+                    <MatListItem Class="list-item">
+                        <div>
+                            <MatBody1 Style="margin: 0; white-space: nowrap;">@recurringExpense.Name</MatBody1>
+                            <MatBody2 Class="clr-1s" Style="margin: 0; white-space: nowrap;">@recurringExpense.Cost.ToString("C2")</MatBody2>
+                        </div>
+                        <MatBody1 Style="margin: 0; white-space: nowrap;">
+                            <MatIconButton 
+                                Icon="close"
+                                @onclick="() => HandleDeletePressed(recurringExpense)"
+                                Class="cross" 
+                            />
+                        </MatBody1>
+                    </MatListItem>
+                    @if (ii != RecurringExpenseViewModel.RecurringExpenses.Count())
+                    {
+                        <MatListDivider></MatListDivider>
+                    }
+                }
             </MatList>
+
+            <MatDialog @bind-IsOpen="@_isDialogOpen">
+                <MatDialogTitle>Are you sure?</MatDialogTitle>
+                <MatDialogContent>
+                    <p>Recurring expense @(_selectedRecurringExpense?.Name ?? string.Empty) will be cancelled and will not generate any future expenses.</p>
+                </MatDialogContent>
+                <MatDialogActions>
+                    <MatButton OnClick="HandleNoPressed">No Thanks</MatButton>
+                    <MatButton OnClick="HandleYesPressed">OK</MatButton>
+                </MatDialogActions>
+            </MatDialog>
         </ContentFragment>
     </BladeContainer>
 </div>

@@ -48,4 +48,15 @@ public partial class ActionBtns : ComponentBase
             }
         );
     }
+
+    void HandleEditRecurringPressed()
+    {
+        EventNotificationService.PostEvent(
+            this,
+            new BladeEventArgs()
+            { 
+                Type = BladeEventArgs.Types.ActiveRecurringExpenses,
+            }
+        );
+    }
 }

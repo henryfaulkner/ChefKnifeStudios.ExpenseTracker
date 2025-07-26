@@ -1,6 +1,7 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Shared;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Models;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
 public class StorageService : IStorageService
 {
+    readonly IEventNotificationService _eventNotificationService;
     readonly HttpClient _httpClient;
     readonly ILogger<StorageService> _logger;
     readonly string _baseUrl = string.Empty;
@@ -22,12 +24,14 @@ public class StorageService : IStorageService
     public StorageService(
         IHttpClientFactory httpClientFactory,
         ILogger<StorageService> logger, 
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IEventNotificationService eventNotificationService)
     {
         _httpClient = httpClientFactory.CreateClient("ExpenseTrackerAPI");
         _logger = logger;
         _baseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? string.Empty;
         _baseUrl += "/storage";
+        _eventNotificationService = eventNotificationService;
     }
 
     public async Task<ApiResponse<bool>> AddExpenseAsync(ExpenseDTO expenseDTO)
@@ -246,6 +250,11 @@ public class StorageService : IStorageService
             {
                 _logger.LogError("Add recurring expense endpoint failed.");
             }
+
+            _eventNotificationService.PostEvent(
+                this,
+                new RecurringExpenseEventArgs() { Type = RecurringExpenseEventArgs.Types.Added, }
+            );
 
             var responseContent = await response.Content.ReadAsStringAsync();
             var obj = JsonSerializer.Deserialize<bool>(responseContent, JsonOptions.Get());

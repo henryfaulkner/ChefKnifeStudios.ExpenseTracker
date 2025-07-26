@@ -1,4 +1,5 @@
-﻿using ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
+﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -15,8 +16,12 @@ public partial class ActiveRecurringExpensesBlade : ComponentBase
     [Inject] IRecurringExpenseViewModel RecurringExpenseViewModel { get; set; } = null!;
     
     BladeContainer? _bladeContainer;
+    bool _isDialogOpen = false;
+    RecurringExpenseConfigDTO? _selectedRecurringExpense = null; 
 
-    readonly string[] _subscriptions = [];
+    readonly string[] _subscriptions = [
+        nameof(IRecurringExpenseViewModel.RecurringExpenses),
+    ];
 
     protected override void OnInitialized()
     {
@@ -24,6 +29,12 @@ public partial class ActiveRecurringExpensesBlade : ComponentBase
         RecurringExpenseViewModel.PropertyChanged += ViewModel_OnPropertyChanged;
 
         base.OnInitialized();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await RecurringExpenseViewModel.LoadRecurringExpensesAsync();
     }
 
     public void Dispose()
@@ -53,5 +64,24 @@ public partial class ActiveRecurringExpensesBlade : ComponentBase
                 break;
         }
         await Task.CompletedTask;
+    }
+
+    void HandleDeletePressed(RecurringExpenseConfigDTO recurringExpense)
+    {
+        _selectedRecurringExpense = recurringExpense;
+        _isDialogOpen = true;
+    }
+
+    void HandleNoPressed()
+    {
+        _selectedRecurringExpense = null;
+        _isDialogOpen = false;
+    }
+
+    async Task HandleYesPressed()
+    {
+        await RecurringExpenseViewModel.DeleteRecurringExpenseAsync(_selectedRecurringExpense.Id);
+        _selectedRecurringExpense = null;
+        _isDialogOpen = false;
     }
 }

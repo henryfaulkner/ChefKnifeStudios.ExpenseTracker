@@ -1,4 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -7,27 +8,46 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 
 public interface IRecurringExpenseViewModel : IViewModel
 {
-    Task<IEnumerable<RecurringExpenseConfigDTO>> GetRecurringExpensesAsync();
-    Task<bool> DeleteRecurringExpense(int recurringExpenseId);
+    List<RecurringExpenseConfigDTO> RecurringExpenses { get; }
+
+    Task LoadRecurringExpensesAsync();
+    Task<bool> DeleteRecurringExpenseAsync(int recurringExpenseId);
 }
 
-public class RecurringExpenseViewModel : BaseViewModel, IRecurringExpenseViewModel
+public class RecurringExpenseViewModel : BaseViewModel, IRecurringExpenseViewModel, IDisposable
 {
     readonly ILogger<RecurringExpenseViewModel> _logger;
     readonly IToastService _toastService;
     readonly IStorageService _storageService;
+    readonly IEventNotificationService _eventNotificationService;
+
+    List<RecurringExpenseConfigDTO> _recurringExpenses = [];
+    public List<RecurringExpenseConfigDTO> RecurringExpenses
+    {
+        get => _recurringExpenses;
+        private set => SetValue(ref _recurringExpenses, value);
+    }
 
     public RecurringExpenseViewModel(
         ILogger<RecurringExpenseViewModel> logger,
         IToastService toastService,
-        IStorageService storageService)
+        IStorageService storageService,
+        IEventNotificationService eventNotificationService)
     {
         _logger = logger;
         _toastService = toastService;
         _storageService = storageService;
+        _eventNotificationService = eventNotificationService;
+        _eventNotificationService.EventReceived += HandleEventReceived;
     }
 
-    public async Task<IEnumerable<RecurringExpenseConfigDTO>> GetRecurringExpensesAsync()
+    public void Dispose()
+    {
+        _eventNotificationService.EventReceived -= HandleEventReceived;
+        GC.SuppressFinalize(this);
+    }
+
+    public async Task LoadRecurringExpensesAsync()
     {
         try
         {
@@ -36,19 +56,20 @@ public class RecurringExpenseViewModel : BaseViewModel, IRecurringExpenseViewMod
             {
                 _logger.LogError("Recurring Expense API failed");
                 _toastService.ShowError("Recurring expenses could not be loaded");
-                return [];
+                RecurringExpenses = [];
+                return;
             }
-            return res.Data;
+            RecurringExpenses = res?.Data?.ToList() ?? [];
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred");
             _toastService.ShowError("Recurring expenses could not be loaded");
-            return [];
+            RecurringExpenses = [];
         }
     }
 
-    public async Task<bool> DeleteRecurringExpense(int recurringExpenseId)
+    public async Task<bool> DeleteRecurringExpenseAsync(int recurringExpenseId)
     {
         try
         {
@@ -59,6 +80,7 @@ public class RecurringExpenseViewModel : BaseViewModel, IRecurringExpenseViewMod
                 _toastService.ShowError("Recurring expense could not be deleted");
                 return false;
             }
+            await LoadRecurringExpensesAsync();
             return res.Data;
         }
         catch (Exception ex)
@@ -66,6 +88,14 @@ public class RecurringExpenseViewModel : BaseViewModel, IRecurringExpenseViewMod
             _logger.LogError(ex, "An error occurred");
             _toastService.ShowError("Recurring expense could not be deleted");
             return false;
+        }
+    }
+
+    async Task HandleEventReceived(object sender, IEventArgs args)
+    {
+        if (args is RecurringExpenseEventArgs recurringExpenseEventArgs)
+        {
+            await LoadRecurringExpensesAsync();
         }
     }
 }
