@@ -1,17 +1,16 @@
 ﻿using Ardalis.Specification;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
-using System.Linq;
 
 namespace ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 
-public sealed class GetExpensesByIdsSpec : Specification<Expense>
+public sealed class GetExpenseByIdSpec : Specification<Expense>
 {
-    public GetExpensesByIdsSpec(List<int> expenseIds, Guid appId)
+    public GetExpenseByIdSpec(int expenseId, Guid appId)
     {
         Query
             .Include(x => x.Budget)
             .Include(x => x.ExpenseSemantic)
             .Where(x => x.AppId == appId)
-            .Where(x => expenseIds.Contains(x.Id)); 
+            .Where(x => x.Id == expenseId);
     }
 }

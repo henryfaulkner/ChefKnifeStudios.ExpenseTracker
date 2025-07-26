@@ -1,0 +1,19 @@
+﻿<div class="editable-expense-cost">
+    <div style="@(_isEditing ? "display: block;" : "display: none;")">
+        <MatTextField
+            @ref="_textFieldCost"
+            @bind-Value="@_cost"
+            Label="Cost"
+            Required="true"
+            OnFocusOut="HandleEditingStopped"
+        />
+    </div>
+
+    <button 
+        class="cost-btn" 
+        style="@(_isEditing ? "display: none;" : "display: block;")"
+        @onclick="HandleEditingStarted"
+    >
+        @Expense.Cost.FormatAsDollar()
+    </button>
+</div>

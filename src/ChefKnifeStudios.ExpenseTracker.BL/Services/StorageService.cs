@@ -128,7 +128,8 @@ public class StorageService : IStorageService
         using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            var expense = await _expenseRepository.GetByIdAsync(expenseId, cancellationToken);
+            var expense = (await _expenseRepository.ListAsync(new GetExpenseByIdSpec(expenseId, appId), cancellationToken))
+                .FirstOrDefault();
             if (expense is null)
             {
                 _logger.LogWarning("Expense {expenseId} could not be found. AppId: {AppId}, New Cost: {newCost}", expenseId, appId, newCost);

@@ -25,6 +25,7 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
             builder.Services.AddTransient<ICommonJsInteropService, CommonJsInteropService>();
             builder.Services.AddSingleton<IEventNotificationService, EventNotificationService>();
             builder.Services.AddSingleton<ISpeechToText, OfflineSpeechToTextImplementation>();
+            builder.Services.AddScoped<ITaskQueueService, TaskQueueService>();
 
             builder.Services.AddTransient<HttpHeaderHandler>();
             builder.Services

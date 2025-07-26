@@ -19,6 +19,7 @@ public partial class BudgetExpenseList : ComponentBase, IDisposable
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
     [Inject] IStorageService StorageService { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
+    [Inject] IToastService ToastService { get; set; } = null!;
 
     readonly string[] _subscriptions =
     [
@@ -61,5 +62,10 @@ public partial class BudgetExpenseList : ComponentBase, IDisposable
             await StorageService.DeleteExpenseAsync(expense.Id);
             await SearchViewModel.LoadPagedBudgetsAsync();
         });
+    }
+
+    void HandleStateHasChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
     }
 }

@@ -37,7 +37,7 @@ public static class StorageEndpoints
                 }
 
                 var result = await storageService.AddExpenseAsync(expenseDTO, Guid.Parse(appId), cancellationToken);
-                return result ? Results.Ok() : Results.Problem("Failed to add expense");
+                return result ? Results.Ok(result) : Results.Problem("Failed to add expense");
             }
             catch (Exception ex)
             {
@@ -71,7 +71,7 @@ public static class StorageEndpoints
                 }
 
                 var result = await storageService.UpdateExpenseCostAsync(id, cost, Guid.Parse(appId), cancellationToken);
-                return result ? Results.Ok() : Results.Problem("Failed to update expense's cost");
+                return result ? Results.Ok(result) : Results.Problem("Failed to update expense's cost");
             }
             catch (Exception ex)
             {
@@ -104,7 +104,7 @@ public static class StorageEndpoints
                         }
 
                         var result = await storageService.DeleteExpenseCostAsync(id, Guid.Parse(appId), cancellationToken);
-                        return result ? Results.Ok() : Results.Problem("Failed to mark expense as deleted");
+                        return result ? Results.Ok(result) : Results.Problem("Failed to mark expense as deleted");
                     }
                     catch (Exception ex)
                     {
@@ -137,7 +137,7 @@ public static class StorageEndpoints
 
                 var budget = budgetDTO.MapToModel();
                 var result = await storageService.AddBudgetAsync(budget, Guid.Parse(appId), cancellationToken);
-                return result ? Results.Ok() : Results.Problem("Failed to add budget");
+                return result ? Results.Ok(result) : Results.Problem("Failed to add budget");
             }
             catch (Exception ex)
             {
@@ -180,7 +180,7 @@ public static class StorageEndpoints
                 existing.EndDateUtc = budgetDTO.EndDate;
 
                 var result = await storageService.UpdateBudgetAsync(existing, Guid.Parse(appId), cancellationToken);
-                return result ? Results.Ok() : Results.Problem("Failed to update budget");
+                return result ? Results.Ok(result) : Results.Problem("Failed to update budget");
             }
             catch (Exception ex)
             {
@@ -312,7 +312,7 @@ public static class StorageEndpoints
 
                 var recurringExpense = recurringExpenseDTO.MapToModel();
                 var result = await storageService.AddRecurringExpenseAsync(recurringExpense, Guid.Parse(appId), cancellationToken);
-                return result ? Results.Ok() : Results.Problem("Failed to add recurring expense");
+                return result ? Results.Ok(result) : Results.Problem("Failed to add recurring expense");
             }
             catch (Exception ex)
             {
@@ -345,7 +345,7 @@ public static class StorageEndpoints
                 }
 
                 var result = await storageService.DeleteRecurringExpenseAsync(id, Guid.Parse(appId), cancellationToken);
-                return result ? Results.Ok() : Results.Problem("Failed to delete recurring expense");
+                return result ? Results.Ok(result) : Results.Problem("Failed to delete recurring expense");
             }
             catch (Exception ex)
             {
