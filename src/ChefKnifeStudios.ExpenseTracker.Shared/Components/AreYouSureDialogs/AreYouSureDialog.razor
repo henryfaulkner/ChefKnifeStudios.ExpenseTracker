@@ -1,0 +1,14 @@
+﻿<div class="are-you-sure-dialog">
+    <MatDialog IsOpen="true">
+        <MatDialogTitle>
+            @HeaderContent
+        </MatDialogTitle>
+        <MatDialogContent>
+            @BodyContent
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="HandleNoPressed">No Thanks</MatButton>
+            <MatButton OnClick="HandleYesPressed">OK</MatButton>
+        </MatDialogActions>
+    </MatDialog>
+</div>

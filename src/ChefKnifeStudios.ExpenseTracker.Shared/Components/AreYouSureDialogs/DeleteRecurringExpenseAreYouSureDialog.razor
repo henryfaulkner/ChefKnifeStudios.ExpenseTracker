@@ -1,0 +1,15 @@
+﻿<div class="delete-recurring-expense-are-you-sure-dialog">
+    
+</div>
+
+@code {
+    RenderFragment HeaderContent()
+    {
+        return @<p>Are you sure?</p>;
+    }
+
+    RenderFragment BodyContent()
+    {
+        return @<p>Recurring expense @(RecurringExpense.Name ?? string.Empty) will be cancelled and will not generate any future expenses.</p>;
+    }
+}

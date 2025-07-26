@@ -38,17 +38,6 @@
                     }
                 }
             </MatList>
-
-            <MatDialog @bind-IsOpen="@_isDialogOpen">
-                <MatDialogTitle>Are you sure?</MatDialogTitle>
-                <MatDialogContent>
-                    <p>Recurring expense @(_selectedRecurringExpense?.Name ?? string.Empty) will be cancelled and will not generate any future expenses.</p>
-                </MatDialogContent>
-                <MatDialogActions>
-                    <MatButton OnClick="HandleNoPressed">No Thanks</MatButton>
-                    <MatButton OnClick="HandleYesPressed">OK</MatButton>
-                </MatDialogActions>
-            </MatDialog>
         </ContentFragment>
     </BladeContainer>
 </div>

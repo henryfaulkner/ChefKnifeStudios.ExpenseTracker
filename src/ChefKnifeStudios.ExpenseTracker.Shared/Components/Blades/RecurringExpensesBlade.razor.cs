@@ -8,9 +8,9 @@ using System.ComponentModel;
 
 namespace ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades;
 
-public partial class ActiveRecurringExpensesBlade : ComponentBase
+public partial class RecurringExpensesBlade : ComponentBase
 {
-    [Inject] ILogger<ActiveRecurringExpensesBlade> Logger { get; set; } = null!;
+    [Inject] ILogger<RecurringExpensesBlade> Logger { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] IToastService ToastService { get; set; } = null!;
     [Inject] IRecurringExpenseViewModel RecurringExpenseViewModel { get; set; } = null!;
