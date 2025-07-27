@@ -7,6 +7,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades;
 public partial class BladeContainer : ComponentBase, IDisposable
 {
     [Parameter] public required RenderFragment ContentFragment { get; set; }
+    [Parameter] public bool KeepOpen { get; set; }
 
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] ICommonJsInteropService CommonJsInteropService { get; set; } = null!;
@@ -39,6 +40,7 @@ public partial class BladeContainer : ComponentBase, IDisposable
 
     public void Close()
     {
+        if (KeepOpen) return;
         // Prevent close if not enough time has passed since open
         if ((DateTime.UtcNow - _lastOpenedUtc).TotalMilliseconds < MinOpenDurationMs)
             return;

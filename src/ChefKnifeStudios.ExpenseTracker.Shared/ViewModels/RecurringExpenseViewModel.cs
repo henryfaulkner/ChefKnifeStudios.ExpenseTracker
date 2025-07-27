@@ -9,6 +9,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 public interface IRecurringExpenseViewModel : IViewModel
 {
     List<RecurringExpenseConfigDTO> RecurringExpenses { get; }
+    RecurringExpenseConfigDTO? SelectedRecurringExpenseForDeletion { get; set; }
 
     Task LoadRecurringExpensesAsync();
     Task<bool> DeleteRecurringExpenseAsync(int recurringExpenseId);
@@ -26,6 +27,13 @@ public class RecurringExpenseViewModel : BaseViewModel, IRecurringExpenseViewMod
     {
         get => _recurringExpenses;
         private set => SetValue(ref _recurringExpenses, value);
+    }
+
+    RecurringExpenseConfigDTO? _selectedRecurringExpenseForDeletion = null;
+    public RecurringExpenseConfigDTO? SelectedRecurringExpenseForDeletion
+    {
+        get => _selectedRecurringExpenseForDeletion;
+        set => SetValue(ref _selectedRecurringExpenseForDeletion, value);
     }
 
     public RecurringExpenseViewModel(

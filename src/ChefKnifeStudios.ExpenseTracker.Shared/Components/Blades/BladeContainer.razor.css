@@ -5,7 +5,7 @@
     width: 80vw;
     height: 100dvh;
     background-color: var(--clr-surface2, #f2ecee);
-    z-index: 1000;
+    z-index: 2;
     transform: translateX(100%); /* Start off-screen */
     transition: transform 0.3s ease-in-out;
 
@@ -43,5 +43,5 @@
     color: var(--clr-1p, #6442d6);
     font-size: 20px;
     border: none;
-    z-index: 50;
+    z-index: 3;
 }

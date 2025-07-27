@@ -2,6 +2,7 @@
 @using ChefKnifeStudios.ExpenseTracker.Shared.DTOs
 @using Shared.Models.EventArgs
 @using ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades
+@using ChefKnifeStudios.ExpenseTracker.Shared.Components.AreYouSureDialogs
 @using System.Globalization
 
 @page "/home"
@@ -17,6 +18,9 @@
     <BudgetBlade />
     <ExpenseBlade />
     <SearchBlade />
-    <RecurringExpensesBlade />
+    <CascadingValue Value="RecurringExpenseViewModel">
+        <RecurringExpensesBlade />
+        <DeleteRecurringExpenseAreYouSureDialog />
+    </CascadingValue>
     <ActionBtns />
 </div>

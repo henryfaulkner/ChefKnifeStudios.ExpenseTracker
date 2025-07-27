@@ -1,7 +1,7 @@
 ﻿::deep .app-fab--absolute {
     position: fixed;
     right: 1rem;
-    z-index: 5;
+    z-index: 1;
 }
 
 ::deep .add {

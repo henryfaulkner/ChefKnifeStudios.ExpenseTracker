@@ -1,5 +1,5 @@
 ﻿<div class="active-recurring-expenses-blade">
-    <BladeContainer @ref="_bladeContainer">
+    <BladeContainer @ref="_bladeContainer" KeepOpen="_keepBladeOpen">
         <ContentFragment>
             <MatH4 class="clr-on-1t-container">
                 Recurring Expenses
@@ -24,13 +24,11 @@
                             <MatBody1 Style="margin: 0; white-space: nowrap;">@recurringExpense.Name</MatBody1>
                             <MatBody2 Class="clr-1s" Style="margin: 0; white-space: nowrap;">@recurringExpense.Cost.ToString("C2")</MatBody2>
                         </div>
-                        <MatBody1 Style="margin: 0; white-space: nowrap;">
-                            <MatIconButton 
-                                Icon="close"
-                                @onclick="() => HandleDeletePressed(recurringExpense)"
-                                Class="cross" 
-                            />
-                        </MatBody1>
+                        <MatIconButton 
+                            Icon="close"
+                            @onclick="() => HandleDeletePressed(recurringExpense)"
+                            Class="delete-recurring-expense-btn" 
+                        />
                     </MatListItem>
                     @if (ii != RecurringExpenseViewModel.RecurringExpenses.Count())
                     {

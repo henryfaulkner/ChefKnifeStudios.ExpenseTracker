@@ -11,6 +11,7 @@ public partial class Home : ComponentBase, IDisposable
     [Inject] ILogger<Home> Logger { get; set; } = null!;
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
+    [Inject] IRecurringExpenseViewModel RecurringExpenseViewModel { get; set; } = null!;
 
     protected override void OnInitialized()
     {

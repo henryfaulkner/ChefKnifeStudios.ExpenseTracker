@@ -1,5 +1,14 @@
 ﻿<div class="delete-recurring-expense-are-you-sure-dialog">
-    
+    @if (RecurringExpenseViewModel.SelectedRecurringExpenseForDeletion is { })
+    {
+        <AreYouSureDialog
+            NoCallback="HandleNoPressed"
+            YesCallback="HandleYesPressed"
+            OpenChangedCallback="HandleOpenChanged"
+            HeaderContent="HeaderContent()"
+            BodyContent="BodyContent()"
+        />
+    }
 </div>
 
 @code {
@@ -10,6 +19,9 @@
 
     RenderFragment BodyContent()
     {
-        return @<p>Recurring expense @(RecurringExpense.Name ?? string.Empty) will be cancelled and will not generate any future expenses.</p>;
+        string name = RecurringExpenseViewModel.SelectedRecurringExpenseForDeletion is { Name: string } 
+            ? $"\"{RecurringExpenseViewModel.SelectedRecurringExpenseForDeletion.Name}\"" 
+            : string.Empty;
+        return @<p>Recurring expense @(name) will be cancelled and will not generate any future expenses.</p>;
     }
 }

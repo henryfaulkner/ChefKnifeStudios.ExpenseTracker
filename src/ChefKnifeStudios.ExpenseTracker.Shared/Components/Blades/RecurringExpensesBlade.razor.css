@@ -4,9 +4,17 @@
     justify-content: space-between;
     gap: 0.5rem;
     margin: 0.25rem 0;
-    border-radius: 1rem;
+    border-radius: 0.25rem;
     &:hover {
         color: var(--clr-on-1s-container, #21182b);
         background-color: var(--clr-1s-container, #dcdaf5);
     }
+}
+
+::deep .delete-recurring-expense-btn {
+    cursor: pointer;
+    color: var(--clr-1p, #6442d6);
+    font-size: 20px;
+    border: none;
+    z-index: 3;
 }
