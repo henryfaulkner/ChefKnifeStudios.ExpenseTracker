@@ -11,10 +11,17 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
         // Locate configuration file
+        #if DEBUG
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
+            .Build();
+        #else
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .Build();
+        #endif
 
         // Retrieve connection string from configuration
         var connectionString = configuration.GetConnectionString("ExpenseTrackerDB");
