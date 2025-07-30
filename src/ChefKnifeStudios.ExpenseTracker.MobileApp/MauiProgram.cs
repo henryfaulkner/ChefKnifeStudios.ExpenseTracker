@@ -19,6 +19,8 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp
             builder.RegisterCommunityToolkit();
 
             builder.Services.AddTransient<IAppSessionService, AppSessionService>();
+            builder.Services.AddTransient<IEmailService, EmailService>();
+            builder.Services.AddTransient<IFileService, FileService>();
             builder.Services.AddTransient<ICameraService, CameraService>();
             builder.Services.AddSingleton<IMicrophoneService, MicrophoneService>();
             builder.Services.AddTransient<IToastService, ToastService>();

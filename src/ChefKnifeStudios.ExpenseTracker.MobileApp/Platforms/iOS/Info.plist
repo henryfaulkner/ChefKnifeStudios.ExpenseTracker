@@ -37,5 +37,11 @@
 	<string>This app needs access to the camera to scan receipts.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Expenses</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mailto</string>
+	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to provide enhanced expense labeling based on your area.</string>
 </dict>
 </plist>

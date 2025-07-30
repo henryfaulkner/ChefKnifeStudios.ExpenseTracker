@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="MatBlazor" Version="2.10.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="9.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />

@@ -11,16 +11,14 @@ namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
 public class AppSessionService : IAppSessionService
 {
-    private const string AppFolder = "ExpenseTracker";
-    private const string SessionFileName = "app_id.txt";
-    private readonly string _filePath;
-    private readonly JsonSerializerOptions _jsonOptions;
+    const string AppFolder = "ExpenseTracker";
+    const string SessionFileName = "app_id.txt";
+    readonly string _filePath;
+    readonly JsonSerializerOptions _jsonOptions;
 
-    public AppSessionService()
+    public AppSessionService(IFileService fileService)
     {
-        // Get the application data directory path
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        _filePath = Path.Combine(appDataPath, AppFolder, SessionFileName);
+        _filePath = Path.Combine(fileService.GetAppDataFolder(), AppFolder, SessionFileName);
 
         // Configure JSON serialization options
         _jsonOptions = new JsonSerializerOptions
