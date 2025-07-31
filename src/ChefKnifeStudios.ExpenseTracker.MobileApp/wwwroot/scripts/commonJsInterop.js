@@ -9,7 +9,6 @@ window.commonJsInterop = {
 
             const handleClickOutside = (e) => {
                 if (!document.getElementById(elementId).contains(e.target)) {
-                    console.log(elementId);
                     dotNetInstance.invokeMethodAsync('HandleClickOutside')
                         .catch(err => console.error('Error invoking HandleClickOutside:', err));
                 }

@@ -1,39 +1,37 @@
 ﻿@using MatBlazor
 
 <div class="action-btn">
-    @* @switch (_actionState)
+    <MatFAB 
+        Icon="attach_money" 
+        Class="app-fab--absolute add" 
+        OnClick="HandleExpensePressed"
+    />
+    
+    @switch (_actionState)
     {
         case ActionStates.Closed:
             <MatFAB 
-                Icon="add" 
-                Class="app-fab--absolute add"
-                onclick="HandleOpenPressed" />
+                Icon="more_horiz" 
+                Class="app-fab--absolute second-layer options"
+                OnClick="HandleOpenPressed" 
+            />
             break;
         case ActionStates.Open:
             <MatFAB 
                 Icon="clear" 
-                Class="app-fab--absolute clear"
-                onclick="HandleClosePressed" />
-            <MatFAB 
-                Icon="list" 
-                Class="app-fab--absolute budget"
-                onclick="HandleBudgetPressed" 
+                Class="app-fab--absolute second-layer close"
+                OnClick="HandleClosePressed" 
             />
             <MatFAB 
-                Icon="attach_money" 
-                Class="app-fab--absolute expense" 
-                onclick="HandleExpensePressed"
+                Icon="autorenew"
+                Class="app-fab--absolute second-layer edit-recurring" 
+                OnClick="HandleEditRecurringPressed"
+            />
+            <MatFAB 
+                Icon="save_alt" 
+                Class="app-fab--absolute second-layer download" 
+                OnClick="HandleDownloadBudgetsPressed"
             />
             break;
-    } *@
-    <MatFAB 
-        Icon="attach_money" 
-        Class="app-fab--absolute add" 
-        onclick="HandleExpensePressed"
-    />
-    
-    <MatFAB Icon="autorenew"
-            Class="app-fab--absolute edit-recurring" 
-        onclick="HandleEditRecurringPressed"
-    />
+    }
 </div>

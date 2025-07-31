@@ -27,13 +27,13 @@ public partial class ActionBtns : ComponentBase
         _actionState = ActionStates.Closed;
     }
 
-    void HandleBudgetPressed()
+    void HandleDownloadBudgetsPressed()
     {
         EventNotificationService.PostEvent(
             this,
             new BladeEventArgs()
             {
-                Type = BladeEventArgs.Types.Budget,
+                Type = BladeEventArgs.Types.DownloadBudgets,
             }
         );
     }

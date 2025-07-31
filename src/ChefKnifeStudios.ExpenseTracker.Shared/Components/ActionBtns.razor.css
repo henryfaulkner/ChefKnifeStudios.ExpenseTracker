@@ -6,16 +6,16 @@
 
 ::deep .add {
     bottom: 1rem;
-} 
-
-::deep .expense {
-    bottom: 9rem;
 }
 
-::deep .budget {
+::deep .second-layer {
     bottom: 5rem;
 }
 
 ::deep .edit-recurring {
-    bottom: 5rem;
+    right: 5rem;
+}
+
+::deep .download {
+    right: 9rem;
 }

@@ -51,9 +51,6 @@ public partial class BudgetBlade : ComponentBase, IDisposable
             case BladeEventArgs { Type: not BladeEventArgs.Types.Budget }:
                 _bladeContainer?.Close();
                 break;
-            default:
-                Logger.LogWarning("Event handler's switch statement fell through.");
-                break;
         }
         await Task.CompletedTask;
     }

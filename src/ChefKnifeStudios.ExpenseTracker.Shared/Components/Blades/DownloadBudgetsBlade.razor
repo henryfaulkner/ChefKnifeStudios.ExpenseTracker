@@ -1,0 +1,75 @@
+﻿<div class="download-budgets-blade">
+    <BladeContainer @ref="_bladeContainer" KeepOpen="_keepBladeOpen">
+        <ContentFragment>
+            <MatH4 class="clr-on-1t-container">
+                Download Budgets
+            </MatH4>
+
+            <div class="blade-content">
+                <div class="form">
+                    <MatList Id="result-list" Class="result-list">
+                        @{
+                            int i = 0;
+                        }
+
+                        @if (!_budgets.Any())
+                        {
+                            <MatBody1>You have no budgets to download.</MatBody1>
+                        }
+
+                        @foreach (var budget in _budgets)
+                        {
+                            i += 1;
+                            int ii = i;
+                            <MatListItem Class="list-item">
+                                <div style="display: flex; align-items: center; justify-content: start;">
+                                    <MatCheckbox
+                                        TValue="bool"
+                                        ValueChanged="(e) => HandleSelectedBudgetsValueChanged(e, budget)"
+                                    >
+                                        <MatBody1 Style="margin: 0; white-space: nowrap;">@budget.Name</MatBody1>
+                                    </MatCheckbox>
+                                </div>
+                            </MatListItem>
+                            @if (ii != _budgets.Count())
+                            {
+                                <MatListDivider></MatListDivider>
+                            }
+                        }
+                    </MatList>
+                </div>
+
+                <div class="btns">
+                    <MatButton 
+                        OnClick="HandleSubmitPressedAsync"
+                        Unelevated="true"
+                        Label="DOWNLOAD"
+                        Disabled="@(_isFormLoading)" 
+                    />
+                </div>
+            </div>
+        </ContentFragment>
+    </BladeContainer>
+
+    @if (_isEmailDialogOpen)
+    {
+        <MatDialog IsOpen="true" IsOpenChanged="HandleEmailDialogOpenChanged">
+            <MatDialogTitle>
+                <p>What email should we send your budgets to?</p>
+            </MatDialogTitle>
+            <MatDialogContent>
+                <MatTextField 
+                    @bind-Value="@_emailRecipient" 
+                    Label="Email Recipient" 
+                    Icon="email"
+                    Required="true"
+                    Disabled="_isEmailLoading" 
+                />
+            </MatDialogContent>
+            <MatDialogActions>
+                <MatButton OnClick="HandleEmailCancelPressed">NO THANKS</MatButton>
+                <MatButton OnClick="HandleEmailSendPressed">SEND BUDGETS</MatButton>
+            </MatDialogActions>
+        </MatDialog>
+    }
+</div>
