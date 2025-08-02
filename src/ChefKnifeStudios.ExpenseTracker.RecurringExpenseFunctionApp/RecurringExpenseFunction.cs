@@ -17,9 +17,9 @@ public class RecurringExpenseFunction
         _storageService = storageService;
     }
 
-    // run on the 3rd hour of the second day of every month
+    // run on the 3rd hour of the third day of every month
     [Function("RecurringExpenseFunction")]
-    public async Task Run([TimerTrigger("0 0 3 2 * *")] TimerInfo myTimer)
+    public async Task Run([TimerTrigger("0 0 3 3 * *")] TimerInfo myTimer)
     {
         try
         {

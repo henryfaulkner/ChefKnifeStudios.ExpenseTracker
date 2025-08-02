@@ -1,4 +1,5 @@
-﻿using Azure.AI.DocumentIntelligence;
+﻿using Azure;
+using Azure.AI.DocumentIntelligence;
 using ChefKnifeStudios.ExpenseTracker.BL.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
@@ -69,16 +70,6 @@ public class SemanticService : ISemanticService
             AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(fileStream));
             var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions, cancellationToken);
             var receipts = operation.Value;
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                _logger.LogError("ScanReceiptAsync failed. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                throw new ApplicationException($"Form Recognizer API call failed: {response.StatusCode}");
-            }
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var receipts = JsonSerializer.Deserialize<AnalyzeResult>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
             var resultData = MapAnalyzeResultToReceiptDTOs(receipts);
 
             _logger.LogInformation("ScanReceiptAsync completed. AppId: {AppId}, Receipts: {Count}", appId, resultData.Count);
