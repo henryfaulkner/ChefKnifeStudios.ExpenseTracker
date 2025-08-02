@@ -62,81 +62,82 @@ public class SemanticService : ISemanticService
                 throw new ApplicationException("Azure Form Recognizer endpoint and key are not configured.");
             }
 
-            // uncomment this when V2024_11_30 v4.0 GA become responsive again
-            //var credential = new AzureKeyCredential(appSettings.AzureDocumentIntelligence.ApiKey);
-            //var clientOptions = new DocumentIntelligenceClientOptions(version: DocumentIntelligenceClientOptions.ServiceVersion.V2024_11_30);
-            //var client = new DocumentIntelligenceClient(new Uri(appSettings.AzureDocumentIntelligence.Endpoint), credential, clientOptions);
-            //AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(fileStream));
-            //var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions, cancellationToken);
-            //var receipts = operation.Value;
-            //if (!response.IsSuccessStatusCode)
-            //{
-            //    var error = await response.Content.ReadAsStringAsync();
-            //    _logger.LogError("ScanReceiptAsync failed. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-            //    throw new ApplicationException($"Form Recognizer API call failed: {response.StatusCode}");
-            //}
-
-            //var responseContent = await response.Content.ReadAsStringAsync();
-            //var receipts = JsonSerializer.Deserialize<AnalyzeResult>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-            //var resultData = MapAnalyzeResultToReceiptDTOs(receipts);
-
-            //_logger.LogInformation("ScanReceiptAsync completed. AppId: {AppId}, Receipts: {Count}", appId, resultData.Count);
-            //return resultData;
-
-            var url = $"{appSettings.AzureDocumentIntelligence.Endpoint}formrecognizer/documentModels/prebuilt-receipt:analyze?api-version=2023-07-31";
-
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", appSettings.AzureDocumentIntelligence.ApiKey);
-
-            using var content = new StreamContent(fileStream);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
-
-            var response = await httpClient.PostAsync(url, content, cancellationToken);
-            string resultJson = null;
-
-            if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
-            {
-                // Poll the operation-location for result
-                if (!response.Headers.TryGetValues("operation-location", out var values))
-                    throw new ApplicationException("Missing operation-location header in response.");
-
-                var operationLocation = values.First();
-
-                for (int i = 0; i < 20; i++) // up to 20 attempts
-                {
-                    await Task.Delay(1500, cancellationToken); // wait 1.5 seconds between polls
-
-                    var resultResponse = await httpClient.GetAsync(operationLocation, cancellationToken);
-                    resultJson = await resultResponse.Content.ReadAsStringAsync();
-
-                    if (resultResponse.StatusCode == System.Net.HttpStatusCode.OK &&
-                        !string.IsNullOrWhiteSpace(resultJson) &&
-                        resultJson.Contains("\"status\":\"succeeded\""))
-                    {
-                        break;
-                    }
-                }
-
-                if (string.IsNullOrWhiteSpace(resultJson))
-                    throw new ApplicationException("Form Recognizer result not available after polling.");
-            }
-            else if (response.IsSuccessStatusCode)
-            {
-                resultJson = await response.Content.ReadAsStringAsync();
-            }
-            else
+            // Use this when V2024_11_30 v4.0 GA is responsive
+            var credential = new AzureKeyCredential(appSettings.AzureDocumentIntelligence.ApiKey);
+            var clientOptions = new DocumentIntelligenceClientOptions(version: DocumentIntelligenceClientOptions.ServiceVersion.V2024_11_30);
+            var client = new DocumentIntelligenceClient(new Uri(appSettings.AzureDocumentIntelligence.Endpoint), credential, clientOptions);
+            AnalyzeDocumentOptions docOptions = new("prebuilt-receipt", BinaryData.FromStream(fileStream));
+            var operation = await client.AnalyzeDocumentAsync(WaitUntil.Completed, docOptions, cancellationToken);
+            var receipts = operation.Value;
+            if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogError("ScanReceiptAsync failed. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
                 throw new ApplicationException($"Form Recognizer API call failed: {response.StatusCode}");
             }
 
-            var receipts = JsonSerializer.Deserialize<ReceiptAnalyzeResult>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var receipts = JsonSerializer.Deserialize<AnalyzeResult>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
             var resultData = MapAnalyzeResultToReceiptDTOs(receipts);
 
             _logger.LogInformation("ScanReceiptAsync completed. AppId: {AppId}, Receipts: {Count}", appId, resultData.Count);
             return resultData;
+
+            // Use this when V2024_11_30 v4.0 GA is unresponsive
+            //var url = $"{appSettings.AzureDocumentIntelligence.Endpoint}formrecognizer/documentModels/prebuilt-receipt:analyze?api-version=2023-07-31";
+
+            //using var httpClient = new HttpClient();
+            //httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", appSettings.AzureDocumentIntelligence.ApiKey);
+
+            //using var content = new StreamContent(fileStream);
+            //content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+
+            //var response = await httpClient.PostAsync(url, content, cancellationToken);
+            //string resultJson = null;
+
+            //if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+            //{
+            //    // Poll the operation-location for result
+            //    if (!response.Headers.TryGetValues("operation-location", out var values))
+            //        throw new ApplicationException("Missing operation-location header in response.");
+
+            //    var operationLocation = values.First();
+
+            //    for (int i = 0; i < 20; i++) // up to 20 attempts
+            //    {
+            //        await Task.Delay(1500, cancellationToken); // wait 1.5 seconds between polls
+
+            //        var resultResponse = await httpClient.GetAsync(operationLocation, cancellationToken);
+            //        resultJson = await resultResponse.Content.ReadAsStringAsync();
+
+            //        if (resultResponse.StatusCode == System.Net.HttpStatusCode.OK &&
+            //            !string.IsNullOrWhiteSpace(resultJson) &&
+            //            resultJson.Contains("\"status\":\"succeeded\""))
+            //        {
+            //            break;
+            //        }
+            //    }
+
+            //    if (string.IsNullOrWhiteSpace(resultJson))
+            //        throw new ApplicationException("Form Recognizer result not available after polling.");
+            //}
+            //else if (response.IsSuccessStatusCode)
+            //{
+            //    resultJson = await response.Content.ReadAsStringAsync();
+            //}
+            //else
+            //{
+            //    var error = await response.Content.ReadAsStringAsync();
+            //    _logger.LogError("ScanReceiptAsync failed. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
+            //    throw new ApplicationException($"Form Recognizer API call failed: {response.StatusCode}");
+            //}
+
+            //var receipts = JsonSerializer.Deserialize<ReceiptAnalyzeResult>(resultJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            //var resultData = MapAnalyzeResultToReceiptDTOs(receipts);
+
+            //_logger.LogInformation("ScanReceiptAsync completed. AppId: {AppId}, Receipts: {Count}", appId, resultData.Count);
+            //return resultData;
 
         }
         catch (Exception ex)

@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using ChefKnifeStudios.ExpenseTracker.BL.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
@@ -19,8 +17,9 @@ public class RecurringExpenseFunction
         _storageService = storageService;
     }
 
+    // run on the 3rd hour of the second day of every month
     [Function("RecurringExpenseFunction")]
-    public async Task Run([TimerTrigger("0 0 0 1 * *")] TimerInfo myTimer)
+    public async Task Run([TimerTrigger("0 0 3 2 * *")] TimerInfo myTimer)
     {
         try
         {
