@@ -332,7 +332,6 @@ public class StorageService : IStorageService
     public async Task ProcessRecurringExpensesAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Starting ProcessRecurringExpensesAsync");
-        using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
         {
             var recurringExpenses = await _recurringExpenseRepository.ListAsync(cancellationToken);
@@ -368,13 +367,11 @@ public class StorageService : IStorageService
                     _logger.LogWarning("Failed to add expense for recurring expense. RecurringExpenseId: {RecurringExpenseId}, AppId: {AppId}", recurringExpense.Id, recurringExpense.AppId);
                 }
             }
-
-            await transaction.CommitAsync(cancellationToken);
-            _logger.LogInformation("Transaction committed for ProcessRecurringExpensesAsync");
+            
+            _logger.LogInformation("ProcessRecurringExpensesAsync processed");
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync(cancellationToken);
             _logger.LogError(ex, "Exception in ProcessRecurringExpensesAsync");
         }
     }

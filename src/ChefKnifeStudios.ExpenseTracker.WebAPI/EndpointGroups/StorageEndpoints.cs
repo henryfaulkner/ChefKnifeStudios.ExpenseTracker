@@ -366,16 +366,8 @@ public static class StorageEndpoints
             CancellationToken cancellationToken = default) =>
         {
             var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
-            string? appId = null;
             try
             {
-                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
-
-                if (string.IsNullOrEmpty(appId))
-                {
-                    return Results.BadRequest("App ID header is required");
-                }
-
                 await storageService.ProcessRecurringExpensesAsync(cancellationToken);
                 return Results.Ok();
             }
