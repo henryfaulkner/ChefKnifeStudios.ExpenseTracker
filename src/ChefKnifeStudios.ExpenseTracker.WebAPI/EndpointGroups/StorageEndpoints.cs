@@ -373,7 +373,7 @@ public static class StorageEndpoints
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Exception in ProcessRecurringExpenses endpoint. AppId: {AppId}", appId);
+                logger.LogError(ex, "Exception in ProcessRecurringExpenses endpoint.");
                 return Results.Problem("An unexpected error occurred.", statusCode: 500);
             }
         })
