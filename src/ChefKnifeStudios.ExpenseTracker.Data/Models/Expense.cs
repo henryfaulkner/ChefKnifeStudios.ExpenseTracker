@@ -1,11 +1,4 @@
-﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
-using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Data;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.InteropServices;
-
-namespace ChefKnifeStudios.ExpenseTracker.Data.Models;
+﻿namespace ChefKnifeStudios.ExpenseTracker.Data.Models;
 
 public class Expense : BaseEntity
 {
@@ -18,4 +11,5 @@ public class Expense : BaseEntity
 
     public Budget? Budget { get; set; }
     public ExpenseSemantic? ExpenseSemantic { get; set; }
+    public ICollection<ExpenseCategory>? ExpenseCategories { get; set; }
 }

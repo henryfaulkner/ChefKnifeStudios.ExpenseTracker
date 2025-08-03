@@ -9,7 +9,7 @@ public class BudgetConfiguration : IEntityTypeConfiguration<Budget>
 {
     public void Configure(EntityTypeBuilder<Budget> builder)
     {
-        builder.ToTable($"Budgets", DbSchemas.ExpenseTracker);
+        builder.ToTable("Budgets", DbSchemas.ExpenseTracker);
 
         builder.HasKey(x => x.Id);
         builder.Property(e => e.Id)

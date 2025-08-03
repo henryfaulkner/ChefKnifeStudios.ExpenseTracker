@@ -1,4 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data;
+using ChefKnifeStudios.ExpenseTracker.Data.Enums;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.MockData;
 using Microsoft.Extensions.AI;
@@ -7,8 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.PgVector;
-using OpenAI.VectorStores;
-using System;
 using System.Text.Json;
 
 class Program
@@ -37,13 +36,203 @@ class Program
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var embeddingGenerator = scope.ServiceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        var vectorStore = scope.ServiceProvider.GetRequiredService<PostgresVectorStore>();
 
-        //if (db.Budgets.Any() || db.Expenses.Any() || db.ExpenseSemantics.Any())
-        //{
-        //    Console.WriteLine("Database already seeded.");
-        //    return;
-        //}
+        // await CreateMockExpensesAsync(db, embeddingGenerator, vectorStore);
+        await CreateCategoriesAsync(db, embeddingGenerator, vectorStore);
+    }
 
+    static async Task CreateCategoriesAsync(
+        AppDbContext db,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        PostgresVectorStore vectorStore)
+    {
+        var categories = new[]
+        {
+            new Category
+            {
+                DisplayName = "Groceries",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "groceries", "supermarket", "food shopping", "produce", "meat", "dairy", "bakery", "household essentials", "weekly shopping", "grocery store", "fresh food", "pantry", "market"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Rent",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "rent", "apartment", "housing", "monthly payment", "lease", "landlord", "residential", "living expenses", "home", "flat", "rental property"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Utilities",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "utilities", "electricity", "water bill", "gas bill", "internet", "wifi", "cable", "phone bill", "energy", "power", "trash", "sewage", "monthly utilities"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Transportation",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "transportation", "commute", "bus", "train", "subway", "metro", "public transit", "taxi", "rideshare", "uber", "lyft", "car", "fuel", "gasoline", "parking", "vehicle maintenance", "auto insurance"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Dining Out",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "dining out", "restaurant", "cafe", "coffee shop", "fast food", "takeout", "delivery", "lunch", "dinner", "breakfast", "food service", "eating out", "bistro", "bar", "pub"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Entertainment",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "entertainment", "movies", "cinema", "theater", "concert", "music", "games", "video games", "streaming", "netflix", "hulu", "disney+", "subscriptions", "events", "shows", "amusement park", "nightlife"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Healthcare",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "healthcare", "doctor", "medical", "pharmacy", "medicine", "prescription", "hospital", "clinic", "health insurance", "dental", "vision", "wellness", "therapy", "mental health", "checkup"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Fitness",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "fitness", "gym", "workout", "exercise", "personal trainer", "yoga", "pilates", "fitness class", "membership", "sports", "athletics", "health club", "recreation"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Shopping",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "shopping", "clothing", "apparel", "fashion", "shoes", "accessories", "retail", "mall", "boutique", "online shopping", "e-commerce", "electronics", "gadgets", "tech", "appliances"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Education",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "education", "school", "tuition", "books", "supplies", "courses", "university", "college", "learning", "training", "workshop", "seminar", "online course", "study", "class"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Travel",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "travel", "vacation", "trip", "flight", "airfare", "hotel", "accommodation", "lodging", "tourism", "car rental", "sightseeing", "holiday", "journey", "cruise", "passport", "visa"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Insurance",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "insurance", "health insurance", "auto insurance", "car insurance", "home insurance", "renter's insurance", "life insurance", "policy", "premium", "coverage", "claim"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Pets",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "pets", "pet food", "veterinarian", "vet", "pet supplies", "dog", "cat", "animal care", "grooming", "pet insurance", "boarding", "pet sitting"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Gifts & Donations",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "gifts", "donations", "charity", "present", "birthday", "holiday gift", "wedding gift", "fundraiser", "nonprofit", "giving", "contribution"
+                }),
+                AppId = Guid.Empty
+            },
+            new Category
+            {
+                DisplayName = "Personal Care",
+                CategoryType = CategoryTypes.Expense,
+                LabelsJson = JsonSerializer.Serialize(new[]
+                {
+                    "personal care", "haircut", "salon", "spa", "cosmetics", "skincare", "beauty", "hygiene", "barber", "massage", "nail salon", "wellness"
+                }),
+                AppId = Guid.Empty
+            }
+        };
+        var semantics = new List<CategorySemantic>();
+
+        await db.AddRangeAsync(categories);
+        await db.SaveChangesAsync();
+
+        string collectionName = "CategorySemantics";
+        var categorySemanticCollection = vectorStore.GetCollection<int, CategorySemantic>(collectionName);
+        await categorySemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+
+        foreach (var category in categories)
+        {
+            var labels = JsonSerializer.Deserialize<string[]>(category.LabelsJson) ?? Array.Empty<string>();
+            var labelText = string.Join(" ", labels);
+            var embedding = await embeddingGenerator.GenerateAsync(labelText);
+            var semantic = new CategorySemantic
+            {
+                CategoryId = category.Id,
+                Labels = labelText,
+                SemanticEmbedding = System.Runtime.InteropServices.MemoryMarshal.AsBytes<float>(embedding.Vector.ToArray().AsSpan()).ToArray()
+            };
+            semantics.Add(semantic);
+        }
+
+        db.CategorySemantics.AddRange(semantics);
+        await db.SaveChangesAsync();
+        await categorySemanticCollection.UpsertAsync(semantics);
+    }
+
+    static async Task CreateMockExpensesAsync(
+        AppDbContext db, 
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        PostgresVectorStore vectorStore)
+    {
         // Name/label pairs for realistic data
         var expenseData = new (string Name, string[] Labels)[]
         {
@@ -106,7 +295,6 @@ class Program
         db.Expenses.AddRange(expenses);
         await db.SaveChangesAsync();
 
-        var vectorStore = scope.ServiceProvider.GetRequiredService<PostgresVectorStore>();
         string collectionName = "ExpenseSemantics";
         var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
         await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);

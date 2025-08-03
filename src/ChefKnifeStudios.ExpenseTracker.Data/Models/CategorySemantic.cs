@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace ChefKnifeStudios.ExpenseTracker.Data.Models;
 
-public class ExpenseSemantic : IAggregateRoot
+public class CategorySemantic : IAggregateRoot
 {
     [Key]
     [VectorStoreKey]
@@ -15,11 +15,11 @@ public class ExpenseSemantic : IAggregateRoot
     public int Id { get; set; }
 
     [VectorStoreData]
-    public int ExpenseId { get; set; }
+    public int CategoryId { get; set; }
 
     [VectorStoreData]
     [TextSearchResultValue]
-    public required string Labels { get; set; } 
+    public required string Labels { get; set; }
 
     [VectorStoreData]
     public byte[]? SemanticEmbedding { get; set; }
@@ -39,5 +39,5 @@ public class ExpenseSemantic : IAggregateRoot
     [NotMapped]
     public double Score { get; set; }
 
-    public Expense? Expense { get; set; }
+    public Category? Category { get; set; }
 }

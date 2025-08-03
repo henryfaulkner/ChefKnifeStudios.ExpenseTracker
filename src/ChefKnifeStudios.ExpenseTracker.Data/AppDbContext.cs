@@ -8,7 +8,10 @@ namespace ChefKnifeStudios.ExpenseTracker.Data;
 public class AppDbContext : DbContext
 {   
 	public DbSet<Budget> Budgets { get; set; }
+	public DbSet<Category> Categories { get; set; }
+	public DbSet<CategorySemantic> CategorySemantics { get; set; }
 	public DbSet<Expense> Expenses { get; set; }
+	public DbSet<ExpenseCategory> ExpenseCategories { get; set; }
 	public DbSet<ExpenseSemantic> ExpenseSemantics { get; set; }
 	public DbSet<RecurringExpenseConfig> RecurringExpenseConfigs { get; set; }
 
