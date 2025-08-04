@@ -1,4 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data;
+using ChefKnifeStudios.ExpenseTracker.Data.Constants;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
@@ -382,7 +383,7 @@ public class StorageService : IStorageService
         {
             if (expense.ExpenseSemantic == null) throw new ArgumentNullException(nameof(expense.ExpenseSemantic));
 
-            var collectionName = "ExpenseSemantics";
+            var collectionName = Collections.ExpenseSemantics;
             var expenseSemanticCollection = _vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
             await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
             await expenseSemanticCollection.UpsertAsync(expense.ExpenseSemantic, cancellationToken);
@@ -402,7 +403,7 @@ public class StorageService : IStorageService
         {
             if (expense.ExpenseSemantic == null) throw new ArgumentNullException(nameof(expense.ExpenseSemantic));
 
-            var collectionName = "ExpenseSemantics";
+            var collectionName = Collections.ExpenseSemantics;
             var expenseSemanticCollection = _vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
             await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
             await expenseSemanticCollection.DeleteAsync(expense.Id, cancellationToken);

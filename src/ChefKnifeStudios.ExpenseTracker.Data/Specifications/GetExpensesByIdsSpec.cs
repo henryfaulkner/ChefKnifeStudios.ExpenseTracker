@@ -1,6 +1,5 @@
 ﻿using Ardalis.Specification;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
-using System.Linq;
 
 namespace ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 

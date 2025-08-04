@@ -7,4 +7,5 @@ public class ReceiptLabelsDTO
     public string? Name { get; set; }
     public DateTime? CreatedOn { get; set; } 
     public IEnumerable<string>? Labels { get; set; }
+    public IEnumerable<CategoryDTO>? Categories { get; set; }
 }

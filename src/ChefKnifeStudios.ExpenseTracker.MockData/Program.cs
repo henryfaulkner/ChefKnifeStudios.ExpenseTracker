@@ -1,4 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data;
+using ChefKnifeStudios.ExpenseTracker.Data.Constants;
 using ChefKnifeStudios.ExpenseTracker.Data.Enums;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.MockData;
@@ -205,7 +206,7 @@ class Program
         await db.AddRangeAsync(categories);
         await db.SaveChangesAsync();
 
-        string collectionName = "CategorySemantics";
+        string collectionName = Collections.CategorySemantics;
         var categorySemanticCollection = vectorStore.GetCollection<int, CategorySemantic>(collectionName);
         await categorySemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
@@ -295,7 +296,7 @@ class Program
         db.Expenses.AddRange(expenses);
         await db.SaveChangesAsync();
 
-        string collectionName = "ExpenseSemantics";
+        string collectionName = Collections.ExpenseSemantics;
         var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
         await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 

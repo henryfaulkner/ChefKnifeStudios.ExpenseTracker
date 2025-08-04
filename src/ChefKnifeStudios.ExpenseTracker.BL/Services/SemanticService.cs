@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.AI.DocumentIntelligence;
 using ChefKnifeStudios.ExpenseTracker.BL.Models;
+using ChefKnifeStudios.ExpenseTracker.Data.Constants;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
@@ -26,12 +27,13 @@ public interface ISemanticService
 
 public class SemanticService : ISemanticService
 {
-    private readonly ILogger<SemanticService> _logger;
-    private readonly IConfiguration _config;
-    private readonly IChatCompletionService _chatCompletionService;
-    private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
-    private readonly IRepository<Expense> _expenseRepository;
-    private readonly PostgresVectorStore _vectorStore;
+    readonly ILogger<SemanticService> _logger;
+    readonly IConfiguration _config;
+    readonly IChatCompletionService _chatCompletionService;
+    readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
+    readonly IRepository<Expense> _expenseRepository;
+    readonly IRepository<Category> _categoryRepository;
+    readonly PostgresVectorStore _vectorStore;
 
     public SemanticService(
         ILogger<SemanticService> logger,
@@ -39,6 +41,7 @@ public class SemanticService : ISemanticService
         IChatCompletionService chatCompletionService,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IRepository<Expense> expenseRepository,
+        IRepository<Category> categoryRepository,
         PostgresVectorStore vectorStore)
     {
         _logger = logger;
@@ -46,6 +49,7 @@ public class SemanticService : ISemanticService
         _chatCompletionService = chatCompletionService;
         _embeddingGenerator = embeddingGenerator;
         _expenseRepository = expenseRepository;
+        _categoryRepository = categoryRepository;
         _vectorStore = vectorStore;
     }
 
@@ -181,6 +185,15 @@ public class SemanticService : ISemanticService
             var result = JsonSerializer.Deserialize<TextToExpenseResponseDTO>(responseContent, Shared.JsonOptions.Get())
                 ?? new TextToExpenseResponseDTO { Name = string.Empty, Labels = Array.Empty<string>() };
 
+            try
+            {
+                result.Categories = await SearchCategoriesAsync(responseContent, 1, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred. category search text {text}", responseContent);
+            }
+
             _logger.LogInformation("TextToExpenseAsync completed. AppId: {AppId}, Name: {Name}, Price: {Price}", appId, result.Name, result.Price);
             return result;
         }
@@ -235,6 +248,15 @@ public class SemanticService : ISemanticService
                 ?? new ReceiptLabelsDTO { Name = string.Empty, CreatedOn = DateTime.UtcNow, Labels = Array.Empty<string>() };
             result.CreatedOn = DateTime.UtcNow;
 
+            try
+            {
+                result.Categories = await SearchCategoriesAsync(responseContent, 1, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred. category search text {text}", responseContent);
+            }
+
             _logger.LogInformation("LabelReceiptDetailsAsync completed. AppId: {AppId}, Name: {Name}", appId, result.Name);
             return result;
         }
@@ -282,7 +304,7 @@ public class SemanticService : ISemanticService
 
             Embedding<float> queryEmbedding = await _embeddingGenerator.GenerateAsync(searchRequest.SearchText, cancellationToken: cancellationToken);
 
-            var collectionName = "ExpenseSemantics";
+            var collectionName = Collections.ExpenseSemantics;
             var expenseSemanticCollection = _vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
             await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
@@ -329,7 +351,54 @@ public class SemanticService : ISemanticService
         }
     }
 
-    private List<ReceiptDTO> MapAnalyzeResultToReceiptDTOs(Azure.AI.DocumentIntelligence.AnalyzeResult receipts)
+    async Task<IEnumerable<CategoryDTO>> SearchCategoriesAsync(string searchText, int topN, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("SearchCategoriesAsync started. SearchText: {SearchText}", searchText);
+        try
+        {
+            Embedding<float> queryEmbedding = await _embeddingGenerator.GenerateAsync(searchText, cancellationToken: cancellationToken);
+
+            var collectionName = Collections.CategorySemantics;
+            var categorySemanticCollection = _vectorStore.GetCollection<int, CategorySemantic>(collectionName);
+            await categorySemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+
+            List<CategorySemantic> semanticResult = [];
+            var searchResult = categorySemanticCollection.SearchAsync(queryEmbedding, top: topN, cancellationToken: cancellationToken);
+            await foreach (var categoryVectorResult in searchResult)
+            {
+                if (!categoryVectorResult.Score.HasValue) continue;
+                var record = categoryVectorResult.Record;
+                record.Score = categoryVectorResult.Score.Value;
+                semanticResult.Add(record);
+            }
+
+            var categoryIds = semanticResult
+                .OrderBy(x => x.Score)
+                .Select(x => x.CategoryId)
+                .ToList();
+            var categories = await _categoryRepository.ListAsync(
+                new GetCategoriesByIdsSpec(categoryIds),
+                cancellationToken
+            );
+
+            List<CategoryDTO> result = [];
+            foreach (var category in categories)
+            {
+                if (category == null) continue;
+                result.Add(category.MapToDTO());
+            }
+
+            _logger.LogInformation("SearchCategoriesAsync completed. Results: {Count}", result.Count);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SearchCategoriesAsync failed. SearchText: {SearchText}", searchText);
+            throw;
+        }
+    }
+
+    List<ReceiptDTO> MapAnalyzeResultToReceiptDTOs(Azure.AI.DocumentIntelligence.AnalyzeResult receipts)
     {
         var resultData = new List<ReceiptDTO>();
 
@@ -397,7 +466,7 @@ public class SemanticService : ISemanticService
         return resultData;
     }
 
-    private async Task<string?> CreateRagMessageAsync(IEnumerable<ExpenseDTO> expenses, CancellationToken cancellationToken = default)
+    async Task<string?> CreateRagMessageAsync(IEnumerable<ExpenseDTO> expenses, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("CreateRagMessageAsync started.");
         try
@@ -452,9 +521,8 @@ public class SemanticService : ISemanticService
         }
     }
 
-
-    // TODO: Remove all below when v4.0 GA comes back online
-    private List<ReceiptDTO> MapAnalyzeResultToReceiptDTOs(ReceiptAnalyzeResult result)
+    #region Doc Intelligence 3.1 API method and models
+    List<ReceiptDTO> MapAnalyzeResultToReceiptDTOs(ReceiptAnalyzeResult result)
     {
         var receiptDTOs = new List<ReceiptDTO>();
         var documents = result?.AnalyzeResult?.Documents;
@@ -562,4 +630,5 @@ public class SemanticService : ISemanticService
         public double? Amount { get; set; }
         public string? CurrencyCode { get; set; }
     }
+    #endregion
 }

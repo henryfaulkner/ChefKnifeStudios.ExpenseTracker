@@ -12,6 +12,7 @@ using Npgsql;
 using OpenAI;
 using Scalar.AspNetCore;
 using ChefKnifeStudios.ExpenseTracker.BL;
+using ChefKnifeStudios.ExpenseTracker.Data.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,7 +89,7 @@ using (var scope = app.Services.CreateScope())
     var expenseSemanticRepository = serviceProvider.GetRequiredService<IRepository<ExpenseSemantic>>();
     var vectorStore = serviceProvider.GetRequiredService<PostgresVectorStore>();
 
-    string collectionName = "ExpenseSemantics";
+    string collectionName = Collections.ExpenseSemantics;
     var expenseSemanticCollection = vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
     await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 

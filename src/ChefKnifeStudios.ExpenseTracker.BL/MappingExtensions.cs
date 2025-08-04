@@ -150,4 +150,46 @@ public static class MappingExtensions
         };
         return result;
     }
+
+    public static CategoryDTO MapToDTO(this Category model)
+    {
+        return new CategoryDTO
+        {
+            Id = model.Id,
+            DisplayName = model.DisplayName,
+            CategoryType = (Shared.Enums.CategoryTypes)(int)model.CategoryType,
+            Labels = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
+            AppId = model.AppId,
+            CategorySemantic = model.CategorySemantic is null ? null : new CategorySemanticDTO
+            {
+                Id = model.CategorySemantic.Id,
+                CategoryId = model.CategorySemantic.CategoryId,
+                Labels = model.CategorySemantic.Labels,
+                SemanticEmbedding = model.CategorySemantic.SemanticEmbedding is null
+                    ? ReadOnlyMemory<float>.Empty
+                    : System.Runtime.InteropServices.MemoryMarshal.Cast<byte, float>(model.CategorySemantic.SemanticEmbedding).ToArray()
+            }
+        };
+    }
+
+    public static Category MapToModel(this CategoryDTO dto)
+    {
+        return new Category
+        {
+            Id = dto.Id,
+            DisplayName = dto.DisplayName,
+            CategoryType = (Data.Enums.CategoryTypes)(int)dto.CategoryType,
+            LabelsJson = System.Text.Json.JsonSerializer.Serialize(dto.Labels),
+            AppId = dto.AppId,
+            CategorySemantic = dto.CategorySemantic is null ? null : new CategorySemantic
+            {
+                Id = dto.CategorySemantic.Id,
+                CategoryId = dto.CategorySemantic.CategoryId,
+                Labels = dto.CategorySemantic.Labels,
+                SemanticEmbedding = dto.CategorySemantic.SemanticEmbedding.IsEmpty
+                    ? null
+                    : System.Runtime.InteropServices.MemoryMarshal.AsBytes<float>(dto.CategorySemantic.SemanticEmbedding.Span).ToArray()
+            }
+        };
+    }
 }
