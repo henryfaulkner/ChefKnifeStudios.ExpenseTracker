@@ -32,8 +32,8 @@ public class SearchViewModel
         private set => SetValue(ref _isLoading, value);
     }
 
-    IEnumerable<BudgetDTO>? _budgets = null!;
-    public IEnumerable<BudgetDTO>? Budgets
+    IEnumerable<BudgetDTO> _budgets = [];
+    public IEnumerable<BudgetDTO> Budgets
     {
         get => _budgets;
         private set => SetValue(ref _budgets, value);
@@ -55,7 +55,7 @@ public class SearchViewModel
         try
         {
             var res = await _storageService.GetBudgetsAsync();
-            if (res.IsSuccess) Budgets = res.Data;
+            if (res.IsSuccess && res.Data is not null) Budgets = res.Data;
             else _toastService.ShowError("Budgets failed to load");
         }
         finally

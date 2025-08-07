@@ -1,0 +1,34 @@
+﻿<div class="category-picker">
+    <div class="top-bar">
+        @if (!_isOpen)
+        {
+            <MatIconButton 
+                Icon="add_circle_outline"
+                @onclick="HandleOpenOptionsPressed"
+                Class="open-btn" 
+            />
+        }
+        else
+        {
+            <MatIconButton 
+                Icon="remove_circle_outline"
+                @onclick="HandleCloseOptionsPressed"
+                Class="close-btn" 
+            />
+        }
+
+        <MatBody2 class="add-categories-label">
+            Add Expense Categories?
+        </MatBody2>
+    </div>
+
+    @if (_isOpen)
+    {
+        <MatChipSet Filter="true" @bind-SelectedChips="_selectedChips">
+            @foreach (var category in CategoryViewModel.Categories)
+            {
+                <MatChip Label="@category.DisplayName" Value="category" IsCheckable="true"></MatChip>
+            }
+        </MatChipSet>
+    }
+</div>

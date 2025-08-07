@@ -1,0 +1,12 @@
+﻿.top-bar {
+    display: flex;
+    column-gap: 1rem;
+}
+
+::deep .open-btn, 
+::deep .close-btn {
+    cursor: pointer;
+    color: var(--clr-1p, #6442d6);
+    font-size: 20px;
+    border: none;
+}

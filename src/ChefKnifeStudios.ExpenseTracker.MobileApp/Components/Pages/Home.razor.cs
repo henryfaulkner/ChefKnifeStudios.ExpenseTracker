@@ -12,6 +12,7 @@ public partial class Home : ComponentBase, IDisposable
     [Inject] ISearchViewModel SearchViewModel { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] IRecurringExpenseViewModel RecurringExpenseViewModel { get; set; } = null!;
+    [Inject] ICategoryViewModel CategoryViewModel { get; set; } = null!;
 
     protected override void OnInitialized()
     {
@@ -23,6 +24,7 @@ public partial class Home : ComponentBase, IDisposable
     protected override async Task OnInitializedAsync()
     {
         await SearchViewModel.LoadPagedBudgetsAsync();
+        await CategoryViewModel.LoadCategoriesAsync();
 
         await base.OnInitializedAsync();
     }

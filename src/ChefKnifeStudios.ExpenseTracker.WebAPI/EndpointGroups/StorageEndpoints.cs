@@ -191,7 +191,6 @@ public static class StorageEndpoints
         .WithName("UpdateBudget")
         .Accepts<BudgetDTO>("application/json")
         .Produces(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
@@ -223,6 +222,7 @@ public static class StorageEndpoints
         })
         .WithName("GetBudgets")
         .Produces<IEnumerable<BudgetDTO>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 
         group.MapGet("/budgets/search", async (
@@ -379,6 +379,37 @@ public static class StorageEndpoints
         })
         .WithName("ProcessRecurringExpenses")
         .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("/categories", async (
+            [FromServices] IStorageService storageService,
+            [FromServices] ILoggerFactory loggerFactory,
+            HttpContext context,
+            CancellationToken cancellationToken = default) =>
+        {
+            var logger = loggerFactory.CreateLogger(nameof(StorageEndpoints));
+            string? appId = null;
+            try
+            {
+                appId = context.Request.Headers[Constants.AppIdHeader].FirstOrDefault();
+
+                if (string.IsNullOrEmpty(appId))
+                {
+                    return Results.BadRequest("App ID header is required");
+                }
+
+                var result = await storageService.GetCategoriesAsync(Guid.Parse(appId));
+                return Results.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception in GetCategories endpoint. AppId: {AppId}", appId);
+                return Results.Problem("An unexpected error occurred.", statusCode: 500);
+            }
+        })
+        .WithName("GetCategories")
+        .Produces<IEnumerable<CategoryDTO>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
 

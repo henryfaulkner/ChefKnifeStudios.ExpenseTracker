@@ -297,4 +297,29 @@ public class StorageService : IStorageService
             };
         }
     }
+
+    public async Task<ApiResponse<IEnumerable<CategoryDTO>?>> GetCategoriesAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}/categories");
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("categories endpoint failed.");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var obj = JsonSerializer.Deserialize<IEnumerable<CategoryDTO>?>(responseContent, JsonOptions.Get());
+
+            return new ApiResponse<IEnumerable<CategoryDTO>?>(obj, response.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<IEnumerable<CategoryDTO>?>()
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Data = null,
+            };
+        }
+    }
 }

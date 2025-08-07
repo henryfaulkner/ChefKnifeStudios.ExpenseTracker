@@ -5,11 +5,8 @@ using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Data.Specifications;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.PgVector;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
@@ -21,29 +18,35 @@ public interface IStorageService
     Task<bool> DeleteExpenseCostAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> AddBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> UpdateBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
+
     Task<IEnumerable<BudgetDTO>> GetBudgetsAsync(Guid appId, CancellationToken cancellationToken = default);
     Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber, Guid appId, CancellationToken cancellationToken = default);
+
     Task<IEnumerable<RecurringExpenseConfigDTO>> GetRecurringExpensesAsync(Guid appId, CancellationToken cancellationToken = default);
     Task<bool> AddRecurringExpenseAsync(RecurringExpenseConfig recurringExpense, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> DeleteRecurringExpenseAsync(int recurringExpenseConfigId, Guid appId, CancellationToken cancellationToken = default);
     Task ProcessRecurringExpensesAsync(CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<CategoryDTO>> GetCategoriesAsync(Guid appId, CancellationToken cancellationToken = default);
 }
 
 public class StorageService : IStorageService
 {
-    private readonly IRepository<Expense> _expenseRepository;
-    private readonly IRepository<Budget> _budgetRepository;
-    private readonly IRepository<RecurringExpenseConfig> _recurringExpenseRepository;
-    private readonly IBudgetSearchRepository _budgetSearchRepository;
-    private readonly ISemanticService _semanticService;
-    private readonly PostgresVectorStore _vectorStore;
-    private readonly AppDbContext _dbContext;
-    private readonly ILogger<StorageService> _logger;
+    readonly IRepository<Expense> _expenseRepository;
+    readonly IRepository<Budget> _budgetRepository;
+    readonly IRepository<RecurringExpenseConfig> _recurringExpenseRepository;
+    readonly IRepository<Category> _categoryRepository;
+    readonly IBudgetSearchRepository _budgetSearchRepository;
+    readonly ISemanticService _semanticService;
+    readonly PostgresVectorStore _vectorStore;
+    readonly AppDbContext _dbContext;
+    readonly ILogger<StorageService> _logger;
 
     public StorageService(
         IRepository<Expense> expenseRepository,
         IRepository<Budget> budgetRepository,
         IRepository<RecurringExpenseConfig> recurringExpenseRepository,
+        IRepository<Category> categoryRepository,
         IBudgetSearchRepository budgetSearchRepository,
         ISemanticService semanticService,
         PostgresVectorStore vectorStore,
@@ -53,6 +56,7 @@ public class StorageService : IStorageService
         _expenseRepository = expenseRepository;
         _budgetRepository = budgetRepository;
         _recurringExpenseRepository = recurringExpenseRepository;
+        _categoryRepository = categoryRepository;
         _budgetSearchRepository = budgetSearchRepository;
         _semanticService = semanticService;
         _vectorStore = vectorStore;
@@ -377,7 +381,7 @@ public class StorageService : IStorageService
         }
     }
 
-    private async Task<bool> UpsertExpense(Expense expense, CancellationToken cancellationToken = default)
+    async Task<bool> UpsertExpense(Expense expense, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -397,7 +401,7 @@ public class StorageService : IStorageService
         return true;
     }
 
-    private async Task<bool> DeleteExpense(Expense expense, CancellationToken cancellationToken = default)
+    async Task<bool> DeleteExpense(Expense expense, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -415,5 +419,21 @@ public class StorageService : IStorageService
             return false;
         }
         return true;
+    }
+
+    public async Task<IEnumerable<CategoryDTO>> GetCategoriesAsync(Guid appId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Starting GetCategoriesAsync for AppId: {AppId}", appId);
+        try
+        {
+            var categories = await _categoryRepository.ListAsync(new GetCategoriesSpec(appId), cancellationToken);
+            _logger.LogInformation("Retrieved {Count} categories for AppId: {AppId}", categories.Count(), appId);
+            return categories.Select(x => x.MapToDTO());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in GetCategoriesAsync for AppId: {AppId}", appId);
+            return Enumerable.Empty<CategoryDTO>();
+        }
     }
 }

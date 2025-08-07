@@ -45,9 +45,12 @@
     width: 100%;
 }
 
+.form ::deep .mdc-checkbox__native-control ~ .mdc-checkbox__background {
+    border-color: var(--mdc-theme-primary, #6200ee) !important;
+}
+
 .form ::deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
     background-color: var(--mdc-theme-primary, #6200ee);
-    border-color: var(--mdc-theme-primary, #6200ee);
 }
 
 .blade-content {
