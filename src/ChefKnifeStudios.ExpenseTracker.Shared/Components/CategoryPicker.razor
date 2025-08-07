@@ -2,19 +2,27 @@
     <div class="top-bar">
         @if (!_isOpen)
         {
-            <MatIconButton 
-                Icon="add_circle_outline"
+            <button 
+                class="open-btn"
                 @onclick="HandleOpenOptionsPressed"
-                Class="open-btn" 
-            />
+            >
+                <MatIcon 
+                    Icon="add_circle_outline"
+                    Class="clr-1p open-btn-icon"
+                />
+            </button>
         }
         else
         {
-            <MatIconButton 
-                Icon="remove_circle_outline"
+            <button 
+                class="close-btn"
                 @onclick="HandleCloseOptionsPressed"
-                Class="close-btn" 
-            />
+            >
+                <MatIcon 
+                    Icon="remove_circle_outline"
+                    Class="clr-1p close-btn-icon"
+                />
+            </button>
         }
 
         <MatBody2 class="add-categories-label">

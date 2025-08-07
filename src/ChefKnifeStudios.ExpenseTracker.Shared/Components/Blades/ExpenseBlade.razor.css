@@ -113,3 +113,9 @@
     border-bottom: 8px solid #dcdaf5;
     filter: drop-shadow(0 -1px 1px rgba(0,0,0,0.08));
 }
+
+.recurring-help-btn {
+    height: 18px;
+    padding-bottom: 1px;
+    box-sizing: content-box;
+}
