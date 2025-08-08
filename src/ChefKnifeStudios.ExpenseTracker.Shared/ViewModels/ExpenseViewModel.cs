@@ -1,5 +1,6 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Models;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -21,6 +22,7 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
     readonly ICameraService _cameraService;
     readonly ISemanticService _semanticService;
     readonly IMicrophoneService _microphoneService;
+    readonly IEventNotificationService _eventNotificationService;
     readonly ILogger<ExpenseViewModel> _logger;
 
     bool _isListening = false;
@@ -30,16 +32,19 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
         private set => SetValue(ref _isListening, value);
     }
 
-    public ExpenseViewModel(IStorageService storageService,
+    public ExpenseViewModel(
+        IStorageService storageService,
         ICameraService cameraService,
         ISemanticService semanticService,
         IMicrophoneService microphoneService,
+        IEventNotificationService eventNotificationService,
         ILogger<ExpenseViewModel> logger)
     {
         _storageService = storageService;
         _cameraService = cameraService;
         _semanticService = semanticService;
         _microphoneService = microphoneService;
+        _eventNotificationService = eventNotificationService;
         _logger = logger;
     }
 
@@ -68,6 +73,14 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
                 return null;
             }
             var labelsDTO = response2.Data;
+            _eventNotificationService.PostEvent(
+                this,
+                new CategoryEventArgs()
+                {
+                    Type = CategoryEventArgs.EventTypes.AddExpenseCategories,
+                    Data = new CategoryEventArgs.EventData() { Categories = labelsDTO.Categories ?? [], },
+                }
+            );
 
             return new Receipt(receiptDTO, labelsDTO);
         }
@@ -103,6 +116,14 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
                 return null;
             }
             var labelsDTO = response2.Data;
+            _eventNotificationService.PostEvent(
+                this,
+                new CategoryEventArgs() 
+                { 
+                    Type = CategoryEventArgs.EventTypes.AddExpenseCategories, 
+                    Data = new CategoryEventArgs.EventData() { Categories = labelsDTO.Categories ?? [], },
+                }
+            );
 
             return new Receipt(receiptDTO, labelsDTO);
         }
@@ -132,6 +153,14 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
             return result;
         }
         result = response.Data;
+        _eventNotificationService.PostEvent(
+            this,
+            new CategoryEventArgs()
+            {
+                Type = CategoryEventArgs.EventTypes.AddExpenseCategories,
+                Data = new CategoryEventArgs.EventData() { Categories = result.Categories ?? [], },
+            }
+        );
 
         return result;
     }

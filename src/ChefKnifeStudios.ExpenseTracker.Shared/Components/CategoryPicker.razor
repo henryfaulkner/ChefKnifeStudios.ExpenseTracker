@@ -10,6 +10,9 @@
                     Icon="add_circle_outline"
                     Class="clr-1p open-btn-icon"
                 />
+                <MatBody2 class="add-categories-label">
+                    Add Expense Categories?
+                </MatBody2>
             </button>
         }
         else
@@ -22,20 +25,29 @@
                     Icon="remove_circle_outline"
                     Class="clr-1p close-btn-icon"
                 />
+                <MatBody2 class="add-categories-label">
+                    Add Expense Categories?
+                </MatBody2>
             </button>
         }
-
-        <MatBody2 class="add-categories-label">
-            Add Expense Categories?
-        </MatBody2>
     </div>
 
     @if (_isOpen)
     {
-        <MatChipSet Filter="true" @bind-SelectedChips="_selectedChips">
+        <MatChipSet Filter="true">
+            @{
+                var selectedIds = CategoryViewModel.SelectedCategoryList.Select(x => x.Id);
+            }
             @foreach (var category in CategoryViewModel.Categories)
             {
-                <MatChip Label="@category.DisplayName" Value="category" IsCheckable="true"></MatChip>
+                var isSelected = selectedIds.Contains(category.Id);
+                <MatChip 
+                    Label="@category.DisplayName" 
+                    Value="category" 
+                    IsCheckable="true" 
+                    IsSelected="isSelected"
+                    @onclick="() => ToggleSelectedCategory(category)"
+                />
             }
         </MatChipSet>
     }

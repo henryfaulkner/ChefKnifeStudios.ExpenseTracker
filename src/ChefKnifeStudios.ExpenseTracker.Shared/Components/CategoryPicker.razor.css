@@ -2,9 +2,10 @@
     margin-bottom: 11px;
 }
 
-.top-bar {
+.top-bar,
+.top-bar > button {
     display: flex;
-    column-gap: 0.25rem;
+    column-gap: 15px;
     align-items: center;
     justify-content: start;
 }
@@ -16,7 +17,7 @@
 .open-btn,
 .close-btn {
     height: 20px;
-    padding: 0 11px;
+    padding-left: 11px;
     box-sizing: content-box;
 }
 
@@ -26,4 +27,9 @@
     color: var(--clr-1p, #6442d6);
     font-size: 18px;
     border: none;
+}
+
+::deep .mdc-chip--selected {
+    color: var(--clr-on-1s-container, #21182b);
+    background-color: var(--clr-1s-container, #dcdaf5);
 }
