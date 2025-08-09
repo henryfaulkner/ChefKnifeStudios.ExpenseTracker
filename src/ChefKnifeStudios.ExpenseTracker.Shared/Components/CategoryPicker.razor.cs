@@ -16,7 +16,6 @@ public partial class CategoryPicker : ComponentBase, IDisposable
     ];
 
     bool _isOpen;
-    MatChip[] _selectedChips = [];
 
     protected override void OnInitialized()
     {
@@ -28,6 +27,14 @@ public partial class CategoryPicker : ComponentBase, IDisposable
     {
         CategoryViewModel.PropertyChanged -= ViewModel_OnPropertyChanged;
         GC.SuppressFinalize(this);
+    }
+
+    public IEnumerable<CategoryDTO> GetSelections() => CategoryViewModel.SelectedCategoryList;
+
+    public void Clear()
+    {
+        _isOpen = false;
+        CategoryViewModel.SelectedCategoryList = [];
     }
 
     void ViewModel_OnPropertyChanged(object? sender, PropertyChangedEventArgs e)

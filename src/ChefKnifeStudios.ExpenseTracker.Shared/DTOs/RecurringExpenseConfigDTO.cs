@@ -6,4 +6,5 @@ public class RecurringExpenseConfigDTO
     public required string Name { get; set; }
     public decimal Cost { get; set; }
     public required IEnumerable<string> Labels { get; set; }
+    public required IEnumerable<int> CategoryIds { get; set; }
 }

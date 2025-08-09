@@ -6,7 +6,7 @@ public interface IStorageService
 {
     Task<ApiResponse<bool>> AddBudgetAsync(BudgetDTO budgetDTO);
     Task<ApiResponse<bool>> UpdateBudgetAsync(BudgetDTO budgetDTO);
-    Task<ApiResponse<bool>> AddExpenseAsync(ExpenseDTO expenseDTO);
+    Task<ApiResponse<bool>> AddExpenseAsync(AddExpenseRequestDTO expenseReqDTO);
     Task<ApiResponse<bool>> UpdateExpenseCostAsync(int expenseId, decimal newCost);
     Task<ApiResponse<bool>> DeleteExpenseAsync(int expenseId);
 

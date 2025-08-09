@@ -18,8 +18,9 @@ public static class StorageEndpoints
             .WithName("Storage");
 
         group.MapPost("/expense", async (
-            [FromBody] ExpenseDTO expenseDTO,
+            [FromBody] AddExpenseRequestDTO expenseReqDTO,
             [FromServices] IStorageService storageService,
+            [FromServices] ISemanticService semanticService,
             [FromServices] IRepository<Budget> budgetRepository,
             [FromServices] ILoggerFactory loggerFactory,
             HttpContext context,
@@ -36,7 +37,13 @@ public static class StorageEndpoints
                     return Results.BadRequest("App ID header is required");
                 }
 
-                var result = await storageService.AddExpenseAsync(expenseDTO, Guid.Parse(appId), cancellationToken);
+                var embeddingDTO = await semanticService.CreateSemanticEmbeddingAsync(
+                    expenseReqDTO.ReceiptLabels, 
+                    Guid.Parse(appId), 
+                    cancellationToken
+                );
+
+                var result = await storageService.AddExpenseAsync(expenseReqDTO.Expense, embeddingDTO, Guid.Parse(appId), cancellationToken);
                 return result ? Results.Ok(result) : Results.Problem("Failed to add expense");
             }
             catch (Exception ex)

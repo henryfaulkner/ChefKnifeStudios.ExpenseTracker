@@ -26,6 +26,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     readonly Guid _recurringHelpRegistrationUid = Guid.NewGuid();
 
     BladeContainer? _bladeContainer;
+    CategoryPicker? _categoryPicker;
 
     string? _name;
     decimal? _cost;
@@ -93,16 +94,14 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         _isLoading = true;
         try
         {
+            var selectedCategories = _categoryPicker?.GetSelections() ?? [];
             ReceiptLabelsDTO receiptLabels = new()
             {
                 Name = _name,
                 CreatedOn = DateTime.Now,
                 Labels = _labels,
+                Categories = selectedCategories,
             };
-
-            var embeddingRes = await SemanticService.CreateSemanticEmbeddingAsync(receiptLabels);
-            var embedding = embeddingRes.Data;
-            if (embedding is not SemanticEmbeddingDTO) throw new ApplicationException("Embedding data is null.");
 
             ExpenseDTO expense = new()
             {
@@ -110,14 +109,12 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
                 Cost = _cost.Value,
                 Labels = _labels ?? [],
                 IsRecurring = _isRecurring,
-                ExpenseSemantic = new()
-                {
-                    Labels = embedding.Labels,
-                    SemanticEmbedding = embedding.Embedding,
-                }
+                Categories = selectedCategories,
             };
 
-            var res1 = await StorageService.AddExpenseAsync(expense);
+            var res1 = await StorageService.AddExpenseAsync(
+                new() { Expense = expense, ReceiptLabels = receiptLabels, }
+            );
             if (!res1.IsSuccess)
             {
                 ToastService.ShowError("Your expense could not be created");
@@ -131,6 +128,7 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
                         Name = expense.Name,
                         Cost = expense.Cost,
                         Labels = expense.Labels ?? [],
+                        CategoryIds = expense.Categories.Select(x => x.Id),
                     };
                     var res2 = await StorageService.AddRecurringExpenseAsync(recurringExpense);
                     if (!res1.IsSuccess)
@@ -182,6 +180,11 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
         _cost = null;
         _isRecurring = false;
         _labels = null;
+
+        if (_categoryPicker is not null)
+        {
+            _categoryPicker.Clear();
+        }
     }
 
     async Task HandlePickPictureAsync()

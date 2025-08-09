@@ -34,11 +34,11 @@ public class StorageService : IStorageService
         _eventNotificationService = eventNotificationService;
     }
 
-    public async Task<ApiResponse<bool>> AddExpenseAsync(ExpenseDTO expenseDTO)
+    public async Task<ApiResponse<bool>> AddExpenseAsync(AddExpenseRequestDTO expenseReqDTO)
     {
         try
         {
-            var bodyContent = JsonContent.Create(expenseDTO, new MediaTypeHeaderValue("application/json"));
+            var bodyContent = JsonContent.Create(expenseReqDTO, new MediaTypeHeaderValue("application/json"));
 
             var response = await _httpClient.PostAsync($"{_baseUrl}/expense", bodyContent);
             if (!response.IsSuccessStatusCode)

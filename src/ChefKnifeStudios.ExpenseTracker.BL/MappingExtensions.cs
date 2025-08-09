@@ -1,8 +1,6 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Search;
 using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace ChefKnifeStudios.ExpenseTracker.BL;
@@ -27,14 +25,10 @@ public static class MappingExtensions
                     StartDate = DateTime.SpecifyKind(model.Budget.StartDateUtc, DateTimeKind.Utc).ToLocalTime(),
                     EndDate = DateTime.SpecifyKind(model.Budget.EndDateUtc, DateTimeKind.Utc).ToLocalTime(),
                 },
-            ExpenseSemantic = model.ExpenseSemantic is null ? null
-                : new()
-                {
-                    Id = model.ExpenseSemantic.Id,
-                    ExpenseId = model.ExpenseSemantic.ExpenseId,
-                    Labels = model.ExpenseSemantic.Labels,
-                    SemanticEmbedding = MemoryMarshal.Cast<byte, float>(model.ExpenseSemantic.SemanticEmbedding).ToArray(),
-                },
+            Categories = model.ExpenseCategories?
+                .Where(ec => ec.Category != null)
+                .Select(ec => ec.Category!.MapToDTO())
+                .ToList() ?? new List<CategoryDTO>(),
         };
         return result;
     }
@@ -57,14 +51,13 @@ public static class MappingExtensions
                     StartDateUtc = dto.Budget.StartDate.Kind == DateTimeKind.Utc ? dto.Budget.StartDate : dto.Budget.StartDate.ToUniversalTime(),
                     EndDateUtc = dto.Budget.EndDate.Kind == DateTimeKind.Utc ? dto.Budget.EndDate : dto.Budget.EndDate.ToUniversalTime(),
                 },
-            ExpenseSemantic = dto.ExpenseSemantic is null ? null
-            : new()
-            {
-                Id = dto.ExpenseSemantic.Id,
-                ExpenseId = dto.ExpenseSemantic.ExpenseId,
-                Labels = dto.ExpenseSemantic.Labels,
-                SemanticEmbedding = MemoryMarshal.AsBytes<float>(dto.ExpenseSemantic.SemanticEmbedding.Span).ToArray(),
-            },
+            ExpenseCategories = dto.Categories?
+                .Select(catDto => new ExpenseCategory
+                {
+                    CategoryId = catDto.Id
+                    // ExpenseId will be set by EF when saving, or you can set it if needed
+                })
+                .ToList() ?? new List<ExpenseCategory>(),
         };
         return result;
     }
@@ -135,6 +128,7 @@ public static class MappingExtensions
             Name = model.Name,
             Cost = model.Cost,
             Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
+            CategoryIds = JsonSerializer.Deserialize<IEnumerable<int>>(model.CategoryIdsJson, Shared.JsonOptions.Get()) ?? [],
         };
         return result;
     }
@@ -147,6 +141,7 @@ public static class MappingExtensions
             Name = dto.Name,
             Cost = dto.Cost,
             LabelsJson = JsonSerializer.Serialize(dto.Labels),
+            CategoryIdsJson = JsonSerializer.Serialize(dto.CategoryIds),
         };
         return result;
     }
@@ -158,17 +153,8 @@ public static class MappingExtensions
             Id = model.Id,
             DisplayName = model.DisplayName,
             CategoryType = (Shared.Enums.CategoryTypes)(int)model.CategoryType,
-            Labels = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
+            Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
             AppId = model.AppId,
-            CategorySemantic = model.CategorySemantic is null ? null : new CategorySemanticDTO
-            {
-                Id = model.CategorySemantic.Id,
-                CategoryId = model.CategorySemantic.CategoryId,
-                Labels = model.CategorySemantic.Labels,
-                SemanticEmbedding = model.CategorySemantic.SemanticEmbedding is null
-                    ? ReadOnlyMemory<float>.Empty
-                    : System.Runtime.InteropServices.MemoryMarshal.Cast<byte, float>(model.CategorySemantic.SemanticEmbedding).ToArray()
-            }
         };
     }
 
@@ -179,17 +165,8 @@ public static class MappingExtensions
             Id = dto.Id,
             DisplayName = dto.DisplayName,
             CategoryType = (Data.Enums.CategoryTypes)(int)dto.CategoryType,
-            LabelsJson = System.Text.Json.JsonSerializer.Serialize(dto.Labels),
+            LabelsJson = JsonSerializer.Serialize(dto.Labels),
             AppId = dto.AppId,
-            CategorySemantic = dto.CategorySemantic is null ? null : new CategorySemantic
-            {
-                Id = dto.CategorySemantic.Id,
-                CategoryId = dto.CategorySemantic.CategoryId,
-                Labels = dto.CategorySemantic.Labels,
-                SemanticEmbedding = dto.CategorySemantic.SemanticEmbedding.IsEmpty
-                    ? null
-                    : System.Runtime.InteropServices.MemoryMarshal.AsBytes<float>(dto.CategorySemantic.SemanticEmbedding.Span).ToArray()
-            }
         };
     }
 }

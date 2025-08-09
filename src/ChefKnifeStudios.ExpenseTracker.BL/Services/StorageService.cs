@@ -13,7 +13,7 @@ namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 
 public interface IStorageService
 {
-    Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, SemanticEmbeddingDTO embeddingDTO, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> UpdateExpenseCostAsync(int expenseId, decimal newCost, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> DeleteExpenseCostAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> AddBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
@@ -64,7 +64,7 @@ public class StorageService : IStorageService
         _logger = logger;
     }
 
-    public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, Guid appId, CancellationToken cancellationToken = default)
+    public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, SemanticEmbeddingDTO embeddingDTO, Guid appId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Starting AddExpenseAsync for AppId: {AppId}, Expense Name: {ExpenseName}", appId, expenseDTO.Name);
         using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -102,6 +102,11 @@ public class StorageService : IStorageService
             var expense = expenseDTO.MapToModel();
             expense.BudgetId = budget.Id;
             expense.AppId = appId;
+            expense.ExpenseSemantic = new ExpenseSemantic()
+            {
+                Labels = embeddingDTO.Labels,
+                SemanticEmbedding = embeddingDTO.Embedding.ToArray().FloatsToBytes(),
+            };
             if (expense.ExpenseSemantic is not null) expense.ExpenseSemantic.AppId = appId;
 
             await _expenseRepository.AddAsync(expense, cancellationToken);
@@ -340,10 +345,20 @@ public class StorageService : IStorageService
         try
         {
             var recurringExpenses = await _recurringExpenseRepository.ListAsync(cancellationToken);
+            var categories = await _categoryRepository.ListAsync(cancellationToken); // get all categories 
 
             foreach (var recurringExpense in recurringExpenses)
             {
                 var labels = JsonSerializer.Deserialize<IEnumerable<string>>(recurringExpense.LabelsJson, Shared.JsonOptions.Get()) ?? [];
+                var expenseCategoryIds = JsonSerializer.Deserialize<IEnumerable<int>>(recurringExpense.CategoryIdsJson, Shared.JsonOptions.Get()) ?? [];
+
+                var categoryDTOs = new List<CategoryDTO>();
+                foreach (var category in categories) 
+                {
+                    if (expenseCategoryIds.Contains(category.Id))
+                        categoryDTOs.Add(category.MapToDTO());
+                }
+
                 SemanticEmbeddingDTO embedding = await _semanticService.CreateSemanticEmbeddingAsync(
                     new ReceiptLabelsDTO()
                     {
@@ -360,13 +375,9 @@ public class StorageService : IStorageService
                     Labels = labels,
                     Cost = recurringExpense.Cost,
                     IsRecurring = true,
-                    ExpenseSemantic = new()
-                    {
-                        Labels = JsonSerializer.Serialize(labels, Shared.JsonOptions.Get()),
-                        SemanticEmbedding = embedding.Embedding,
-                    },
+                    Categories = categoryDTOs,
                 };
-                var result = await AddExpenseAsync(expense, recurringExpense.AppId, cancellationToken);
+                var result = await AddExpenseAsync(expense, embedding, recurringExpense.AppId, cancellationToken);
                 if (!result)
                 {
                     _logger.LogWarning("Failed to add expense for recurring expense. RecurringExpenseId: {RecurringExpenseId}, AppId: {AppId}", recurringExpense.Id, recurringExpense.AppId);

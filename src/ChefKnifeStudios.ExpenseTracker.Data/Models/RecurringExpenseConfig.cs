@@ -5,4 +5,5 @@ public class RecurringExpenseConfig : BaseEntity
     public decimal Cost { get; set; }
     public required string LabelsJson { get; set; }
     public Guid AppId { get; set; }
+    public required string CategoryIdsJson { get; set; }
 } 
