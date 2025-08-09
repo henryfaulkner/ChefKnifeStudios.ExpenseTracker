@@ -155,6 +155,7 @@ public static class MappingExtensions
             CategoryType = (Shared.Enums.CategoryTypes)(int)model.CategoryType,
             Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
             AppId = model.AppId,
+            Icon = model.Icon,
         };
     }
 
@@ -167,6 +168,7 @@ public static class MappingExtensions
             CategoryType = (Data.Enums.CategoryTypes)(int)dto.CategoryType,
             LabelsJson = JsonSerializer.Serialize(dto.Labels),
             AppId = dto.AppId,
+            Icon = dto.Icon,
         };
     }
 }

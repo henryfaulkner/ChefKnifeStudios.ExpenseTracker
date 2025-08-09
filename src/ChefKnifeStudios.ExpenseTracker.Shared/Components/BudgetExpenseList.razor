@@ -42,6 +42,16 @@
                                     <td class="col-row-name">
                                         <button @onclick="@(() => ToastService.ShowWarning("Expense names cannot be edited"))">
                                             @context.Name 
+                                            @foreach (var category in @context.Categories)
+                                            {
+                                                if (!string.IsNullOrWhiteSpace(category.Icon))
+                                                {
+                                                    <MatIcon 
+                                                        Icon="@category.Icon"
+                                                        Class="clr-1s category-icon" 
+                                                    /> 
+                                                }
+                                            }
                                             @if (@context.IsRecurring)
                                             {
                                                 <MatIcon 

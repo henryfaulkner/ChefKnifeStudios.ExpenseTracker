@@ -9,4 +9,5 @@ public class CategoryDTO
     public CategoryTypes CategoryType { get; set; }
     public IEnumerable<string> Labels { get; set; } = [];
     public Guid AppId { get; set; }
+    public string? Icon { get; set; }
 }

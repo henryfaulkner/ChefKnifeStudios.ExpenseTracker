@@ -58,7 +58,8 @@ class Program
                 {
                     "groceries", "supermarket", "food shopping", "produce", "meat", "dairy", "bakery", "household essentials", "weekly shopping", "grocery store", "fresh food", "pantry", "market"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "shopping_cart",
             },
             new Category
             {
@@ -68,7 +69,8 @@ class Program
                 {
                     "rent", "apartment", "housing", "monthly payment", "lease", "landlord", "residential", "living expenses", "home", "flat", "rental property"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "home",
             },
             new Category
             {
@@ -78,7 +80,8 @@ class Program
                 {
                     "utilities", "electricity", "water bill", "gas bill", "internet", "wifi", "cable", "phone bill", "energy", "power", "trash", "sewage", "monthly utilities"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "build",
             },
             new Category
             {
@@ -88,7 +91,8 @@ class Program
                 {
                     "transportation", "commute", "bus", "train", "subway", "metro", "public transit", "taxi", "rideshare", "uber", "lyft", "car", "fuel", "gasoline", "parking", "vehicle maintenance", "auto insurance"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "airport_shuttle",
             },
             new Category
             {
@@ -98,7 +102,8 @@ class Program
                 {
                     "dining out", "restaurant", "cafe", "coffee shop", "fast food", "takeout", "delivery", "lunch", "dinner", "breakfast", "food service", "eating out", "bistro", "bar", "pub"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "restaurant",
             },
             new Category
             {
@@ -108,7 +113,8 @@ class Program
                 {
                     "entertainment", "movies", "cinema", "theater", "concert", "music", "games", "video games", "streaming", "netflix", "hulu", "disney+", "subscriptions", "events", "shows", "amusement park", "nightlife"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "local_activity",
             },
             new Category
             {
@@ -118,7 +124,8 @@ class Program
                 {
                     "healthcare", "doctor", "medical", "pharmacy", "medicine", "prescription", "hospital", "clinic", "health insurance", "dental", "vision", "wellness", "therapy", "mental health", "checkup"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "local_hospital",
             },
             new Category
             {
@@ -128,7 +135,8 @@ class Program
                 {
                     "fitness", "gym", "workout", "exercise", "personal trainer", "yoga", "pilates", "fitness class", "membership", "sports", "athletics", "health club", "recreation"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "fitness_center",
             },
             new Category
             {
@@ -138,7 +146,8 @@ class Program
                 {
                     "shopping", "clothing", "apparel", "fashion", "shoes", "accessories", "retail", "mall", "boutique", "online shopping", "e-commerce", "electronics", "gadgets", "tech", "appliances"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "shopping_basket",
             },
             new Category
             {
@@ -148,7 +157,8 @@ class Program
                 {
                     "education", "school", "tuition", "books", "supplies", "courses", "university", "college", "learning", "training", "workshop", "seminar", "online course", "study", "class"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "school",
             },
             new Category
             {
@@ -158,7 +168,8 @@ class Program
                 {
                     "travel", "vacation", "trip", "flight", "airfare", "hotel", "accommodation", "lodging", "tourism", "car rental", "sightseeing", "holiday", "journey", "cruise", "passport", "visa"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "flight",
             },
             new Category
             {
@@ -168,7 +179,8 @@ class Program
                 {
                     "insurance", "health insurance", "auto insurance", "car insurance", "home insurance", "renter's insurance", "life insurance", "policy", "premium", "coverage", "claim"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "security",
             },
             new Category
             {
@@ -178,7 +190,8 @@ class Program
                 {
                     "pets", "pet food", "veterinarian", "vet", "pet supplies", "dog", "cat", "animal care", "grooming", "pet insurance", "boarding", "pet sitting"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "pets",
             },
             new Category
             {
@@ -188,7 +201,8 @@ class Program
                 {
                     "gifts", "donations", "charity", "present", "birthday", "holiday gift", "wedding gift", "fundraiser", "nonprofit", "giving", "contribution"
                 }),
-                AppId = Guid.Empty
+                AppId = Guid.Empty,
+                Icon = "card_giftcard",
             },
             new Category
             {
@@ -198,8 +212,9 @@ class Program
                 {
                     "personal care", "haircut", "salon", "spa", "cosmetics", "skincare", "beauty", "hygiene", "barber", "massage", "nail salon", "wellness"
                 }),
-                AppId = Guid.Empty
-            }
+                AppId = Guid.Empty,
+                Icon = "sentiment_satisfied_alt",
+            },
         };
         var semantics = new List<CategorySemantic>();
 
