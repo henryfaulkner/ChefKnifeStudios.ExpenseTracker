@@ -46,6 +46,8 @@
                     Value="category" 
                     IsCheckable="true" 
                     IsSelected="isSelected"
+                    TrailingIcon="@(category.Icon ?? string.Empty)"
+                    TrailingIconClick="() => ToggleSelectedCategory(category)"
                     @onclick="() => ToggleSelectedCategory(category)"
                 />
             }
