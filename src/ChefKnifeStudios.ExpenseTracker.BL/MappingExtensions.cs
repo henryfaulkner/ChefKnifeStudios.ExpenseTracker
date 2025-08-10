@@ -127,8 +127,12 @@ public static class MappingExtensions
             Id = model.Id,
             Name = model.Name,
             Cost = model.Cost,
-            Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
-            CategoryIds = JsonSerializer.Deserialize<IEnumerable<int>>(model.CategoryIdsJson, Shared.JsonOptions.Get()) ?? [],
+            Labels = string.IsNullOrWhiteSpace(model.LabelsJson)
+                ? []
+                : JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
+            CategoryIds = string.IsNullOrWhiteSpace(model.CategoryIdsJson)
+                ? []
+                : JsonSerializer.Deserialize<IEnumerable<int>>(model.CategoryIdsJson, Shared.JsonOptions.Get()) ?? [],
         };
         return result;
     }

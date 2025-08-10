@@ -9,10 +9,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
 
 public class ExpenseEventArgs : IEventArgs
 {
-    public enum Types
-    {
-        Added,
-    }
+    public enum Types { Added, Deleted, }
 
     public required Types Type { get; init; }
 }

@@ -9,11 +9,13 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
 
 public interface IExpenseViewModel : IViewModel
 {
+    ExpenseDTO? SelectedExpense { get; set; }
     bool IsListening { get; }
     Task<Receipt?> PickPhotoForReceiptAsync();
     Task<Receipt?> CapturePhotoForReceiptAsync();
     Task StartListeningForExpenseAsync();
     Task<TextToExpenseResponseDTO?> StopListeningForExpenseAsync();
+    Task DeleteSelectedExpense();
 }
 
 public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
@@ -22,8 +24,16 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
     readonly ICameraService _cameraService;
     readonly ISemanticService _semanticService;
     readonly IMicrophoneService _microphoneService;
+    readonly IToastService _toastService;
     readonly IEventNotificationService _eventNotificationService;
     readonly ILogger<ExpenseViewModel> _logger;
+
+    ExpenseDTO? _selectedExpense = null;
+    public ExpenseDTO? SelectedExpense
+    {
+        get => _selectedExpense;
+        set => SetValue(ref _selectedExpense, value);
+    }
 
     bool _isListening = false;
     public bool IsListening
@@ -37,6 +47,7 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
         ICameraService cameraService,
         ISemanticService semanticService,
         IMicrophoneService microphoneService,
+        IToastService toastService,
         IEventNotificationService eventNotificationService,
         ILogger<ExpenseViewModel> logger)
     {
@@ -44,6 +55,7 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
         _cameraService = cameraService;
         _semanticService = semanticService;
         _microphoneService = microphoneService;
+        _toastService = toastService;
         _eventNotificationService = eventNotificationService;
         _logger = logger;
     }
@@ -163,5 +175,29 @@ public class ExpenseViewModel : BaseViewModel, IExpenseViewModel
         );
 
         return result;
+    }
+
+    public async Task DeleteSelectedExpense()
+    {
+        if (SelectedExpense == null)
+        {
+            _toastService.ShowError("Expense could not be deleted");
+            _logger.LogError("Expense dialog had a null recurring expense when handling YES action.");
+            return;
+        }
+
+        try
+        {
+            await _storageService.DeleteExpenseAsync(SelectedExpense.Id);
+            _eventNotificationService.PostEvent(
+                this,
+                new ExpenseEventArgs() { Type = ExpenseEventArgs.Types.Deleted }
+            );
+            SelectedExpense = null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred.");
+        }
     }
 }

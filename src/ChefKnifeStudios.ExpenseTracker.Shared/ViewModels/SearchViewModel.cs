@@ -1,4 +1,5 @@
 ﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
+using ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 
 namespace ChefKnifeStudios.ExpenseTracker.Shared.ViewModels;
@@ -15,13 +16,44 @@ public interface ISearchViewModel : IViewModel
 }
 
 public class SearchViewModel
-    (IStorageService storageService, 
-    IToastService toastService,
-    ISemanticService semanticService) : BaseViewModel, ISearchViewModel
+     : BaseViewModel, ISearchViewModel, IDisposable
 {
-    readonly IStorageService _storageService = storageService;
-    readonly ISemanticService _semanticService = semanticService;
-    readonly IToastService _toastService = toastService;
+    readonly IStorageService _storageService;
+    readonly ISemanticService _semanticService;
+    readonly IToastService _toastService;
+    readonly IEventNotificationService _eventNotificationService;
+
+    public SearchViewModel(
+        IStorageService storageService,
+        IToastService toastService,
+        ISemanticService semanticService,
+        IEventNotificationService eventNotificationService)
+    {
+        _storageService = storageService;
+        _semanticService = semanticService;
+        _toastService = toastService;
+        _eventNotificationService = eventNotificationService;
+
+        _eventNotificationService.EventReceived += HandleEventReceived;
+    }
+
+    async Task HandleEventReceived(object sender, IEventArgs e)
+    {
+        switch (e)
+        {
+            case BudgetEventArgs budgetEvent:
+            case ExpenseEventArgs expenseEvent:
+                await LoadPagedBudgetsAsync();
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void Dispose()
+    {
+        _eventNotificationService.EventReceived -= HandleEventReceived;
+    }
 
     const int PAGE_SIZE = 10;
 

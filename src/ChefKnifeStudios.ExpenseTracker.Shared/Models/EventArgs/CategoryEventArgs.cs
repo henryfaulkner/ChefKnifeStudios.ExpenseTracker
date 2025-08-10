@@ -5,10 +5,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.Models.EventArgs;
 
 public class CategoryEventArgs : IEventArgs
 {
-    public enum EventTypes
-    {
-        AddExpenseCategories,
-    }
+    public enum EventTypes { AddExpenseCategories, }
 
     public class EventData
     {

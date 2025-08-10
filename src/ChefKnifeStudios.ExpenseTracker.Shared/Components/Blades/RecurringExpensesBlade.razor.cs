@@ -35,12 +35,6 @@ public partial class RecurringExpensesBlade : ComponentBase
         base.OnInitialized();
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        await RecurringExpenseViewModel.LoadRecurringExpensesAsync();
-    }
-
     public void Dispose()
     {
         EventNotificationService.EventReceived -= HandleEventReceived;

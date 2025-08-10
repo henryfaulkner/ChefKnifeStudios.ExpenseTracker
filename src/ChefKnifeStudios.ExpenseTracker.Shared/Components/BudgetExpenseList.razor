@@ -7,76 +7,81 @@
     }
     else
     {
-        @* Use https://www.matblazor.com/ExpansionPanel for budget list *@
-        <MatAccordion Multi="true">
-            @foreach (var budget in SearchViewModel.Budgets ?? [])
-            {
-                <MatExpansionPanel>
-                    <MatExpansionPanelSummary>
-                        <MatExpansionPanelHeader>@budget.Name</MatExpansionPanelHeader>
-                        <MatExpansionPanelSubHeader>
-                            @{
-                                string str = $"{(budget.ExpenseDTOs?.Sum(x => x.Cost) ?? decimal.Zero).FormatAsDollar()} / {@budget.ExpenseBudget.FormatAsDollar()}";
-                            }
-                            <div class="panel-subheader">
-                                <MatBody2 style="margin: 0;">@str</MatBody2>
-                                <button @onclick="() => HandleEditBudgetPressed(budget)" @onclick:stopPropagation="true">
-                                    <MatIcon 
-                                        Class="edit-budget-icon"
-                                        Icon="edit" 
-                                    />
-                                </button>
-                            </div>
-                        </MatExpansionPanelSubHeader>
-                    </MatExpansionPanelSummary>
-                    <MatExpansionPanelDetails>
-                        @if (budget.ExpenseDTOs != null && budget.ExpenseDTOs.Any())
-                        {
-                            <MatTable Items="budget.ExpenseDTOs.OrderByDescending(x => x.Id)">
-                                <MatTableHeader>
-                                    <th class="col-header-name">Name</th>
-                                    <th class="col-header-cost">Cost</th>
-                                    <th class="col-header-actions"></th>
-                                </MatTableHeader>
-                                <MatTableRow>
-                                    <td class="col-row-name">
-                                        <button @onclick="@(() => ToastService.ShowWarning("Expense names cannot be edited"))">
-                                            @context.Name 
-                                            @foreach (var category in @context.Categories)
-                                            {
-                                                if (!string.IsNullOrWhiteSpace(category.Icon))
+        <SwipeArea>
+            <MatAccordion Multi="true">
+                @foreach (var budget in SearchViewModel.Budgets ?? [])
+                {
+                    <MatExpansionPanel>
+                        <MatExpansionPanelSummary>
+                            <MatExpansionPanelHeader>@budget.Name</MatExpansionPanelHeader>
+                            <MatExpansionPanelSubHeader>
+                                @{
+                                    string str = $"{(budget.ExpenseDTOs?.Sum(x => x.Cost) ?? decimal.Zero).FormatAsDollar()} / {@budget.ExpenseBudget.FormatAsDollar()}";
+                                }
+                                <div class="panel-subheader">
+                                    <MatBody2 style="margin: 0;">@str</MatBody2>
+                                    <button @onclick="() => HandleEditBudgetPressed(budget)" @onclick:stopPropagation="true">
+                                        <MatIcon 
+                                            Class="edit-budget-icon"
+                                            Icon="edit" 
+                                        />
+                                    </button>
+                                </div>
+                            </MatExpansionPanelSubHeader>
+                        </MatExpansionPanelSummary>
+                        <MatExpansionPanelDetails>
+                            @if (budget.ExpenseDTOs != null && budget.ExpenseDTOs.Any())
+                            {
+                                <MatTable 
+                                    Items="budget.ExpenseDTOs.OrderByDescending(x => x.Id)"
+                                    PageLabel="Pages"
+                                    PageRecordCountLabel="Expenses per Page"
+                                >
+                                    <MatTableHeader>
+                                        <th class="col-header-name">Name</th>
+                                        <th class="col-header-cost">Cost</th>
+                                        <th class="col-header-actions"></th>
+                                    </MatTableHeader>
+                                    <MatTableRow>
+                                        <td class="col-row-name">
+                                            <button @onclick="@(() => ToastService.ShowWarning("Expense names cannot be edited"))">
+                                                @context.Name 
+                                                @foreach (var category in @context.Categories)
+                                                {
+                                                    if (!string.IsNullOrWhiteSpace(category.Icon))
+                                                    {
+                                                        <MatIcon 
+                                                            Icon="@category.Icon"
+                                                            Class="clr-1s category-icon" 
+                                                        /> 
+                                                    }
+                                                }
+                                                @if (@context.IsRecurring)
                                                 {
                                                     <MatIcon 
-                                                        Icon="@category.Icon"
-                                                        Class="clr-1s category-icon" 
-                                                    /> 
+                                                        Icon="autorenew"
+                                                        Class="clr-1s is-recurring-label-icon" 
+                                                    />    
                                                 }
-                                            }
-                                            @if (@context.IsRecurring)
-                                            {
-                                                <MatIcon 
-                                                    Icon="autorenew"
-                                                    Class="clr-1s is-recurring-label-icon" 
-                                                />    
-                                            }
-                                        </button>
-                                    </td>
-                                    <td class="col-row-cost">
-                                        <EditableExpenseCost Expense="@context" StateHasChangedCallback="HandleStateHasChanged" />
-                                    </td>
-                                    <td class="col-row-actions">
-                                        <MatIconButton Class="delete-expense-btn" Icon="delete" OnClick="() => HandleDeleteExpensePressed(context)" />
-                                    </td>
-                                </MatTableRow>
-                            </MatTable>
-                        }
-                        else
-                        {
-                            <MatBody1>No expenses available for this budget.</MatBody1>
-                        }
-                    </MatExpansionPanelDetails>
-                </MatExpansionPanel>
-            }
-        </MatAccordion>
+                                            </button>
+                                        </td>
+                                        <td class="col-row-cost">
+                                            <EditableExpenseCost Expense="@context" StateHasChangedCallback="HandleStateHasChanged" />
+                                        </td>
+                                        <td class="col-row-actions">
+                                            <MatIconButton Class="delete-expense-btn" Icon="delete" OnClick="() => HandleDeleteExpensePressed(context)" />
+                                        </td>
+                                    </MatTableRow>
+                                </MatTable>
+                            }
+                            else
+                            {
+                                <MatBody1>No expenses available for this budget.</MatBody1>
+                            }
+                        </MatExpansionPanelDetails>
+                    </MatExpansionPanel>
+                }
+            </MatAccordion>
+        </SwipeArea>
     }
 </div>

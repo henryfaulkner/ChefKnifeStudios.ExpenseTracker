@@ -22,6 +22,6 @@
         string name = RecurringExpenseViewModel.SelectedRecurringExpenseForDeletion is { Name: string } 
             ? $"\"{RecurringExpenseViewModel.SelectedRecurringExpenseForDeletion.Name}\"" 
             : string.Empty;
-        return @<p>Recurring expense @(name) will be cancelled and will not generate any future expenses.</p>;
+        return @<p>Recurring expense, @(name), will be cancelled and will not generate any future expenses.</p>;
     }
 }

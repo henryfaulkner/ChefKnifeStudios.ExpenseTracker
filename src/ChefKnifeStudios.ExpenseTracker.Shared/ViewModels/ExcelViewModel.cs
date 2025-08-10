@@ -34,7 +34,8 @@ public class ExcelViewModel : BaseViewModel, IExcelViewModel
             worksheet.Cell(1, 1).Value = nameof(ExpenseDTO.Name);
             worksheet.Cell(1, 2).Value = nameof(ExpenseDTO.Cost);
             worksheet.Cell(1, 3).Value = nameof(ExpenseDTO.Labels);
-            worksheet.Cell(1, 4).Value = nameof(ExpenseDTO.IsRecurring);
+            worksheet.Cell(1, 4).Value = nameof(ExpenseDTO.Categories);
+            worksheet.Cell(1, 5).Value = nameof(ExpenseDTO.IsRecurring);
 
             int row = 2; // Start from row 2 for expenses
             foreach (var expense in budget.ExpenseDTOs ?? [])
@@ -42,7 +43,8 @@ public class ExcelViewModel : BaseViewModel, IExcelViewModel
                 worksheet.Cell(row, 1).Value = expense.Name;
                 worksheet.Cell(row, 2).Value = expense.Cost;
                 worksheet.Cell(row, 3).Value = string.Join(", ", expense.Labels);
-                worksheet.Cell(row, 4).Value = expense.IsRecurring;
+                worksheet.Cell(row, 4).Value = string.Join(", ", expense.Categories);
+                worksheet.Cell(row, 5).Value = expense.IsRecurring;
                 row++;
             }
             workbook.SaveAs(filePath);

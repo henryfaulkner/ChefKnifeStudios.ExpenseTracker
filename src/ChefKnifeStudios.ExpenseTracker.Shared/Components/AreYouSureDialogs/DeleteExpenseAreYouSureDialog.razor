@@ -1,0 +1,27 @@
+﻿<div class="delete-expense-are-you-sure-dialog">
+    @if (ExpenseViewModel.SelectedExpense is { })
+    {
+        <AreYouSureDialog
+            NoCallback="HandleNoPressed"
+            YesCallback="HandleYesPressed"
+            OpenChangedCallback="HandleOpenChanged"
+            HeaderContent="HeaderContent()"
+            BodyContent="BodyContent()"
+        />
+    }
+</div>
+
+@code {
+    RenderFragment HeaderContent()
+    {
+        return @<p>Are you sure?</p>;
+    }
+
+    RenderFragment BodyContent()
+    {
+        string name = ExpenseViewModel.SelectedExpense is { Name: string } 
+            ? $"\"{ExpenseViewModel.SelectedExpense.Name}\""
+            : string.Empty;
+        return @<p>Expense, @(name), will be permanently deleted.</p>;
+    }
+}

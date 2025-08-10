@@ -97,6 +97,7 @@ public partial class DownloadBudgetsBlade : ComponentBase, IDisposable
 
     async Task HandleEmailSendPressed()
     {
+        bool isSuccess = false;
         _isEmailLoading = true;
         try
         {
@@ -105,6 +106,7 @@ public partial class DownloadBudgetsBlade : ComponentBase, IDisposable
                 _emailRecipient
             );
 
+            isSuccess = true;
             ToastService.ShowSuccess("Email sent successfully");
         }
         catch (Exception ex)
@@ -119,6 +121,17 @@ public partial class DownloadBudgetsBlade : ComponentBase, IDisposable
             _isEmailDialogOpen = false;
             await Task.Delay(50);
             _keepBladeOpen = false;
+        }
+
+        if (isSuccess)
+        {
+            EventNotificationService.PostEvent(
+                this,
+                new BladeEventArgs()
+                {
+                    Type = BladeEventArgs.Types.Close,
+                }
+            );
         }
     }
 }

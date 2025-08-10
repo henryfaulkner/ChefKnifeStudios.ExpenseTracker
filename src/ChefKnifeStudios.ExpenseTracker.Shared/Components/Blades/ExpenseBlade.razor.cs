@@ -17,7 +17,6 @@ public partial class ExpenseBlade : ComponentBase, IDisposable
     [Inject] ILogger<BudgetBlade> Logger { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] IStorageService StorageService { get; set; } = null!;
-    [Inject] ISemanticService SemanticService { get; set; } = null!;
     [Inject] IToastService ToastService { get; set; } = null!;
     [Inject] IExpenseViewModel ExpenseViewModel { get; set; } = null!;
     [Inject] ICommonJsInteropService CommonJsInteropService { get; set; } = null!;
