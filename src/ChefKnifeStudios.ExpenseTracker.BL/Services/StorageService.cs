@@ -15,7 +15,7 @@ public interface IStorageService
 {
     Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, SemanticEmbeddingDTO embeddingDTO, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> UpdateExpenseCostAsync(int expenseId, decimal newCost, Guid appId, CancellationToken cancellationToken = default);
-    Task<bool> DeleteExpenseCostAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteExpenseAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> AddBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> UpdateBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
 
@@ -106,13 +106,13 @@ public class StorageService : IStorageService
             {
                 Labels = embeddingDTO.Labels,
                 SemanticEmbedding = embeddingDTO.Embedding.ToArray().FloatsToBytes(),
+                AppId = appId,
             };
-            if (expense.ExpenseSemantic is not null) expense.ExpenseSemantic.AppId = appId;
 
             await _expenseRepository.AddAsync(expense, cancellationToken);
             _logger.LogInformation("Added expense for AppId: {AppId}, ExpenseId: {ExpenseId}, Name: {ExpenseName}", appId, expense.Id, expense.Name);
 
-            if (expense.ExpenseSemantic is not null) expense.ExpenseSemantic.ExpenseId = expense.Id;
+            expense.ExpenseSemantic.ExpenseId = expense.Id;
 
             var upsertResult = await UpsertExpense(expense, cancellationToken);
             if (!upsertResult)
@@ -172,13 +172,13 @@ public class StorageService : IStorageService
         }
     }
 
-    public async Task<bool> DeleteExpenseCostAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteExpenseAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting DeleteExpenseCostAsync for AppId: {AppId}, Expense Id: {expenseId}", appId, expenseId);
+        _logger.LogInformation("Starting DeleteExpenseAsync for AppId: {AppId}, Expense Id: {expenseId}", appId, expenseId);
         using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            var expense = await _expenseRepository.GetByIdAsync(expenseId, cancellationToken);
+            var expense = await _expenseRepository.FirstOrDefaultAsync(new GetExpenseByIdSpec(expenseId, appId), cancellationToken);
             if (expense is null)
             {
                 _logger.LogWarning("Expense {expenseId} could not be found. AppId: {AppId}", expenseId, appId);
@@ -200,13 +200,13 @@ public class StorageService : IStorageService
             }
 
             await transaction.CommitAsync(cancellationToken);
-            _logger.LogInformation("Transaction committed for DeleteExpenseCostAsync: {AppId}, Expense Id: {expenseId}", appId, expenseId);
+            _logger.LogInformation("Transaction committed for DeleteExpenseAsync: {AppId}, Expense Id: {expenseId}", appId, expenseId);
             return upsertResult;
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(cancellationToken);
-            _logger.LogError(ex, "Exception in DeleteExpenseCostAsync for AppId: {AppId}, Expense Id: {expenseId}", appId, expenseId);
+            _logger.LogError(ex, "Exception in DeleteExpenseAsync for AppId: {AppId}, Expense Id: {expenseId}", appId, expenseId);
             return false;
         }
     }

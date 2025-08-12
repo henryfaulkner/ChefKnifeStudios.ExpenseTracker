@@ -110,7 +110,7 @@ public static class StorageEndpoints
                             return Results.BadRequest("App ID header is required");
                         }
 
-                        var result = await storageService.DeleteExpenseCostAsync(id, Guid.Parse(appId), cancellationToken);
+                        var result = await storageService.DeleteExpenseAsync(id, Guid.Parse(appId), cancellationToken);
                         return result ? Results.Ok(result) : Results.Problem("Failed to mark expense as deleted");
                     }
                     catch (Exception ex)

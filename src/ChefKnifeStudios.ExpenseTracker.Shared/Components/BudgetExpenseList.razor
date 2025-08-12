@@ -35,7 +35,7 @@
                                 <MatTable 
                                     Items="budget.ExpenseDTOs.OrderByDescending(x => x.Id)"
                                     PageLabel="Pages"
-                                    PageRecordCountLabel="Expenses per Page"
+                                    PageRecordCountLabel="Page Size"
                                 >
                                     <MatTableHeader>
                                         <th class="col-header-name">Name</th>
@@ -45,24 +45,27 @@
                                     <MatTableRow>
                                         <td class="col-row-name">
                                             <button @onclick="@(() => ToastService.ShowWarning("Expense names cannot be edited"))">
-                                                @context.Name 
-                                                @foreach (var category in @context.Categories)
-                                                {
-                                                    if (!string.IsNullOrWhiteSpace(category.Icon))
+                                                <MatBody1 Class="col-row-name-name">
+                                                    @context.Name 
+                                                    @foreach (var category in @context.Categories)
+                                                    {
+                                                        if (!string.IsNullOrWhiteSpace(category.Icon))
+                                                        {
+                                                            <MatIcon 
+                                                                Icon="@category.Icon"
+                                                                Class="clr-1s category-icon" 
+                                                            /> 
+                                                        }
+                                                    }
+                                                    @if (@context.IsRecurring)
                                                     {
                                                         <MatIcon 
-                                                            Icon="@category.Icon"
-                                                            Class="clr-1s category-icon" 
-                                                        /> 
+                                                            Icon="autorenew"
+                                                            Class="clr-1s is-recurring-label-icon" 
+                                                        />    
                                                     }
-                                                }
-                                                @if (@context.IsRecurring)
-                                                {
-                                                    <MatIcon 
-                                                        Icon="autorenew"
-                                                        Class="clr-1s is-recurring-label-icon" 
-                                                    />    
-                                                }
+                                                </MatBody1>
+                                                <MatBody2 Class="col-row-name-date">@context.CreatedOn.ToString(Constants.DateFormats.DateOnlyFormat)</MatBody2>
                                             </button>
                                         </td>
                                         <td class="col-row-cost">

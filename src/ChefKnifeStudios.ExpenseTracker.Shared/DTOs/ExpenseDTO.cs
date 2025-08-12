@@ -10,4 +10,5 @@ public class ExpenseDTO
     public bool IsRecurring { get; set; }
     public BudgetDTO? Budget { get; set; }
     public required IEnumerable<CategoryDTO> Categories { get; set; }
+    public DateTime CreatedOn { get; set; }
 }

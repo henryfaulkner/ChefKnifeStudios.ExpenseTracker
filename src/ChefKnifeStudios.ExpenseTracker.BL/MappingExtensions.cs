@@ -17,6 +17,7 @@ public static class MappingExtensions
             Cost = model.Cost,
             Labels = JsonSerializer.Deserialize<IEnumerable<string>>(model.LabelsJson, Shared.JsonOptions.Get()) ?? [],
             IsRecurring = model.IsRecurring,
+            CreatedOn = DateTime.SpecifyKind(model.CreatedOnUtc, DateTimeKind.Utc).ToLocalTime(),
             Budget = model.Budget is null ? null
                 : new()
                 {
@@ -43,6 +44,7 @@ public static class MappingExtensions
             Cost = dto.Cost,
             LabelsJson = JsonSerializer.Serialize(dto.Labels),
             IsRecurring = dto.IsRecurring,
+            CreatedOnUtc = dto.CreatedOn.Kind == DateTimeKind.Utc ? dto.CreatedOn : dto.CreatedOn.ToUniversalTime(),
             Budget = dto.Budget is null ? null
                 : new()
                 {

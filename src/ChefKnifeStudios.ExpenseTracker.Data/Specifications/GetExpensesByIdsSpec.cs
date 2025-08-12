@@ -10,6 +10,7 @@ public sealed class GetExpensesByIdsSpec : Specification<Expense>
         Query
             .Include(x => x.Budget)
             .Include(x => x.ExpenseCategories)
+            .Include(x => x.ExpenseSemantic)
             .Where(x => x.AppId == appId)
             .Where(x => expenseIds.Contains(x.Id)); 
     }
