@@ -13,12 +13,12 @@ namespace ChefKnifeStudios.ExpenseTracker.BL.Services;
 
 public interface IStorageService
 {
-    Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, SemanticEmbeddingDTO embeddingDTO, Guid appId, CancellationToken cancellationToken = default);
+    Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> UpdateExpenseCostAsync(int expenseId, decimal newCost, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> DeleteExpenseAsync(int expenseId, Guid appId, CancellationToken cancellationToken = default);
+
     Task<bool> AddBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
     Task<bool> UpdateBudgetAsync(Budget budget, Guid appId, CancellationToken cancellationToken = default);
-
     Task<IEnumerable<BudgetDTO>> GetBudgetsAsync(Guid appId, CancellationToken cancellationToken = default);
     Task<PagedResult<Budget>> SearchBudgetsAsync(string? searchText, int pageSize, int pageNumber, Guid appId, CancellationToken cancellationToken = default);
 
@@ -64,7 +64,7 @@ public class StorageService : IStorageService
         _logger = logger;
     }
 
-    public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, SemanticEmbeddingDTO embeddingDTO, Guid appId, CancellationToken cancellationToken = default)
+    public async Task<bool> AddExpenseAsync(ExpenseDTO expenseDTO, Guid appId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Starting AddExpenseAsync for AppId: {AppId}, Expense Name: {ExpenseName}", appId, expenseDTO.Name);
         using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -99,13 +99,32 @@ public class StorageService : IStorageService
                 expenseDTO.Labels = tteRes.Labels ?? [];
             }
 
+            List<string> categoryLabelList = [];
+            foreach (var category in expenseDTO.Categories)
+            {
+                categoryLabelList.AddRange(category.Labels);
+            }
+            expenseDTO.Labels.Concat(categoryLabelList);
+
             var expense = expenseDTO.MapToModel();
             expense.BudgetId = budget.Id;
             expense.AppId = appId;
+
+            SemanticEmbeddingDTO embedding = await _semanticService.CreateSemanticEmbeddingAsync(
+                new ReceiptLabelsDTO()
+                {
+                    Name = expenseDTO.Name,
+                    CreatedOn = expenseDTO.CreatedOn,
+                    Labels = expenseDTO.Labels,
+                },
+                appId,
+                cancellationToken
+            );
+
             expense.ExpenseSemantic = new ExpenseSemantic()
             {
-                Labels = embeddingDTO.Labels,
-                SemanticEmbedding = embeddingDTO.Embedding.ToArray().FloatsToBytes(),
+                Labels = embedding.Labels,
+                SemanticEmbedding = embedding.Embedding.ToArray().FloatsToBytes(),
                 AppId = appId,
             };
 
@@ -359,16 +378,6 @@ public class StorageService : IStorageService
                         categoryDTOs.Add(category.MapToDTO());
                 }
 
-                SemanticEmbeddingDTO embedding = await _semanticService.CreateSemanticEmbeddingAsync(
-                    new ReceiptLabelsDTO()
-                    {
-                        Name = recurringExpense.Name,
-                        CreatedOn = recurringExpense.CreatedOnUtc,
-                        Labels = labels,
-                    },
-                    recurringExpense.AppId,
-                    cancellationToken
-                );
                 var expense = new ExpenseDTO()
                 {
                     Name = recurringExpense.Name,
@@ -377,7 +386,7 @@ public class StorageService : IStorageService
                     IsRecurring = true,
                     Categories = categoryDTOs,
                 };
-                var result = await AddExpenseAsync(expense, embedding, recurringExpense.AppId, cancellationToken);
+                var result = await AddExpenseAsync(expense, recurringExpense.AppId, cancellationToken);
                 if (!result)
                 {
                     _logger.LogWarning("Failed to add expense for recurring expense. RecurringExpenseId: {RecurringExpenseId}, AppId: {AppId}", recurringExpense.Id, recurringExpense.AppId);

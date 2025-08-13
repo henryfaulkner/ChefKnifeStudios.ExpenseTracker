@@ -9,6 +9,7 @@ using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using System.Globalization;
@@ -306,15 +307,27 @@ public class SemanticService : ISemanticService
             var collectionName = Collections.ExpenseSemantics;
             var expenseSemanticCollection = _vectorStore.GetCollection<int, ExpenseSemantic>(collectionName);
             await expenseSemanticCollection.EnsureCollectionExistsAsync().ConfigureAwait(false);
+            var searchOptions = new VectorSearchOptions<ExpenseSemantic>()
+            {
+                Filter = x => x.AppId == appId,
+            };
 
             List<ExpenseSemantic> semanticResult = [];
-            var searchResult = expenseSemanticCollection.SearchAsync(queryEmbedding, top: searchRequest.TopN, cancellationToken: cancellationToken);
+            var searchResult = expenseSemanticCollection
+                .SearchAsync(
+                    queryEmbedding, 
+                    top: searchRequest.TopN, 
+                    options: searchOptions, 
+                    cancellationToken: cancellationToken);
+
+            const double maxAllowedDistance = 0.35;
             await foreach (var expenseVectorResult in searchResult)
             {
                 if (!expenseVectorResult.Score.HasValue) continue;
                 var record = expenseVectorResult.Record;
                 record.Score = expenseVectorResult.Score.Value;
-                semanticResult.Add(record);
+                if (record.Score <= maxAllowedDistance)
+                    semanticResult.Add(record);
             }
 
             var expenseIds = semanticResult

@@ -37,13 +37,7 @@ public static class StorageEndpoints
                     return Results.BadRequest("App ID header is required");
                 }
 
-                var embeddingDTO = await semanticService.CreateSemanticEmbeddingAsync(
-                    expenseReqDTO.ReceiptLabels, 
-                    Guid.Parse(appId), 
-                    cancellationToken
-                );
-
-                var result = await storageService.AddExpenseAsync(expenseReqDTO.Expense, embeddingDTO, Guid.Parse(appId), cancellationToken);
+                var result = await storageService.AddExpenseAsync(expenseReqDTO.Expense, Guid.Parse(appId), cancellationToken);
                 return result ? Results.Ok(result) : Results.Problem("Failed to add expense");
             }
             catch (Exception ex)
