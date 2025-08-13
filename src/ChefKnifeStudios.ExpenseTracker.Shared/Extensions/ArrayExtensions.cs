@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.EMMA;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace System;
 
