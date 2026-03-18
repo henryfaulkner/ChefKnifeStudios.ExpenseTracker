@@ -1,18 +1,17 @@
+using ChefKnifeStudios.ExpenseTracker.BL;
+using ChefKnifeStudios.ExpenseTracker.BL.Models;
+using ChefKnifeStudios.ExpenseTracker.BL.Services;
 using ChefKnifeStudios.ExpenseTracker.Data;
+using ChefKnifeStudios.ExpenseTracker.Data.Constants;
 using ChefKnifeStudios.ExpenseTracker.Data.Models;
 using ChefKnifeStudios.ExpenseTracker.Data.Repos;
 using ChefKnifeStudios.ExpenseTracker.WebAPI;
 using ChefKnifeStudios.ExpenseTracker.WebAPI.EndpointGroups;
-using ChefKnifeStudios.ExpenseTracker.BL.Models;
-using ChefKnifeStudios.ExpenseTracker.BL.Services;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.PgVector;
-using Npgsql;
 using OpenAI;
 using Scalar.AspNetCore;
-using ChefKnifeStudios.ExpenseTracker.BL;
-using ChefKnifeStudios.ExpenseTracker.Data.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -14,7 +14,7 @@ namespace ChefKnifeStudios.ExpenseTracker.Shared.Components.Blades;
 
 public partial class ExpenseBlade : ComponentBase, IDisposable
 {
-    [Inject] ILogger<BudgetBlade> Logger { get; set; } = null!;
+    [Inject] ILogger<ExpenseBlade> Logger { get; set; } = null!;
     [Inject] IEventNotificationService EventNotificationService { get; set; } = null!;
     [Inject] IStorageService StorageService { get; set; } = null!;
     [Inject] IToastService ToastService { get; set; } = null!;

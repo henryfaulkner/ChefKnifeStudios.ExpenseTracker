@@ -1,19 +1,12 @@
-﻿using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
-using ChefKnifeStudios.ExpenseTracker.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Http.Headers;
+﻿using ChefKnifeStudios.ExpenseTracker.Shared;
+using ChefKnifeStudios.ExpenseTracker.Shared.DTOs;
 using ChefKnifeStudios.ExpenseTracker.Shared.Services;
 using Microsoft.Extensions.Configuration;
-using System.Text.Json;
-using System.Net;
-using System.Net.Http.Json;
-using ChefKnifeStudios.ExpenseTracker.Shared.Models;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace ChefKnifeStudios.ExpenseTracker.MobileApp.Services;
 
